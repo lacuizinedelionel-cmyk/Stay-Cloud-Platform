@@ -115,6 +115,7 @@ import type {
   RestaurantProduct,
   RestaurantStats,
   SectorRevenue,
+  StockAdjustBody,
   Student,
   SuperAdminStats,
   Supplier,
@@ -4443,6 +4444,177 @@ export const useUpdateGroceryProduct = <
   TContext
 > => {
   return useMutation(getUpdateGroceryProductMutationOptions(options));
+};
+
+/**
+ * @summary Delete a grocery product
+ */
+export const getDeleteGroceryProductUrl = (id: number) => {
+  return `/api/grocery/products/${id}`;
+};
+
+export const deleteGroceryProduct = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGroceryProductUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGroceryProductMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGroceryProduct>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGroceryProduct>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGroceryProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGroceryProduct>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteGroceryProduct(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGroceryProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGroceryProduct>>
+>;
+
+export type DeleteGroceryProductMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a grocery product
+ */
+export const useDeleteGroceryProduct = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGroceryProduct>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGroceryProduct>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteGroceryProductMutationOptions(options));
+};
+
+/**
+ * @summary Adjust stock quantity (delta)
+ */
+export const getAdjustGroceryProductStockUrl = (id: number) => {
+  return `/api/grocery/products/${id}/stock`;
+};
+
+export const adjustGroceryProductStock = async (
+  id: number,
+  stockAdjustBody: StockAdjustBody,
+  options?: RequestInit,
+): Promise<GroceryProduct> => {
+  return customFetch<GroceryProduct>(getAdjustGroceryProductStockUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(stockAdjustBody),
+  });
+};
+
+export const getAdjustGroceryProductStockMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adjustGroceryProductStock>>,
+    TError,
+    { id: number; data: BodyType<StockAdjustBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof adjustGroceryProductStock>>,
+  TError,
+  { id: number; data: BodyType<StockAdjustBody> },
+  TContext
+> => {
+  const mutationKey = ["adjustGroceryProductStock"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof adjustGroceryProductStock>>,
+    { id: number; data: BodyType<StockAdjustBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return adjustGroceryProductStock(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AdjustGroceryProductStockMutationResult = NonNullable<
+  Awaited<ReturnType<typeof adjustGroceryProductStock>>
+>;
+export type AdjustGroceryProductStockMutationBody = BodyType<StockAdjustBody>;
+export type AdjustGroceryProductStockMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Adjust stock quantity (delta)
+ */
+export const useAdjustGroceryProductStock = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof adjustGroceryProductStock>>,
+    TError,
+    { id: number; data: BodyType<StockAdjustBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof adjustGroceryProductStock>>,
+  TError,
+  { id: number; data: BodyType<StockAdjustBody> },
+  TContext
+> => {
+  return useMutation(getAdjustGroceryProductStockMutationOptions(options));
 };
 
 /**

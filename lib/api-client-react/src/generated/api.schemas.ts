@@ -643,6 +643,11 @@ export interface CreateSupplierBody {
   city?: string;
 }
 
+export interface StockAdjustBody {
+  /** Positive to add stock, negative to remove */
+  delta: number;
+}
+
 export interface GroceryStats {
   dailySales: number;
   itemsSoldToday: number;

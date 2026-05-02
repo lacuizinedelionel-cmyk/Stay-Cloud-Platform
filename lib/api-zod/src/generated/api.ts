@@ -988,6 +988,45 @@ export const UpdateGroceryProductResponse = zod.object({
 });
 
 /**
+ * @summary Delete a grocery product
+ */
+export const DeleteGroceryProductParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Adjust stock quantity (delta)
+ */
+export const AdjustGroceryProductStockParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdjustGroceryProductStockBody = zod.object({
+  delta: zod.number().describe("Positive to add stock, negative to remove"),
+});
+
+export const AdjustGroceryProductStockResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  name: zod.string(),
+  barcode: zod.string().nullish(),
+  category: zod.enum([
+    "ALIMENTAIRE",
+    "BOISSONS",
+    "HYGIENE",
+    "PRODUITS_FRAIS",
+    "AUTRES",
+  ]),
+  price: zod.number(),
+  costPrice: zod.number(),
+  stock: zod.number(),
+  minStock: zod.number(),
+  supplierId: zod.number().nullish(),
+  supplierName: zod.string().nullish(),
+  isActive: zod.boolean(),
+});
+
+/**
  * @summary List grocery suppliers
  */
 export const ListGrocerySuppliersQueryParams = zod.object({

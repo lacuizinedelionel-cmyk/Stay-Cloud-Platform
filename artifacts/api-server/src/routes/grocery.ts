@@ -36,6 +36,24 @@ router.put("/grocery/products/:id", async (req, res): Promise<void> => {
   res.json({ ...product, price: parseFloat(product.price), costPrice: parseFloat(product.costPrice) });
 });
 
+router.patch("/grocery/products/:id/stock", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { delta } = req.body; // positive = add, negative = remove
+  if (delta === undefined) { res.status(400).json({ error: "delta required" }); return; }
+  const [product] = await db.update(groceryProductsTable)
+    .set({ stock: sql`GREATEST(0, ${groceryProductsTable.stock} + ${delta})` })
+    .where(eq(groceryProductsTable.id, id))
+    .returning();
+  if (!product) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...product, price: parseFloat(product.price), costPrice: parseFloat(product.costPrice) });
+});
+
+router.delete("/grocery/products/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  await db.delete(groceryProductsTable).where(eq(groceryProductsTable.id, id));
+  res.sendStatus(204);
+});
+
 router.get("/grocery/suppliers", async (req, res): Promise<void> => {
   const businessId = parseInt(req.query.businessId as string, 10);
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }

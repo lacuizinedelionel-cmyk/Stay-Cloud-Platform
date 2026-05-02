@@ -982,6 +982,44 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GroceryProduct"
+    delete:
+      operationId: deleteGroceryProduct
+      tags: [grocery]
+      summary: Delete a grocery product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /grocery/products/{id}/stock:
+    patch:
+      operationId: adjustGroceryProductStock
+      tags: [grocery]
+      summary: Adjust stock quantity (delta)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockAdjustBody"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroceryProduct"
 
   /grocery/suppliers:
     get:
@@ -2482,6 +2520,14 @@ components:
         city:
           type: string
       required: [businessId, name]
+
+    StockAdjustBody:
+      type: object
+      properties:
+        delta:
+          type: integer
+          description: Positive to add stock, negative to remove
+      required: [delta]
 
     GroceryStats:
       type: object

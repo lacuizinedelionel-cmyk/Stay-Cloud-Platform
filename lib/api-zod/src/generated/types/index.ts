@@ -136,6 +136,7 @@ export * from "./restaurantProduct";
 export * from "./restaurantStats";
 export * from "./restaurantStatsTopDishesItem";
 export * from "./sectorRevenue";
+export * from "./stockAdjustBody";
 export * from "./student";
 export * from "./studentPaymentStatus";
 export * from "./superAdminStats";
