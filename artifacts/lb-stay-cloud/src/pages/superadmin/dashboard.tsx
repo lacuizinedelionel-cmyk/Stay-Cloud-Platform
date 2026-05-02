@@ -1,42 +1,131 @@
-import { useGetSuperAdminStats, useGetSuperAdminRevenueChart, useListBusinesses } from '@workspace/api-client-react';
-import { KPICard } from '@/components/kpi-card';
-import { Building2, CreditCard, Activity, Users, TrendingUp, ArrowUpRight } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { motion } from 'framer-motion';
+import {
+  useGetSuperAdminStats,
+  useGetSuperAdminRevenueChart,
+  useListBusinesses,
+  useGetSuperAdminSectorRevenue,
+  useGetSuperAdminPaymentMethods,
+  useGetSuperAdminRecentActivity,
+  getGetSuperAdminSectorRevenueQueryKey,
+  getGetSuperAdminPaymentMethodsQueryKey,
+  getGetSuperAdminRecentActivityQueryKey,
+  getGetSuperAdminStatsQueryKey,
+  getGetSuperAdminRevenueChartQueryKey,
+  getListBusinessesQueryKey,
+} from '@workspace/api-client-react';
+import {
+  ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
+  CartesianGrid, BarChart, Bar, Cell, PieChart, Pie,
+} from 'recharts';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import { motion } from 'framer-motion';
+import {
+  Building2, CreditCard, Activity, Users, TrendingUp,
+  ArrowUpRight, Zap, ShoppingBag, Smartphone, Banknote,
+  Clock, CheckCircle2, BarChart2,
+} from 'lucide-react';
 
-const SECTOR_LABELS: Record<string, string> = {
-  RESTAURANT: 'Restaurant', HOTEL: 'Hôtel', BEAUTY: 'Beauté',
-  GROCERY: 'Supérette', PHARMACY: 'Pharmacie', GARAGE: 'Garage',
-  FITNESS: 'Fitness', EDUCATION: 'Formation',
-};
-
+/* ──────────────────────────────────────────────────────── */
+/*  Constants                                              */
+/* ──────────────────────────────────────────────────────── */
 const SECTOR_COLORS: Record<string, string> = {
-  RESTAURANT: '#F59E0B', HOTEL: '#3B82F6', BEAUTY: '#EC4899',
-  GROCERY: '#10B981', PHARMACY: '#8B5CF6', GARAGE: '#6B7280',
-  FITNESS: '#EF4444', EDUCATION: '#06B6D4',
+  RESTAURANT: '#F97316', HOTEL: '#818CF8', BEAUTY: '#F472B6',
+  GROCERY: '#34D399', PHARMACY: '#F472B6', GARAGE: '#94A3B8',
+  FITNESS: '#FBBF24', EDUCATION: '#60A5FA',
 };
 
-function PageHeader() {
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+const METHOD_COLORS: Record<string, string> = {
+  CASH: '#34D399',
+  MTN_MOBILE_MONEY: '#FBBF24',
+  ORANGE_MONEY: '#F97316',
+  CARD: '#818CF8',
+};
 
+const METHOD_ICONS: Record<string, React.ElementType> = {
+  CASH: Banknote,
+  MTN_MOBILE_MONEY: Smartphone,
+  ORANGE_MONEY: Smartphone,
+  CARD: CreditCard,
+};
+
+/* ──────────────────────────────────────────────────────── */
+/*  Helpers                                                */
+/* ──────────────────────────────────────────────────────── */
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "À l'instant";
+  if (m < 60) return `Il y a ${m} min`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `Il y a ${h}h`;
+  return `Il y a ${Math.floor(h / 24)}j`;
+}
+
+/* ──────────────────────────────────────────────────────── */
+/*  KPI Card                                               */
+/* ──────────────────────────────────────────────────────── */
+function KPI({
+  title, value, sub, icon: Icon, color, bg, trend, loading,
+}: {
+  title: string; value: string; sub?: string;
+  icon: React.ElementType; color: string; bg: string;
+  trend?: { value: number; positive: boolean };
+  loading?: boolean;
+}) {
+  if (loading) return <Skeleton className="h-28 rounded-xl" />;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="rounded-xl p-5 flex flex-col justify-between"
+      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: bg }}>
+          <Icon className="w-4.5 h-4.5" style={{ color }} strokeWidth={2} />
+        </div>
+        {trend && (
+          <div
+            className="flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
+            style={{
+              background: trend.positive ? 'hsl(160 84% 39% / 0.12)' : 'hsl(0 72% 51% / 0.1)',
+              color: trend.positive ? '#10B981' : '#EF4444',
+            }}
+          >
+            <ArrowUpRight className="w-3 h-3" style={{ transform: trend.positive ? 'none' : 'rotate(90deg)' }} />
+            {trend.value}%
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="text-xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>{value}</p>
+        <p className="text-xs font-medium text-muted-foreground mt-0.5">{title}</p>
+        {sub && <p className="text-[10px] text-muted-foreground mt-0.5 opacity-70">{sub}</p>}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────── */
+/*  Page header                                            */
+/* ──────────────────────────────────────────────────────── */
+function PageHeader() {
+  const dateStr = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+  });
   return (
     <div className="flex items-start justify-between">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1 capitalize">
           {dateStr}
         </p>
         <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
           Vue d'ensemble de la plateforme
         </h1>
+        <p className="text-sm text-muted-foreground mt-1">Toutes les enseignes · Données en temps réel</p>
       </div>
-      <div
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
-        style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}
-      >
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
+        style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)', border: '1px solid hsl(38 90% 56% / 0.25)' }}>
         <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
         SUPER ADMIN
       </div>
@@ -44,31 +133,108 @@ function PageHeader() {
   );
 }
 
+/* ──────────────────────────────────────────────────────── */
+/*  Custom Tooltip                                         */
+/* ──────────────────────────────────────────────────────── */
+function ChartTooltip({ active, payload, label, formatter }: any) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-xl px-4 py-3 text-xs shadow-xl"
+      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+      <p className="font-bold text-foreground mb-1">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.dataKey} style={{ color: p.color }}>
+          {formatter ? formatter(p.value) : p.value}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────── */
+/*  Main Dashboard                                         */
+/* ──────────────────────────────────────────────────────── */
 export default function SuperAdminDashboard() {
-  const { data: stats, isLoading: statsLoading } = useGetSuperAdminStats();
-  const { data: chartData, isLoading: chartLoading } = useGetSuperAdminRevenueChart();
-  const { data: businesses, isLoading: businessesLoading } = useListBusinesses();
+  const { data: stats, isLoading: statsLoading } = useGetSuperAdminStats({
+    query: { queryKey: getGetSuperAdminStatsQueryKey() },
+  });
+  const { data: chart, isLoading: chartLoading } = useGetSuperAdminRevenueChart({
+    query: { queryKey: getGetSuperAdminRevenueChartQueryKey() },
+  });
+  const { data: businesses, isLoading: bizLoading } = useListBusinesses(undefined, {
+    query: { queryKey: getListBusinessesQueryKey() },
+  });
+  const { data: sectorRevenue, isLoading: sectorLoading } = useGetSuperAdminSectorRevenue({
+    query: { queryKey: getGetSuperAdminSectorRevenueQueryKey() },
+  });
+  const { data: paymentMethods, isLoading: pmLoading } = useGetSuperAdminPaymentMethods({
+    query: { queryKey: getGetSuperAdminPaymentMethodsQueryKey() },
+  });
+  const { data: recentActivity, isLoading: activityLoading } = useGetSuperAdminRecentActivity({
+    query: { queryKey: getGetSuperAdminRecentActivityQueryKey() },
+  });
+
+  const totalCA = sectorRevenue?.reduce((s, r) => s + r.revenue, 0) ?? 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
+    <div className="p-6 md:p-8 space-y-6 max-w-[1600px]">
       <PageHeader />
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statsLoading ? (
-          Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[110px] rounded-xl" />)
-        ) : stats ? (
-          <>
-            <KPICard title="Enseignes Actives" value={stats.activeBusinesses} icon={Building2} accent />
-            <KPICard title="CA du mois" value={stats.monthlyRevenue} icon={CreditCard} isCurrency trend={{ value: 12, isPositive: true }} />
-            <KPICard title="Transactions aujourd'hui" value={stats.totalTransactionsToday} icon={Activity} trend={{ value: 8, isPositive: true }} />
-            <KPICard title="Nouvelles enseignes" value={stats.newBusinessesThisMonth} icon={Users} />
-          </>
-        ) : null}
+      {/* ── ROW 1 : KPIs ─────────────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <KPI
+          loading={statsLoading}
+          title="Enseignes actives"
+          value={String(stats?.activeBusinesses ?? 0)}
+          sub={`${stats?.totalBusinesses ?? 0} au total`}
+          icon={Building2}
+          color="hsl(38 90% 56%)"
+          bg="hsl(38 90% 56% / 0.12)"
+          trend={{ value: 12, positive: true }}
+        />
+        <KPI
+          loading={sectorLoading}
+          title="CA total plateforme"
+          value={formatXAF(totalCA)}
+          sub="Toutes transactions"
+          icon={CreditCard}
+          color="#10B981"
+          bg="hsl(160 84% 39% / 0.1)"
+          trend={{ value: 18, positive: true }}
+        />
+        <KPI
+          loading={statsLoading}
+          title="Transactions aujourd'hui"
+          value={String(stats?.totalTransactionsToday ?? 0)}
+          icon={Activity}
+          color="#818CF8"
+          bg="hsl(239 84% 67% / 0.1)"
+          trend={{ value: 8, positive: true }}
+        />
+        <KPI
+          loading={statsLoading}
+          title="Nouvelles enseignes"
+          value={String(stats?.newBusinessesThisMonth ?? 0)}
+          sub="Ce mois-ci"
+          icon={Users}
+          color="#F97316"
+          bg="hsl(25 95% 53% / 0.1)"
+        />
+        <KPI
+          loading={pmLoading}
+          title="Transactions totales"
+          value={String(paymentMethods?.reduce((s, m) => s + m.amount, 0) ? (paymentMethods?.length ?? 0) : (stats?.totalTransactionsToday ?? 0))}
+          sub="Tous paiements"
+          icon={BarChart2}
+          color="#FBBF24"
+          bg="hsl(38 92% 50% / 0.1)"
+        />
       </div>
 
-      {/* Revenue Chart */}
+      {/* ── ROW 2 : Revenue chart + Payment methods ─── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Area chart */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -76,120 +242,239 @@ export default function SuperAdminDashboard() {
           className="lg:col-span-2 rounded-xl p-6"
           style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-5">
             <div>
               <h2 className="text-sm font-bold text-foreground">Évolution des revenus</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Chiffre d'affaires de la plateforme</p>
+              <p className="text-xs text-muted-foreground mt-0.5">CA mensuel de la plateforme · 12 mois</p>
             </div>
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-success">
+            <div className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full"
+              style={{ background: 'hsl(160 84% 39% / 0.1)', color: '#10B981' }}>
               <TrendingUp className="w-3.5 h-3.5" />
-              +12% ce mois
+              +18% vs N-1
             </div>
           </div>
 
-          {chartLoading ? (
-            <Skeleton className="h-[260px] w-full rounded-lg" />
-          ) : chartData ? (
-            <div className="h-[260px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="gold-gradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(38 90% 56%)" stopOpacity={0.25} />
-                      <stop offset="95%" stopColor="hsl(38 90% 56%)" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    fontFamily="Plus Jakarta Sans"
-                  />
-                  <YAxis
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={11}
-                    tickLine={false}
-                    axisLine={false}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
-                    fontFamily="Plus Jakarta Sans"
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      borderColor: 'hsl(var(--border))',
-                      borderRadius: '10px',
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontSize: '12px',
-                    }}
-                    formatter={(value: number) => [formatXAF(value), 'Revenu']}
-                    labelStyle={{ color: 'hsl(var(--foreground))', fontWeight: 600 }}
-                    itemStyle={{ color: 'hsl(38 90% 56%)' }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(38 90% 56%)"
-                    strokeWidth={2}
-                    fill="url(#gold-gradient)"
-                    dot={false}
-                    activeDot={{ r: 5, fill: 'hsl(38 90% 56%)', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          ) : null}
+          {chartLoading
+            ? <Skeleton className="h-[240px] w-full rounded-lg" />
+            : (
+              <div className="h-[240px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chart ?? []} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="gold-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="hsl(38 90% 56%)" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(38 90% 56%)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11}
+                      tickLine={false} axisLine={false} fontFamily="Plus Jakarta Sans" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11}
+                      tickLine={false} axisLine={false}
+                      tickFormatter={v => `${(v / 1000000).toFixed(1)}M`}
+                      fontFamily="Plus Jakarta Sans" />
+                    <Tooltip content={<ChartTooltip formatter={(v: number) => formatXAF(v)} />} />
+                    <Area type="monotone" dataKey="revenue"
+                      stroke="hsl(38 90% 56%)" strokeWidth={2.5}
+                      fill="url(#gold-grad)" dot={false}
+                      activeDot={{ r: 5, fill: 'hsl(38 90% 56%)', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
         </motion.div>
 
-        {/* Sector breakdown */}
+        {/* Payment methods donut */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="rounded-xl p-6"
+          style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+        >
+          <h2 className="text-sm font-bold text-foreground mb-1">Modes de paiement</h2>
+          <p className="text-xs text-muted-foreground mb-4">Répartition du CA</p>
+
+          {pmLoading
+            ? <Skeleton className="h-[200px] w-full" />
+            : (
+              <>
+                <div className="flex justify-center mb-4">
+                  <div className="relative">
+                    <PieChart width={150} height={150}>
+                      <Pie
+                        data={paymentMethods ?? []}
+                        cx={75} cy={75}
+                        innerRadius={48} outerRadius={70}
+                        dataKey="amount"
+                        strokeWidth={2}
+                        stroke="hsl(var(--background))"
+                      >
+                        {(paymentMethods ?? []).map(m => (
+                          <Cell key={m.method} fill={METHOD_COLORS[m.method] ?? '#6B7280'} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <p className="text-xs font-bold text-foreground">Total</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatXAF(paymentMethods?.reduce((s, m) => s + m.amount, 0) ?? 0)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  {(paymentMethods ?? []).map(m => {
+                    const Icon = METHOD_ICONS[m.method] ?? CreditCard;
+                    const color = METHOD_COLORS[m.method] ?? '#6B7280';
+                    return (
+                      <div key={m.method} className="flex items-center gap-2.5">
+                        <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
+                          style={{ background: color + '20' }}>
+                          <Icon className="w-3 h-3" style={{ color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <span className="text-[11px] font-medium text-foreground truncate">{m.label}</span>
+                            <span className="text-[11px] font-bold ml-2" style={{ color }}>
+                              {m.percentage.toFixed(0)}%
+                            </span>
+                          </div>
+                          <div className="w-full h-1 rounded-full" style={{ background: 'hsl(var(--muted))' }}>
+                            <div className="h-full rounded-full transition-all"
+                              style={{ width: `${m.percentage}%`, background: color }} />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+        </motion.div>
+      </div>
+
+      {/* ── ROW 3 : Sector bar + Activity feed ─────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        {/* Sector revenue bar chart */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-xl p-6"
+          className="lg:col-span-3 rounded-xl p-6"
           style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
         >
-          <h2 className="text-sm font-bold text-foreground mb-1">Répartition par secteur</h2>
-          <p className="text-xs text-muted-foreground mb-6">Enseignes actives</p>
-
-          {businessesLoading ? (
-            <div className="space-y-3">
-              {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-8 w-full" />)}
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-sm font-bold text-foreground">CA par secteur</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Chiffre d'affaires agrégé</p>
             </div>
-          ) : businesses ? (
-            <div className="space-y-3">
-              {Object.entries(
-                businesses.reduce((acc, b) => {
-                  acc[b.sector] = (acc[b.sector] || 0) + 1;
-                  return acc;
-                }, {} as Record<string, number>)
-              ).map(([sector, count]) => (
-                <div key={sector} className="flex items-center gap-3">
-                  <div
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ background: SECTOR_COLORS[sector] ?? '#6B7280' }}
-                  />
-                  <span className="text-xs text-muted-foreground flex-1">{SECTOR_LABELS[sector] ?? sector}</span>
-                  <span className="text-xs font-bold text-foreground">{count}</span>
-                  <div className="w-16 h-1.5 rounded-full overflow-hidden" style={{ background: 'hsl(var(--muted))' }}>
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${(count / businesses.length) * 100}%`,
-                        background: SECTOR_COLORS[sector] ?? '#6B7280',
-                      }}
-                    />
-                  </div>
+          </div>
+
+          {sectorLoading
+            ? <Skeleton className="h-[200px] w-full rounded-lg" />
+            : (
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={sectorRevenue ?? []} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={11}
+                      tickLine={false} axisLine={false} fontFamily="Plus Jakarta Sans" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11}
+                      tickLine={false} axisLine={false}
+                      tickFormatter={v => `${(v / 1000).toFixed(0)}k`}
+                      fontFamily="Plus Jakarta Sans" />
+                    <Tooltip content={<ChartTooltip formatter={(v: number) => formatXAF(v)} />} />
+                    <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
+                      {(sectorRevenue ?? []).map(r => (
+                        <Cell key={r.sector} fill={SECTOR_COLORS[r.sector] ?? '#6B7280'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+
+          {/* Sector legend */}
+          {!sectorLoading && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4">
+              {(sectorRevenue ?? []).map(r => (
+                <div key={r.sector} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full" style={{ background: SECTOR_COLORS[r.sector] ?? '#6B7280' }} />
+                  <span className="text-[10px] text-muted-foreground">{r.label}</span>
+                  <span className="text-[10px] font-semibold text-foreground">{r.transactions} tx</span>
                 </div>
               ))}
             </div>
-          ) : null}
+          )}
+        </motion.div>
+
+        {/* Recent activity feed */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="lg:col-span-2 rounded-xl"
+          style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+        >
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-sm font-bold text-foreground">Activité récente</h2>
+                <p className="text-xs text-muted-foreground">Dernières transactions</p>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            </div>
+          </div>
+
+          <div className="overflow-y-auto max-h-[280px] custom-scrollbar divide-y"
+            style={{ borderColor: 'hsl(var(--border))' }}>
+            {activityLoading
+              ? Array(6).fill(0).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-5 py-3">
+                  <Skeleton className="w-8 h-8 rounded-lg" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3 w-28" />
+                    <Skeleton className="h-2.5 w-20" />
+                  </div>
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              ))
+              : (recentActivity ?? []).map(activity => {
+                const color = SECTOR_COLORS[activity.sector] ?? '#6B7280';
+                const Icon = METHOD_ICONS[activity.method] ?? CreditCard;
+                return (
+                  <div key={activity.id} className="flex items-center gap-3 px-5 py-3 transition-colors hover:bg-muted/30">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-[11px] font-bold text-white"
+                      style={{ background: color }}>
+                      {activity.businessName.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-foreground truncate">{activity.businessName}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <Icon className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{activity.methodLabel}</span>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-xs font-bold text-foreground">{formatXAF(activity.amount)}</p>
+                      <div className="flex items-center gap-1 mt-0.5 justify-end">
+                        <Clock className="w-2.5 h-2.5 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{timeAgo(activity.createdAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </div>
         </motion.div>
       </div>
 
-      {/* Businesses table */}
+      {/* ── ROW 4 : Businesses table ──────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -197,89 +482,98 @@ export default function SuperAdminDashboard() {
         className="rounded-xl overflow-hidden"
         style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
       >
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+        <div className="flex items-center justify-between px-6 py-4"
+          style={{ borderBottom: '1px solid hsl(var(--border))' }}>
           <div>
             <h2 className="text-sm font-bold text-foreground">Toutes les enseignes</h2>
-            <p className="text-xs text-muted-foreground">{businesses?.length ?? 0} enregistrées</p>
+            <p className="text-xs text-muted-foreground">
+              {bizLoading ? '…' : `${businesses?.length ?? 0} enregistrées`}
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <CheckCircle2 className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
+            {businesses?.filter(b => b.isActive).length ?? 0} actives
           </div>
         </div>
 
-        {businessesLoading ? (
-          <div className="p-6 space-y-3">
-            {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
-          </div>
-        ) : businesses ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                  {['Enseigne', 'Secteur', 'Ville', 'Plan', 'CA ce mois', 'Statut'].map((h) => (
-                    <th
-                      key={h}
-                      className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {businesses.map((biz, i) => (
-                  <tr
-                    key={biz.id}
-                    className="transition-colors hover:bg-muted/30"
-                    style={{ borderBottom: i < businesses.length - 1 ? '1px solid hsl(var(--border))' : 'none' }}
-                  >
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shrink-0"
-                          style={{ background: SECTOR_COLORS[biz.sector] ?? '#6B7280' }}
-                        >
-                          {biz.name.charAt(0)}
-                        </div>
-                        <span className="text-sm font-semibold text-foreground">{biz.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <span
-                        className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold"
-                        style={{
-                          background: `${SECTOR_COLORS[biz.sector] ?? '#6B7280'}18`,
-                          color: SECTOR_COLORS[biz.sector] ?? '#6B7280',
-                        }}
-                      >
-                        {SECTOR_LABELS[biz.sector] ?? biz.sector}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-sm text-muted-foreground">{biz.city}</td>
-                    <td className="px-6 py-3.5">
-                      <span className="text-[11px] font-semibold text-secondary uppercase tracking-wide">{biz.plan}</span>
-                    </td>
-                    <td className="px-6 py-3.5 text-sm font-semibold text-foreground">
-                      {formatXAF(biz.monthlyRevenue)}
-                    </td>
-                    <td className="px-6 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2">
-                          {biz.isActive && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
-                              style={{ background: 'hsl(var(--success))' }} />
-                          )}
-                          <span
-                            className="relative inline-flex rounded-full h-2 w-2"
-                            style={{ background: biz.isActive ? 'hsl(var(--success))' : 'hsl(var(--destructive))' }}
-                          />
-                        </span>
-                        <span className="text-xs text-muted-foreground">{biz.isActive ? 'Actif' : 'Inactif'}</span>
-                      </div>
-                    </td>
+        {bizLoading
+          ? <div className="p-6 space-y-3">{Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
+          : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+                    {['Enseigne', 'Secteur', 'Ville', 'Plan', 'CA ce mois', 'Statut'].map(h => (
+                      <th key={h} className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : null}
+                </thead>
+                <tbody>
+                  {(businesses ?? []).map((biz, i) => {
+                    const color = SECTOR_COLORS[biz.sector] ?? '#6B7280';
+                    const LABELS: Record<string, string> = {
+                      RESTAURANT: 'Restauration', HOTEL: 'Hôtellerie', BEAUTY: 'Beauté',
+                      GROCERY: 'Supermarché', PHARMACY: 'Pharmacie', GARAGE: 'Garage',
+                      FITNESS: 'Fitness', EDUCATION: 'Formation',
+                    };
+                    return (
+                      <tr
+                        key={biz.id}
+                        className="transition-colors hover:bg-muted/30"
+                        style={{ borderBottom: i < (businesses?.length ?? 1) - 1 ? '1px solid hsl(var(--border))' : 'none' }}
+                      >
+                        <td className="px-6 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                              style={{ background: color }}>
+                              {biz.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">{biz.name}</p>
+                              <p className="text-[11px] text-muted-foreground">{biz.city}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold"
+                            style={{ background: color + '18', color }}>
+                            {LABELS[biz.sector] ?? biz.sector}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5 text-sm text-muted-foreground">{biz.city}</td>
+                        <td className="px-6 py-3.5">
+                          <span className="text-[11px] font-bold uppercase tracking-wide"
+                            style={{ color: 'hsl(38 90% 56%)' }}>
+                            {biz.plan}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3.5 text-sm font-bold text-foreground">
+                          {formatXAF(biz.monthlyRevenue)}
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2 w-2">
+                              {biz.isActive && (
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
+                                  style={{ background: '#10B981' }} />
+                              )}
+                              <span className="relative inline-flex rounded-full h-2 w-2"
+                                style={{ background: biz.isActive ? '#10B981' : '#EF4444' }} />
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {biz.isActive ? 'Actif' : 'Inactif'}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
       </motion.div>
     </div>
   );

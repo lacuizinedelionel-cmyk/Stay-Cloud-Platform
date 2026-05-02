@@ -106,12 +106,15 @@ import type {
   MonthlyRevenue,
   Notification,
   Payment,
+  PaymentMethodStat,
   PaymentStats,
   PharmacyStats,
   Prescription,
+  RecentActivity,
   RestaurantOrder,
   RestaurantProduct,
   RestaurantStats,
+  SectorRevenue,
   Student,
   SuperAdminStats,
   Supplier,
@@ -575,6 +578,236 @@ export function useGetSuperAdminRevenueChart<
   request?: SecondParameter<typeof customFetch>;
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetSuperAdminRevenueChartQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Revenue breakdown by sector
+ */
+export const getGetSuperAdminSectorRevenueUrl = () => {
+  return `/api/superadmin/sector-revenue`;
+};
+
+export const getSuperAdminSectorRevenue = async (
+  options?: RequestInit,
+): Promise<SectorRevenue[]> => {
+  return customFetch<SectorRevenue[]>(getGetSuperAdminSectorRevenueUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSuperAdminSectorRevenueQueryKey = () => {
+  return [`/api/superadmin/sector-revenue`] as const;
+};
+
+export const getGetSuperAdminSectorRevenueQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSuperAdminSectorRevenueQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>
+  > = ({ signal }) => getSuperAdminSectorRevenue({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSuperAdminSectorRevenueQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>
+>;
+export type GetSuperAdminSectorRevenueQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Revenue breakdown by sector
+ */
+
+export function useGetSuperAdminSectorRevenue<
+  TData = Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminSectorRevenue>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSuperAdminSectorRevenueQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Payment method distribution
+ */
+export const getGetSuperAdminPaymentMethodsUrl = () => {
+  return `/api/superadmin/payment-methods`;
+};
+
+export const getSuperAdminPaymentMethods = async (
+  options?: RequestInit,
+): Promise<PaymentMethodStat[]> => {
+  return customFetch<PaymentMethodStat[]>(getGetSuperAdminPaymentMethodsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSuperAdminPaymentMethodsQueryKey = () => {
+  return [`/api/superadmin/payment-methods`] as const;
+};
+
+export const getGetSuperAdminPaymentMethodsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSuperAdminPaymentMethodsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>
+  > = ({ signal }) =>
+    getSuperAdminPaymentMethods({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSuperAdminPaymentMethodsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>
+>;
+export type GetSuperAdminPaymentMethodsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Payment method distribution
+ */
+
+export function useGetSuperAdminPaymentMethods<
+  TData = Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminPaymentMethods>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSuperAdminPaymentMethodsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Recent transactions across all businesses
+ */
+export const getGetSuperAdminRecentActivityUrl = () => {
+  return `/api/superadmin/recent-activity`;
+};
+
+export const getSuperAdminRecentActivity = async (
+  options?: RequestInit,
+): Promise<RecentActivity[]> => {
+  return customFetch<RecentActivity[]>(getGetSuperAdminRecentActivityUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSuperAdminRecentActivityQueryKey = () => {
+  return [`/api/superadmin/recent-activity`] as const;
+};
+
+export const getGetSuperAdminRecentActivityQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSuperAdminRecentActivity>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRecentActivity>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSuperAdminRecentActivityQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSuperAdminRecentActivity>>
+  > = ({ signal }) =>
+    getSuperAdminRecentActivity({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRecentActivity>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSuperAdminRecentActivityQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSuperAdminRecentActivity>>
+>;
+export type GetSuperAdminRecentActivityQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Recent transactions across all businesses
+ */
+
+export function useGetSuperAdminRecentActivity<
+  TData = Awaited<ReturnType<typeof getSuperAdminRecentActivity>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getSuperAdminRecentActivity>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSuperAdminRecentActivityQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

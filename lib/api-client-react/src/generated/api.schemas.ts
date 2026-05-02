@@ -51,6 +51,31 @@ export interface MonthlyRevenue {
   transactions: number;
 }
 
+export interface SectorRevenue {
+  sector: string;
+  label: string;
+  revenue: number;
+  transactions: number;
+}
+
+export interface PaymentMethodStat {
+  method: string;
+  label: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface RecentActivity {
+  id: number;
+  businessName: string;
+  sector: string;
+  amount: number;
+  method: string;
+  methodLabel: string;
+  status: string;
+  createdAt: string;
+}
+
 export type BusinessSector =
   (typeof BusinessSector)[keyof typeof BusinessSector];
 

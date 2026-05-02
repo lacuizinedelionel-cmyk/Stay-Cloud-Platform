@@ -70,6 +70,49 @@ export const GetSuperAdminRevenueChartResponse = zod.array(
 );
 
 /**
+ * @summary Revenue breakdown by sector
+ */
+export const GetSuperAdminSectorRevenueResponseItem = zod.object({
+  sector: zod.string(),
+  label: zod.string(),
+  revenue: zod.number(),
+  transactions: zod.number(),
+});
+export const GetSuperAdminSectorRevenueResponse = zod.array(
+  GetSuperAdminSectorRevenueResponseItem,
+);
+
+/**
+ * @summary Payment method distribution
+ */
+export const GetSuperAdminPaymentMethodsResponseItem = zod.object({
+  method: zod.string(),
+  label: zod.string(),
+  amount: zod.number(),
+  percentage: zod.number(),
+});
+export const GetSuperAdminPaymentMethodsResponse = zod.array(
+  GetSuperAdminPaymentMethodsResponseItem,
+);
+
+/**
+ * @summary Recent transactions across all businesses
+ */
+export const GetSuperAdminRecentActivityResponseItem = zod.object({
+  id: zod.number(),
+  businessName: zod.string(),
+  sector: zod.string(),
+  amount: zod.number(),
+  method: zod.string(),
+  methodLabel: zod.string(),
+  status: zod.string(),
+  createdAt: zod.string(),
+});
+export const GetSuperAdminRecentActivityResponse = zod.array(
+  GetSuperAdminRecentActivityResponseItem,
+);
+
+/**
  * @summary List all businesses
  */
 export const ListBusinessesQueryParams = zod.object({

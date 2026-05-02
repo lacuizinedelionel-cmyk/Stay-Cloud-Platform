@@ -109,6 +109,51 @@ paths:
                 items:
                   $ref: "#/components/schemas/MonthlyRevenue"
 
+  /superadmin/sector-revenue:
+    get:
+      operationId: getSuperAdminSectorRevenue
+      tags: [superadmin]
+      summary: Revenue breakdown by sector
+      responses:
+        "200":
+          description: Sector revenue breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SectorRevenue"
+
+  /superadmin/payment-methods:
+    get:
+      operationId: getSuperAdminPaymentMethods
+      tags: [superadmin]
+      summary: Payment method distribution
+      responses:
+        "200":
+          description: Payment methods
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PaymentMethodStat"
+
+  /superadmin/recent-activity:
+    get:
+      operationId: getSuperAdminRecentActivity
+      tags: [superadmin]
+      summary: Recent transactions across all businesses
+      responses:
+        "200":
+          description: Recent activity
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecentActivity"
+
   # ─── BUSINESSES ──────────────────────────────────────────
   /businesses:
     get:
@@ -1632,6 +1677,53 @@ components:
         transactions:
           type: integer
       required: [month, revenue, transactions]
+
+    SectorRevenue:
+      type: object
+      properties:
+        sector:
+          type: string
+        label:
+          type: string
+        revenue:
+          type: number
+        transactions:
+          type: integer
+      required: [sector, label, revenue, transactions]
+
+    PaymentMethodStat:
+      type: object
+      properties:
+        method:
+          type: string
+        label:
+          type: string
+        amount:
+          type: number
+        percentage:
+          type: number
+      required: [method, label, amount, percentage]
+
+    RecentActivity:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessName:
+          type: string
+        sector:
+          type: string
+        amount:
+          type: number
+        method:
+          type: string
+        methodLabel:
+          type: string
+        status:
+          type: string
+        createdAt:
+          type: string
+      required: [id, businessName, sector, amount, method, methodLabel, status, createdAt]
 
     # ─── BUSINESS ─────────────────────────────────────────
     Business:
