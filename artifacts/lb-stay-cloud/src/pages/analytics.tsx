@@ -1,5 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useLanguage } from '@/context/LanguageContext';
+import { exportAnalyticsToExcel, exportTransactionsToCsv } from '@/lib/exportExcel';
 import {
   useGetPaymentStats,
   useListPayments,
@@ -39,8 +41,13 @@ import {
   Users,
   Receipt,
   Trophy,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  ChevronDown,
+  Loader2,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const PAYMENT_COLORS = {
   CASH: '#10B981',
@@ -139,8 +146,76 @@ function PaymentPieChart({ stats }: { stats: { cash: number; mtnMobileMoney: num
   );
 }
 
+/* ═══════════════════════════════════════════
+   COMPOSANT — Bouton Export
+═══════════════════════════════════════════ */
+function ExportButton({ onClick, onCsvClick, disabled }: {
+  onClick: () => void;
+  onCsvClick: () => void;
+  disabled: boolean;
+}) {
+  const { t } = useLanguage();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen(o => !o)}
+        disabled={disabled}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
+        style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
+      >
+        <Download className="w-4 h-4" strokeWidth={2} />
+        {t.analytics.exportBtn}
+        <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: open ? 'rotate(180deg)' : 'none' }} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.14 }}
+            className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-50 min-w-[200px]"
+            style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', boxShadow: '0 8px 32px hsl(0 0% 0% / 0.3)' }}
+          >
+            <button
+              onClick={() => { onClick(); setOpen(false); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-left transition-colors hover:bg-muted/50"
+              style={{ color: 'hsl(var(--foreground))' }}
+            >
+              <FileSpreadsheet className="w-4 h-4 shrink-0" style={{ color: '#10B981' }} strokeWidth={1.5} />
+              <div>
+                <p className="text-xs font-bold">{t.actions.exportExcel}</p>
+                <p className="text-[10px] text-muted-foreground">3 feuilles · Résumé, Transactions, CA</p>
+              </div>
+            </button>
+            <div style={{ height: '1px', background: 'hsl(var(--border))' }} />
+            <button
+              onClick={() => { onCsvClick(); setOpen(false); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-left transition-colors hover:bg-muted/50"
+              style={{ color: 'hsl(var(--foreground))' }}
+            >
+              <FileText className="w-4 h-4 shrink-0" style={{ color: '#3B82F6' }} strokeWidth={1.5} />
+              <div>
+                <p className="text-xs font-bold">{t.actions.exportCsv}</p>
+                <p className="text-[10px] text-muted-foreground">Transactions uniquement · UTF-8</p>
+              </div>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   PAGE PRINCIPALE
+═══════════════════════════════════════════ */
 export default function AnalyticsPage() {
   const { business } = useAuth();
+  const { t, lang } = useLanguage();
   const bId = business?.id ?? 0;
   const sector = business?.sector;
 
@@ -207,14 +282,39 @@ export default function AnalyticsPage() {
     ] : null,
   ].find(Boolean) ?? [];
 
+  const handleExportExcel = () => {
+    exportAnalyticsToExcel({
+      businessName: business?.name ?? 'LB Stay Cloud',
+      payments:     payments ?? [],
+      dailyChart,
+      payStats:     payStats ?? null,
+      lang,
+    });
+  };
+
+  const handleExportCsv = () => {
+    exportTransactionsToCsv({
+      businessName: business?.name ?? 'LB Stay Cloud',
+      payments:     payments ?? [],
+      lang,
+    });
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
-          Rapports & Analytics
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">Performance financière détaillée</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
+            {t.analytics.title}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">{t.analytics.subtitle}</p>
+        </div>
+        <ExportButton
+          onClick={handleExportExcel}
+          onCsvClick={handleExportCsv}
+          disabled={!payments || payments.length === 0}
+        />
       </div>
 
       {/* KPI row */}

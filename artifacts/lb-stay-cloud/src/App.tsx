@@ -34,6 +34,7 @@ import GarageQuotesPage from "@/pages/garage/quotes";
 import FitnessDashboard from "@/pages/fitness/dashboard";
 import EducationDashboard from "@/pages/education/dashboard";
 
+import { LanguageProvider } from "@/context/LanguageContext";
 import ClientsPage from "@/pages/clients";
 import AnalyticsPage from "@/pages/analytics";
 import NotificationsPage from "@/pages/notifications";
@@ -127,9 +128,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <AuthProvider>
-            <Router />
-          </AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <Router />
+            </AuthProvider>
+          </LanguageProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

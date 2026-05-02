@@ -51,3 +51,28 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 - `useGetBillingSettings`, `useUpsertBillingSettings`, `useIncrementInvoiceNumber`
 
 **Note TypeScript** : Les erreurs TS2308 dans `lib/api-zod/src/index.ts` sont pré-existantes (doublon `generated/api` + `generated/types`) et ignorées — les fichiers sont générés correctement.
+
+**Module Sécurité & Audit Trail** (`/audit`) :
+- Table `activity_logs` créée via SQL direct (drizzle-kit push interactif contourné)
+- Route `artifacts/api-server/src/routes/audit.ts` — GET /audit/logs, /audit/actions, /audit/team, PATCH /audit/team/:id/role
+- Page `artifacts/lb-stay-cloud/src/pages/audit.tsx` — Journal d'activité + Permissions & Équipe
+- Hook `usePermissions()` dans `src/hooks/usePermissions.ts` — niveaux SUPER_ADMIN/OWNER/MANAGER/STAFF
+- `permission-guard.tsx` — composant AccessDeniedPage pour les rôles insuffisants
+- Users démo MANAGER/STAFF ajoutés pour businessId=2 (hotel): manager.hotel@lbstay.com, staff.hotel@lbstay.com
+
+**Internationalisation FR/EN** :
+- `src/i18n/translations.ts` — dictionnaire complet FR/EN (nav, actions, statuts, analytics, settings, rôles, secteurs, auth)
+- `src/context/LanguageContext.tsx` — Provider + hook `useLanguage()`, persisté en localStorage
+- Toggle langue dans la sidebar (bas de page), wrappé dans App.tsx
+- Navigation sidebar traduite dynamiquement via `t.nav.*`
+
+**Export Excel/CSV** (`/analytics`) :
+- `src/lib/exportExcel.ts` — `exportAnalyticsToExcel()` (3 feuilles: Résumé, Transactions, Évolution CA) + `exportTransactionsToCsv()` (UTF-8 BOM)
+- Lib xlsx installée dans `@workspace/lb-stay-cloud`
+- Bouton dropdown "Exporter le rapport" dans le header analytics
+
+**Logo Upload** (`/settings`) :
+- Section logo dans la page Paramètres avec drag & drop ou file input
+- Stocké en base64 (dataURL) via l'API billing/settings (champ `logoUrl`)
+- Preview immédiate avant sauvegarde, bouton supprimer
+- Taille max 2 Mo, formats PNG/JPG/SVG

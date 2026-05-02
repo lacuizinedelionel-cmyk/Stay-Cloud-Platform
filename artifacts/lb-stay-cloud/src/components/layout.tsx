@@ -11,6 +11,7 @@ import {
   UserCheck, BookOpen, Activity, Wallet, Shield,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useLanguage } from '@/context/LanguageContext';
 
 /* ══════════════════════════════════════
    Types
@@ -313,14 +314,15 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
     : null;
 
   const { canViewAudit, canViewBilling } = usePermissions();
+  const { t } = useLanguage();
 
   const sharedItems = [
-    { href: '/clients',       label: 'Clients',              icon: Users,   always: true  },
-    { href: '/analytics',     label: 'Analyses',             icon: BarChart2, always: true },
-    { href: '/audit',         label: 'Sécurité & Audit',     icon: Shield,  always: canViewAudit   },
-    { href: '/billing',       label: 'Abonnement',           icon: Wallet,  always: canViewBilling },
-    { href: '/notifications', label: 'Notifications',        icon: Bell,    always: true  },
-    { href: '/settings',      label: 'Paramètres',           icon: Settings, always: true },
+    { href: '/clients',       label: t.nav.clients,       icon: Users,    always: true              },
+    { href: '/analytics',     label: t.nav.analytics,     icon: BarChart2, always: true             },
+    { href: '/audit',         label: t.nav.audit,         icon: Shield,   always: canViewAudit      },
+    { href: '/billing',       label: t.nav.billing,       icon: Wallet,   always: canViewBilling    },
+    { href: '/notifications', label: t.nav.notifications, icon: Bell,     always: true              },
+    { href: '/settings',      label: t.nav.settings,      icon: Settings, always: true              },
   ].filter(i => i.always);
 
   return (
@@ -434,10 +436,29 @@ function SidebarLogo() {
 }
 
 function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; role?: string }) {
+  const { lang, toggle } = useLanguage();
   return (
-    <div className="p-3 shrink-0" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+    <div className="p-3 shrink-0 space-y-1" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+      {/* Sélecteur de langue */}
+      <button
+        onClick={toggle}
+        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
+        style={{ background: 'hsl(var(--muted) / 0.5)', color: 'hsl(var(--muted-foreground))' }}
+        title={lang === 'fr' ? 'Switch to English' : 'Passer en français'}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'hsl(38 90% 56% / 0.1)'; (e.currentTarget as HTMLElement).style.color = 'hsl(38 90% 56%)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted) / 0.5)'; (e.currentTarget as HTMLElement).style.color = ''; }}
+      >
+        <span className="text-base leading-none">{lang === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+        <span className="flex-1 text-left">{lang === 'fr' ? 'Français' : 'English'}</span>
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+          {lang.toUpperCase()}
+        </span>
+      </button>
+
+      {/* User card */}
       <div
-        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl mb-1"
+        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
         style={{ background: 'hsl(var(--muted) / 0.5)' }}
       >
         <div className="w-8 h-8 rounded-full gradient-gold flex items-center justify-center shrink-0">
@@ -448,6 +469,7 @@ function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; 
           <p className="text-[10px] text-muted-foreground truncate">{role ?? user.email}</p>
         </div>
       </div>
+
       <button
         onClick={logout}
         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground transition-all"
@@ -455,7 +477,7 @@ function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; 
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = ''; }}
       >
         <LogOut className="w-3.5 h-3.5" strokeWidth={1.5} />
-        Déconnexion
+        {lang === 'fr' ? 'Déconnexion' : 'Sign out'}
       </button>
     </div>
   );
