@@ -6,6 +6,7 @@ import {
   getListMedicationsQueryKey
 } from '@workspace/api-client-react';
 import { KPICard } from '@/components/kpi-card';
+import { DashboardHero } from '@/components/dashboard-hero';
 import { FileText, Pill, Receipt, AlertOctagon } from 'lucide-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,11 +47,22 @@ export default function PharmacyDashboard() {
   const hasCritical = (stats?.criticalStockCount ?? 0) > 0 || expiredCount > 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Tableau de bord Pharmacie</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos médicaments et ordonnances</p>
-      </div>
+    <div className="p-6 md:p-8 space-y-6 page-enter">
+      <DashboardHero
+        title="Tableau de bord Pharmacie"
+        subtitle="Gérez vos médicaments et ordonnances"
+        gradient="linear-gradient(135deg,#DB2777,#F472B6)"
+        color="#F472B6"
+        bg="rgba(244,114,182,0.08)"
+        icon={Pill}
+        badge="PRO"
+        stats={stats ? [
+          { label: 'ordonnances', value: String(stats.prescriptionsToday) },
+          { label: 'médicaments vendus', value: String(stats.medicationsSold) },
+          { label: 'CA du jour', value: new Intl.NumberFormat('fr-FR').format(stats.dailyRevenue) + ' FCFA' },
+          ...(stats.criticalStockCount > 0 ? [{ label: 'ruptures critiques', value: String(stats.criticalStockCount), color: '#EF4444' }] : []),
+        ] : undefined}
+      />
 
       {/* Critical alert banner */}
       <AnimatePresence>
@@ -88,16 +100,16 @@ export default function PharmacyDashboard() {
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
         ) : stats ? (
           <>
-            <KPICard title="Ordonnances du Jour" value={stats.prescriptionsToday} icon={FileText} />
-            <KPICard title="Médicaments Vendus" value={stats.medicationsSold} icon={Pill} />
-            <KPICard title="CA du Jour" value={stats.dailyRevenue} icon={Receipt} isCurrency />
+            <KPICard title="Ordonnances du Jour" value={stats.prescriptionsToday} icon={FileText} color="#60A5FA" staggerIndex={0} />
+            <KPICard title="Médicaments Vendus" value={stats.medicationsSold} icon={Pill} color="#F472B6" staggerIndex={1} />
+            <KPICard title="CA du Jour" value={stats.dailyRevenue} icon={Receipt} isCurrency accent staggerIndex={2} />
             <div className="relative">
               {(stats.criticalStockCount > 0) && (
                 <span className="absolute top-3 right-3 z-10">
                   <PulseDot />
                 </span>
               )}
-              <KPICard title="Ruptures Critiques" value={stats.criticalStockCount} icon={AlertOctagon} />
+              <KPICard title="Ruptures Critiques" value={stats.criticalStockCount} icon={AlertOctagon} color={stats.criticalStockCount > 0 ? '#EF4444' : '#94A3B8'} staggerIndex={3} />
             </div>
           </>
         ) : null}

@@ -1,6 +1,7 @@
 import { useGetRestaurantStats, getGetRestaurantStatsQueryKey, useGetRestaurantHourlySales, getGetRestaurantHourlySalesQueryKey, useListRestaurantOrders, getListRestaurantOrdersQueryKey, RestaurantOrderStatus } from '@workspace/api-client-react';
 import { useAuth } from '@/context/AuthContext';
 import { KPICard } from '@/components/kpi-card';
+import { DashboardHero } from '@/components/dashboard-hero';
 import { UtensilsCrossed, ShoppingBag, Users, Receipt, Clock } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { formatXAF } from '@/lib/utils';
@@ -51,21 +52,31 @@ export default function RestaurantDashboard() {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Tableau de bord Restaurant</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos commandes et vos ventes en temps réel</p>
-      </div>
+    <div className="p-6 md:p-8 space-y-6 page-enter">
+      <DashboardHero
+        title="Tableau de bord Restaurant"
+        subtitle="Gérez vos commandes et vos ventes en temps réel"
+        gradient="linear-gradient(135deg,#EA580C,#F97316)"
+        color="#F97316"
+        bg="rgba(249,115,22,0.08)"
+        icon={UtensilsCrossed}
+        badge="PRO"
+        stats={stats ? [
+          { label: 'commandes', value: String(stats.ordersCount) },
+          { label: 'CA du jour', value: new Intl.NumberFormat('fr-FR').format(stats.dailyRevenue) + ' FCFA' },
+          { label: 'ticket moyen', value: new Intl.NumberFormat('fr-FR').format(stats.averageTicket) + ' FCFA' },
+        ] : undefined}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
         ) : stats ? (
           <>
-            <KPICard title="CA du Jour" value={stats.dailyRevenue} icon={Receipt} isCurrency />
-            <KPICard title="Commandes" value={stats.ordersCount} icon={ShoppingBag} />
-            <KPICard title="Clients" value={stats.clientsCount} icon={Users} />
-            <KPICard title="Ticket Moyen" value={stats.averageTicket} icon={UtensilsCrossed} isCurrency />
+            <KPICard title="CA du Jour" value={stats.dailyRevenue} icon={Receipt} isCurrency accent staggerIndex={0} />
+            <KPICard title="Commandes" value={stats.ordersCount} icon={ShoppingBag} color="#F97316" staggerIndex={1} />
+            <KPICard title="Clients" value={stats.clientsCount} icon={Users} color="#60A5FA" staggerIndex={2} />
+            <KPICard title="Ticket Moyen" value={stats.averageTicket} icon={UtensilsCrossed} isCurrency color="#A78BFA" staggerIndex={3} />
           </>
         ) : null}
       </div>

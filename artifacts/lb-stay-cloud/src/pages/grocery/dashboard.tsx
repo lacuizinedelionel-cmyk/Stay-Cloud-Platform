@@ -6,6 +6,7 @@ import {
   getListGroceryProductsQueryKey
 } from '@workspace/api-client-react';
 import { KPICard } from '@/components/kpi-card';
+import { DashboardHero } from '@/components/dashboard-hero';
 import { ShoppingCart, Package, AlertTriangle, Truck } from 'lucide-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,11 +47,21 @@ export default function GroceryDashboard() {
   const hasCritical = criticalCount > 0;
 
   return (
-    <div className="p-6 md:p-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Tableau de bord Supérette</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos stocks et vos ventes</p>
-      </div>
+    <div className="p-6 md:p-8 space-y-6 page-enter">
+      <DashboardHero
+        title="Tableau de bord Supérette"
+        subtitle="Gérez vos stocks et vos ventes"
+        gradient="linear-gradient(135deg,#059669,#34D399)"
+        color="#34D399"
+        bg="rgba(52,211,153,0.08)"
+        icon={ShoppingCart}
+        badge="PRO"
+        stats={stats ? [
+          { label: 'ventes du jour', value: new Intl.NumberFormat('fr-FR').format(stats.dailySales) + ' FCFA' },
+          { label: 'articles vendus', value: String(stats.itemsSoldToday) },
+          ...(criticalCount > 0 ? [{ label: 'ruptures', value: String(criticalCount), color: '#EF4444' }] : []),
+        ] : undefined}
+      />
 
       {/* Critical stock banner */}
       <AnimatePresence>
@@ -79,17 +90,17 @@ export default function GroceryDashboard() {
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
         ) : stats ? (
           <>
-            <KPICard title="Ventes du Jour" value={stats.dailySales} icon={ShoppingCart} isCurrency />
-            <KPICard title="Articles Vendus" value={stats.itemsSoldToday} icon={Package} />
+            <KPICard title="Ventes du Jour" value={stats.dailySales} icon={ShoppingCart} isCurrency accent staggerIndex={0} />
+            <KPICard title="Articles Vendus" value={stats.itemsSoldToday} icon={Package} color="#34D399" staggerIndex={1} />
             <div className="relative">
               {hasCritical && (
                 <span className="absolute top-3 right-3 z-10">
                   <PulseDot />
                 </span>
               )}
-              <KPICard title="Ruptures de Stock" value={stats.lowStockCount} icon={AlertTriangle} />
+              <KPICard title="Ruptures de Stock" value={stats.lowStockCount} icon={AlertTriangle} color={hasCritical ? '#EF4444' : '#F59E0B'} staggerIndex={2} />
             </div>
-            <KPICard title="Fournisseurs Actifs" value={stats.activeSuppliers} icon={Truck} />
+            <KPICard title="Fournisseurs Actifs" value={stats.activeSuppliers} icon={Truck} color="#60A5FA" staggerIndex={3} />
           </>
         ) : null}
       </div>
