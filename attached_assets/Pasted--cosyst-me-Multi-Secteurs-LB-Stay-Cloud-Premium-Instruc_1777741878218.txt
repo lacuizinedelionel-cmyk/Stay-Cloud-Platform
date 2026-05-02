@@ -1,0 +1,44 @@
+Écosystème Multi-Secteurs "LB Stay Cloud" Premium
+Instruction de base :
+
+"Agis en tant qu'Architecte Logiciel Senior. Réalise un redesign complet et une extension fonctionnelle de LB Stay Cloud pour en faire une plateforme de gestion multi-sites transparente et ultra-détaillée, en suivant la structure du PDF de référence. Utilise la police 'Plus Jakarta Sans' pour un rendu SaaS de luxe.
+
+📂 1. ARCHITECTURE DES RÔLES (TRANSPARENCE TOTALE)
+Crée des tableaux de bord spécifiques et peuplés d'exemples pour chaque profil :
+
+Compte Grand Patron (Super Admin) : Vue consolidée de toutes les enseignes (Hôtels, Restaurants, Supermarchés). Affiche les revenus globaux en XAF, les marges nettes et la performance par ville (Douala, Yaoundé).
+
+
+Compte Réceptionniste (Front-Office) : Interface POS simplifiée pour les ventes rapides, check-in des clients d'hôtels, et gestion des réservations de tables.
+
+Compte Cuisinier / Staff Technique : Écran de production en temps réel. Pour le restaurant, affiche la file d'attente des commandes avec les ingrédients restants en stock. Pour l'hôtel, affiche l'état de propreté des chambres.
+
+🏨 2. MODULE HÔTELLERIE PRESTIGE
+
+Gestion des Logements : Crée une grille interactive des chambres (Chambre 101, Suite Royale, etc.).
+
+État des Occupations : Affiche clairement 'Occupée' (en rouge), 'Libre' (en vert) ou 'En nettoyage' (en jaune).
+
+Données Clients : Pour chaque chambre occupée, affiche le nom du client (ex: M. Kamdem), le montant total du séjour, le reste à payer et la date de check-out prévue.
+
+Finances : Calcul automatique du taux d'occupation et du revenu par chambre disponible.
+
+🛒 3. MODULE SUPERMARCHÉ & STOCKAGE UNIVERSEL
+
+Gestion des Stocks : Implémente un système de stockage intelligent pour TOUS les secteurs.
+
+Inventaire en temps réel : Pour le supermarché, affiche le nombre de marchandises en rayon vs en réserve. Pour le restaurant, suis la quantité de denrées (ex: sacs de riz, kilos de poisson).
+
+Alertes de Rupture : Notifie automatiquement l'admin quand un produit descend sous un seuil critique (ex: 'Plus que 5 menus Poulet DG disponibles').
+
+📊 4. ANALYTICS & RENDU FINAL (COMME LE PDF)
+
+Transparence Financière : Réplique l'écran 'Rapports & Analytics' du PDF avec des graphiques en aires pour le CA journalier, des camemberts pour les modes de paiement (Orange Money, MTN MoMo, Espèces) et le Top 10 des produits les plus vendus.
+
+Données de Démo : Remplit chaque table avec au moins 20 exemples réalistes (noms camerounais, prix en XAF, numéros +237) pour que la plateforme paraisse vivante et prête pour une réunion de partenaires.
+
+⚙️ CONFIGURATION TECHNIQUE :
+
+Utilise Supabase Realtime pour que les changements de stock ou d'occupation de chambre soient visibles instantanément par le Patron sans rafraîchir la page.
+
+Design : Dark mode, accents dorés (#F5A623), cartes arrondies à 16px."
