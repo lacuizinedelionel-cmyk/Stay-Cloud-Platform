@@ -1,4 +1,4 @@
-import { useGetRestaurantStats, useGetRestaurantHourlySales, useListRestaurantOrders, getListRestaurantOrdersQueryKey, RestaurantOrderStatus } from '@workspace/api-client-react';
+import { useGetRestaurantStats, getGetRestaurantStatsQueryKey, useGetRestaurantHourlySales, getGetRestaurantHourlySalesQueryKey, useListRestaurantOrders, getListRestaurantOrdersQueryKey, RestaurantOrderStatus } from '@workspace/api-client-react';
 import { useAuth } from '@/context/AuthContext';
 import { KPICard } from '@/components/kpi-card';
 import { UtensilsCrossed, ShoppingBag, Users, Receipt, Clock } from 'lucide-react';
@@ -14,18 +14,18 @@ export default function RestaurantDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetRestaurantStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetRestaurantStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: chartData, isLoading: chartLoading } = useGetRestaurantHourlySales(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetRestaurantHourlySalesQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: orders, isLoading: ordersLoading } = useListRestaurantOrders(
-    { businessId: business?.id, limit: 10 },
-    { query: { enabled: !!business?.id, queryKey: getListRestaurantOrdersQueryKey({ businessId: business?.id, limit: 10 }) } }
+    { businessId: business?.id ?? 0, limit: 10 },
+    { query: { enabled: !!business?.id, queryKey: getListRestaurantOrdersQueryKey({ businessId: business?.id ?? 0, limit: 10 }) } }
   );
 
   const getStatusColor = (status: RestaurantOrderStatus) => {

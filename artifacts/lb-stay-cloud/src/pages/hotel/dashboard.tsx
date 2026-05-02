@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetHotelStats, 
+  useGetHotelStats,
+  getGetHotelStatsQueryKey,
   useListHotelRooms, 
   getListHotelRoomsQueryKey,
   useListHotelReservations,
@@ -9,7 +10,7 @@ import {
   HotelRoomType
 } from '@workspace/api-client-react';
 import { KPICard } from '@/components/kpi-card';
-import { Bed, Users, Calendar, Receipt, DoorOpen, BedDouble, DoorClosed, Sparkles } from 'lucide-react';
+import { Bed, Users, Calendar, Receipt, DoorOpen, BedDouble, DoorClosed, Sparkles, Activity } from 'lucide-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,13 +24,13 @@ export default function HotelDashboard() {
   const [selectedRoom, setSelectedRoom] = useState<any | null>(null);
   
   const { data: stats, isLoading: statsLoading } = useGetHotelStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetHotelStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: rooms, isLoading: roomsLoading } = useListHotelRooms(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListHotelRoomsQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListHotelRoomsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const getStatusColor = (status: HotelRoomStatus) => {
@@ -219,22 +220,3 @@ export default function HotelDashboard() {
   );
 }
 
-// Temporary Activity icon for KPI
-function Activity(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-    </svg>
-  );
-}

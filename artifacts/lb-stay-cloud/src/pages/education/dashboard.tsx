@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetEducationStats, 
+  useGetEducationStats,
+  getGetEducationStatsQueryKey,
   useListCourses, 
   getListCoursesQueryKey,
   useListStudents,
@@ -18,18 +19,18 @@ export default function EducationDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetEducationStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetEducationStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: courses, isLoading: coursesLoading } = useListCourses(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListCoursesQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListCoursesQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: students, isLoading: studentsLoading } = useListStudents(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListStudentsQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListStudentsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   return (
@@ -76,8 +77,8 @@ export default function EducationDashboard() {
                   <TableBody>
                     {courses.slice(0, 5).map((course) => (
                       <TableRow key={course.id} className="border-border/50">
-                        <TableCell className="font-medium">{course.title}</TableCell>
-                        <TableCell>{course.instructor}</TableCell>
+                        <TableCell className="font-medium">{course.name}</TableCell>
+                        <TableCell>{course.description ?? '—'}</TableCell>
                         <TableCell className="text-right">{formatXAF(course.price)}</TableCell>
                         <TableCell className="text-right font-bold">{course.enrolledCount}</TableCell>
                       </TableRow>
@@ -113,7 +114,7 @@ export default function EducationDashboard() {
                     {students.slice(0, 5).map((student) => (
                       <TableRow key={student.id} className="border-border/50">
                         <TableCell className="font-medium">
-                          {student.firstName} {student.lastName}
+                          {student.name}
                         </TableCell>
                         <TableCell>
                           <Badge variant="outline" className={

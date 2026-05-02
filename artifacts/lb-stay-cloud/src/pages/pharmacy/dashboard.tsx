@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetPharmacyStats, 
+  useGetPharmacyStats,
+  getGetPharmacyStatsQueryKey,
   useListMedications, 
   getListMedicationsQueryKey
 } from '@workspace/api-client-react';
@@ -16,13 +17,13 @@ export default function PharmacyDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetPharmacyStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetPharmacyStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: medications, isLoading: medicationsLoading } = useListMedications(
-    { businessId: business?.id, expiringSoon: true },
-    { query: { enabled: !!business?.id, queryKey: getListMedicationsQueryKey({ businessId: business?.id, expiringSoon: true }) } }
+    { businessId: business?.id ?? 0, expiringSoon: true },
+    { query: { enabled: !!business?.id, queryKey: getListMedicationsQueryKey({ businessId: business?.id ?? 0, expiringSoon: true }) } }
   );
 
   return (

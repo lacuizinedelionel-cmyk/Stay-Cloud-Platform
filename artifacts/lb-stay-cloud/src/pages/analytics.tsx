@@ -1,5 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
-import { useGetPaymentStats } from '@workspace/api-client-react';
+import { useGetPaymentStats, getGetPaymentStatsQueryKey } from '@workspace/api-client-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,8 +9,8 @@ export default function AnalyticsPage() {
   const { business } = useAuth();
   
   const { data: stats, isLoading } = useGetPaymentStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetPaymentStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const COLORS = ['#F5A623', '#6C63FF', '#00D4AA', '#FF4757'];

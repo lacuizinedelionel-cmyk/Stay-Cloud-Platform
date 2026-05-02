@@ -1,4 +1,5 @@
-import { motion, useInView, useAnimation, useMotionValue } from 'framer-motion';
+import { animate } from 'framer-motion';
+import { motion, useInView, useMotionValue } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { formatXAF } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,7 +17,7 @@ export function AnimatedNumber({ value, isCurrency = false }: { value: number; i
         ease: "easeOut",
         onUpdate: (latest) => {
           if (ref.current) {
-            ref.current.textContent = isCurrency 
+            ref.current.textContent = isCurrency
               ? formatXAF(latest)
               : Math.round(latest).toString();
           }
@@ -24,14 +25,11 @@ export function AnimatedNumber({ value, isCurrency = false }: { value: number; i
       });
       return controls.stop;
     }
+    return undefined;
   }, [value, isInView, isCurrency, motionValue]);
 
   return <span ref={ref}>{isCurrency ? formatXAF(0) : '0'}</span>;
 }
-
-// Need to import animate from framer-motion but it's not exported directly in all versions, 
-// using animate function:
-import { animate } from 'framer-motion';
 
 interface KPICardProps {
   title: string;

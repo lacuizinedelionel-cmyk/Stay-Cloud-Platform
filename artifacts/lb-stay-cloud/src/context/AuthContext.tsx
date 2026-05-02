@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { useGetMe, useListBusinesses, User, Business, getGetMeQueryKey } from '@workspace/api-client-react';
+import { useGetMe, useListBusinesses, User, Business, getGetMeQueryKey, getListBusinessesQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 interface AuthContextType {
@@ -19,12 +19,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: user, isLoading: isUserLoading, error: userError } = useGetMe({
     query: {
+      queryKey: getGetMeQueryKey(),
       retry: false,
     }
   });
 
   const { data: businesses, isLoading: isBusinessesLoading } = useListBusinesses(undefined, {
     query: {
+      queryKey: getListBusinessesQueryKey(),
       enabled: !!user?.businessId,
     }
   });

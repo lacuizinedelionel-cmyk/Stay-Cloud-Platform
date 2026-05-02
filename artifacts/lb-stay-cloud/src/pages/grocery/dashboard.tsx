@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetGroceryStats, 
+  useGetGroceryStats,
+  getGetGroceryStatsQueryKey,
   useListGroceryProducts, 
   getListGroceryProductsQueryKey
 } from '@workspace/api-client-react';
@@ -16,13 +17,13 @@ export default function GroceryDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetGroceryStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetGroceryStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: products, isLoading: productsLoading } = useListGroceryProducts(
-    { businessId: business?.id, lowStock: true },
-    { query: { enabled: !!business?.id, queryKey: getListGroceryProductsQueryKey({ businessId: business?.id, lowStock: true }) } }
+    { businessId: business?.id ?? 0, lowStock: true },
+    { query: { enabled: !!business?.id, queryKey: getListGroceryProductsQueryKey({ businessId: business?.id ?? 0, lowStock: true }) } }
   );
 
   return (

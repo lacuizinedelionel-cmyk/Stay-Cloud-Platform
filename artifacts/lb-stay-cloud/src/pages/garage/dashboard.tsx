@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetGarageStats, 
+  useGetGarageStats,
+  getGetGarageStatsQueryKey,
   useListGarageVehicles, 
   getListGarageVehiclesQueryKey,
   GarageVehicleStatus
@@ -18,13 +19,13 @@ export default function GarageDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetGarageStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetGarageStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: vehicles, isLoading: vehiclesLoading } = useListGarageVehicles(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListGarageVehiclesQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListGarageVehiclesQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const getStatusColor = (status: GarageVehicleStatus) => {

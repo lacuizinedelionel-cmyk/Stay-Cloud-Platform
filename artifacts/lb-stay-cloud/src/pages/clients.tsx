@@ -17,8 +17,8 @@ export default function ClientsPage() {
   const { business } = useAuth();
   
   const { data: clients, isLoading } = useListClients(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListClientsQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListClientsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const getLoyaltyColor = (level: ClientLoyaltyLevel) => {

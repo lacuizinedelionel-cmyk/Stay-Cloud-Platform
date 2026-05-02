@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetBeautyStats, 
+  useGetBeautyStats,
+  getGetBeautyStatsQueryKey,
   useListBeautyAppointments, 
   getListBeautyAppointmentsQueryKey,
   BeautyAppointmentStatus
@@ -17,13 +18,13 @@ export default function BeautyDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetBeautyStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetBeautyStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: appointments, isLoading: appointmentsLoading } = useListBeautyAppointments(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListBeautyAppointmentsQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListBeautyAppointmentsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const getStatusColor = (status: BeautyAppointmentStatus) => {

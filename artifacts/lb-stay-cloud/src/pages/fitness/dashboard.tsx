@@ -1,6 +1,7 @@
 import { useAuth } from '@/context/AuthContext';
 import { 
-  useGetFitnessStats, 
+  useGetFitnessStats,
+  getGetFitnessStatsQueryKey,
   useListFitnessMembers, 
   getListFitnessMembersQueryKey,
   useListFitnessClasses,
@@ -18,18 +19,18 @@ export default function FitnessDashboard() {
   const { business } = useAuth();
   
   const { data: stats, isLoading: statsLoading } = useGetFitnessStats(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getGetFitnessStatsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: members, isLoading: membersLoading } = useListFitnessMembers(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListFitnessMembersQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListFitnessMembersQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   const { data: classes, isLoading: classesLoading } = useListFitnessClasses(
-    { businessId: business?.id },
-    { query: { enabled: !!business?.id, queryKey: getListFitnessClassesQueryKey({ businessId: business?.id }) } }
+    { businessId: business?.id ?? 0 },
+    { query: { enabled: !!business?.id, queryKey: getListFitnessClassesQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
   return (
