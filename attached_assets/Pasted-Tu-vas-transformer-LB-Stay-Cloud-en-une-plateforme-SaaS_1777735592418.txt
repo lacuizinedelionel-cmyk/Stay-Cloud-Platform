@@ -1,0 +1,154 @@
+Tu vas transformer LB Stay Cloud en une plateforme SaaS multi-secteurs premium et luxueuse. Voici les instructions complètes :
+
+## DESIGN SYSTEM PREMIUM
+- Fond principal : #0A0A0F (noir profond)
+- Fond cartes : #12121A
+- Accent principal : #F5A623 (or)
+- Accent secondaire : #6C63FF (violet premium)
+- Succès : #00D4AA (vert émeraude)
+- Danger : #FF4757
+- Texte principal : #FFFFFF
+- Texte secondaire : #8B8FA8
+- Border radius : 16px partout
+- Shadows : box-shadow 0 8px 32px rgba(0,0,0,0.4)
+- Font : Inter pour UI, Playfair Display pour les titres premium
+- Animations : framer-motion sur tous les changements d'état
+- Glassmorphism sur les modals : backdrop-filter blur(20px)
+
+## ARCHITECTURE MULTI-TENANT
+Crée un système de rôles :
+- SUPER_ADMIN : voit et gère TOUTES les enseignes de toutes les industries
+- OWNER : propriétaire d'une ou plusieurs enseignes
+- MANAGER : gère une branche spécifique
+- STAFF : caissier/employé avec accès limité
+
+Ajoute dans Supabase une table "businesses" avec : id, name, sector, owner_id, plan, logo_url, color_theme, created_at, is_active
+Ajoute une table "branches" liée à businesses.
+Le SUPER_ADMIN voit un dashboard global avec toutes les enseignes.
+
+## SUPER ADMIN DASHBOARD (route /superadmin)
+Page principale du Super Admin avec :
+- Header : "LB Stay Cloud — Super Admin" avec badge "SUPER ADMIN" en violet
+- KPIs globaux en 4 grandes cartes animées :
+  * Total enseignes actives : 47
+  * Chiffre d'affaires plateforme ce mois : 12 450 000 XAF
+  * Transactions totales aujourd'hui : 2 847
+  * Nouveaux inscrits ce mois : 12 enseignes
+- Graphique CA plateforme sur 12 mois (line chart Recharts)
+- Tableau de toutes les enseignes avec colonnes : Logo, Nom, Secteur, Ville, Plan, CA ce mois, Statut, Actions
+- Filtres par secteur et par ville
+- Bouton "Ajouter une enseigne" qui ouvre un modal
+
+## 8 SECTEURS avec données fictives réalistes
+
+### 1. RESTAURATION — "Restaurant Chez Mama"
+Dashboard restauration avec :
+- CA jour : 847 000 XAF, Commandes : 156, Clients : 89, Ticket moyen : 5 430 XAF
+- Graphique ventes par heure (bar chart)
+- Top 5 plats du jour avec barres de progression
+- Commandes en temps réel avec statuts colorés
+- POS complet avec menu Camerounais (Poulet DG 2500, Ndole Crevettes 3200, Eru 2800, Koki 1500, Soya 800, Plantain frit 500, Beignets 300)
+- Menu & Catalogue avec photos emoji, badges disponible/rupture
+- Gestion branches : Akwa, Bonanjo, Deido avec stats individuelles
+
+### 2. HOTEL / HÉBERGEMENT — "Hôtel Le Prestige"
+Dashboard hôtel avec :
+- Taux occupation : 78%, Chambres libres : 12, Réservations aujourd'hui : 8, Revenu nuit : 2 340 000 XAF
+- Plan visuel des chambres par étage (3 étages, 10 chambres chacun)
+- Code couleur : Libre (vert), Occupée (rouge), Réservée (orange), Nettoyage (bleu)
+- Chaque chambre cliquable : ouvre modal avec infos client, dates, montant
+- Timeline des arrivées et départs du jour
+- Boutons Check-in et Check-out avec horodatage
+- Types de chambres : Standard 25000 XAF, Supérieure 45000 XAF, Suite 85000 XAF, Suite Présidentielle 150000 XAF
+
+### 3. SALON DE BEAUTÉ — "Beauty Palace"
+Dashboard salon avec :
+- RDV aujourd'hui : 23, CA jour : 345 000 XAF, Clients en attente : 4, Taux satisfaction : 4.8/5
+- Calendrier des RDV avec créneaux visuels par praticienne
+- Liste praticiens avec leurs plannings et spécialités
+- Services : Coupe femme 5000, Tressage 15000, Manucure 3500, Soin visage 8000, Extensions 25000
+- Fiche client avec historique des soins et préférences
+- Gestion des stocks produits beauté
+
+### 4. ÉPICERIE / SUPERMARCHÉ — "Super Marché Central"
+Dashboard épicerie avec :
+- Ventes jour : 1 230 000 XAF, Articles vendus : 847, Ruptures : 12, Fournisseurs actifs : 8
+- Catalogue produits avec stock en temps réel et alertes rupture
+- Gestion fournisseurs avec historique commandes
+- Scanner de caisse POS adapté (code-barres simulé)
+- Catégories : Alimentaire, Boissons, Hygiène, Produits frais
+- Alertes automatiques quand stock < seuil minimum
+
+### 5. SANTÉ / PHARMACIE — "Pharmacie Centrale Plus"
+Dashboard pharmacie avec :
+- Ordonnances traitées : 67, Médicaments vendus : 234, CA jour : 567 000 XAF, Ruptures critiques : 3
+- Catalogue médicaments avec DCI, stock, prix, date expiration
+- Gestion ordonnances avec upload photo
+- Alertes dates de péremption (rouge si < 30 jours)
+- Historique patients (anonymisé)
+- Fournisseurs pharmaceutiques
+
+### 6. GARAGE / MÉCANIQUE — "Garage Auto Excellence"
+Dashboard garage avec :
+- Véhicules en cours : 8, Devis en attente : 5, CA semaine : 890 000 XAF, Pièces en rupture : 2
+- Liste des véhicules en réparation avec progression (0% → 100%)
+- Création de devis avec sélection des pièces et main d'oeuvre
+- Stock pièces détachées avec alertes
+- Fiches clients avec historique de leurs véhicules
+- Statuts réparation : Diagnostic, En cours, En attente pièces, Terminé, Livré
+
+### 7. SPORT / FITNESS — "FitZone Cameroun"
+Dashboard fitness avec :
+- Membres actifs : 312, Abonnements ce mois : 47, CA mensuel : 4 680 000 XAF, Présents maintenant : 23
+- Gestion abonnements avec types (Mensuel 15000, Trimestriel 40000, Annuel 140000)
+- Planning des cours collectifs avec capacité et inscriptions
+- Check-in membres par QR code (simulé)
+- Tableau de bord coach avec leurs clients
+- Alertes abonnements qui expirent dans 7 jours
+
+### 8. ÉDUCATION — "Institut de Formation Excellence"
+Dashboard école avec :
+- Apprenants inscrits : 234, Cours actifs : 18, Paiements en attente : 45, Taux présence : 87%
+- Gestion inscriptions avec paiements échelonnés
+- Catalogue formations avec durée, prix, places disponibles
+- Suivi présences par classe
+- Bulletins et résultats
+- Relances automatiques paiements en retard
+
+## NAVIGATION PRINCIPALE
+Sidebar gauche collapsible avec :
+- Logo LB Stay Cloud animé
+- Sélecteur d'enseigne (dropdown avec toutes les enseignes du compte)
+- Menu adaptatif selon le secteur sélectionné
+- Badge notifications en temps réel
+- Avatar utilisateur avec menu profil
+
+## TOUTES LES PAGES DOIVENT ÊTRE REMPLIES avec données fictives réalistes et complètes. Aucune page "bientôt disponible". Utilise des données camerounaises réalistes (villes, noms, monnaie XAF).
+
+## PAGE PARAMÈTRES complète avec :
+- Profil de l'enseigne (nom, logo, couleur, ville, secteur)
+- Gestion des utilisateurs et rôles
+- Configuration WhatsApp Business (numéro, templates)
+- Abonnement et facturation
+- Préférences notifications
+- Intégrations (Mobile Money MTN/Orange)
+
+## COMPOSANTS UI PREMIUM obligatoires :
+- Toutes les cartes KPI avec icônes Lucide, animation counter au chargement
+- Tous les tableaux avec tri, pagination, recherche et export CSV
+- Tous les graphiques avec Recharts, tooltips custom, animations
+- Tous les modals avec glassmorphism et animations framer-motion
+- Badges de statut avec points animés (pulse) pour les statuts actifs
+- Skeleton loaders sur tous les chargements
+- Toasts de confirmation sur toutes les actions
+- Textes parfaitement alignés dans leurs conteneurs, padding cohérent 16px/24px
+
+## TEXTE ET ALIGNEMENT
+- Tous les textes doivent être parfaitement centrés dans leurs cartes
+- Padding uniforme : p-6 sur toutes les cartes
+- Titres de section en font-semibold text-lg text-white
+- Labels en text-sm text-gray-400 uppercase tracking-wider
+- Valeurs en text-2xl font-bold avec la couleur accent
+- Pas de texte qui déborde de son conteneur (truncate si nécessaire)
+
+Génère toutes les pages, tous les composants, et connecte tout à Supabase avec des données fictives insérées via des seeds. L'objectif est une démo premium qui impressionne immédiatement.

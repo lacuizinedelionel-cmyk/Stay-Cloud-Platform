@@ -1,22 +1,35 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LB Stay Cloud - Multi-sector SaaS platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: auth
+  - name: businesses
+  - name: branches
+  - name: superadmin
+  - name: clients
+  - name: restaurant
+  - name: hotel
+  - name: beauty
+  - name: grocery
+  - name: pharmacy
+  - name: garage
+  - name: fitness
+  - name: education
+  - name: payments
+  - name: notifications
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +37,1509 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── AUTH ────────────────────────────────────────────────
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+
+  # ─── SUPER ADMIN ─────────────────────────────────────────
+  /superadmin/stats:
+    get:
+      operationId: getSuperAdminStats
+      tags: [superadmin]
+      summary: Global platform stats
+      responses:
+        "200":
+          description: Global stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuperAdminStats"
+
+  /superadmin/revenue-chart:
+    get:
+      operationId: getSuperAdminRevenueChart
+      tags: [superadmin]
+      summary: 12-month revenue chart data
+      responses:
+        "200":
+          description: Revenue chart
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlyRevenue"
+
+  # ─── BUSINESSES ──────────────────────────────────────────
+  /businesses:
+    get:
+      operationId: listBusinesses
+      tags: [businesses]
+      summary: List all businesses
+      parameters:
+        - name: sector
+          in: query
+          schema:
+            type: string
+        - name: city
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of businesses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Business"
+    post:
+      operationId: createBusiness
+      tags: [businesses]
+      summary: Create a business
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBusinessBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+
+  /businesses/{id}:
+    get:
+      operationId: getBusiness
+      tags: [businesses]
+      summary: Get a business
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Business
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+    put:
+      operationId: updateBusiness
+      tags: [businesses]
+      summary: Update a business
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBusinessBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Business"
+
+  /businesses/{id}/stats:
+    get:
+      operationId: getBusinessStats
+      tags: [businesses]
+      summary: Get business daily stats
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Business stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BusinessStats"
+
+  # ─── BRANCHES ────────────────────────────────────────────
+  /branches:
+    get:
+      operationId: listBranches
+      tags: [branches]
+      summary: List branches for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of branches
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Branch"
+    post:
+      operationId: createBranch
+      tags: [branches]
+      summary: Create a branch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBranchBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Branch"
+
+  # ─── CLIENTS ─────────────────────────────────────────────
+  /clients:
+    get:
+      operationId: listClients
+      tags: [clients]
+      summary: List clients for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Client"
+    post:
+      operationId: createClient
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateClientBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  /clients/{id}:
+    get:
+      operationId: getClient
+      tags: [clients]
+      summary: Get a client
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Client
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Client"
+
+  # ─── PAYMENTS ────────────────────────────────────────────
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Create a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/stats:
+    get:
+      operationId: getPaymentStats
+      tags: [payments]
+      summary: Payment method breakdown
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentStats"
+
+  # ─── RESTAURANT ──────────────────────────────────────────
+  /restaurant/products:
+    get:
+      operationId: listRestaurantProducts
+      tags: [restaurant]
+      summary: List restaurant menu items
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RestaurantProduct"
+    post:
+      operationId: createRestaurantProduct
+      tags: [restaurant]
+      summary: Create a menu item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRestaurantProductBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantProduct"
+
+  /restaurant/products/{id}:
+    put:
+      operationId: updateRestaurantProduct
+      tags: [restaurant]
+      summary: Update a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRestaurantProductBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantProduct"
+    delete:
+      operationId: deleteRestaurantProduct
+      tags: [restaurant]
+      summary: Delete a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /restaurant/orders:
+    get:
+      operationId: listRestaurantOrders
+      tags: [restaurant]
+      summary: List restaurant orders
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RestaurantOrder"
+    post:
+      operationId: createRestaurantOrder
+      tags: [restaurant]
+      summary: Create an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRestaurantOrderBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantOrder"
+
+  /restaurant/orders/{id}/status:
+    put:
+      operationId: updateRestaurantOrderStatus
+      tags: [restaurant]
+      summary: Update order status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderStatusBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantOrder"
+
+  /restaurant/stats:
+    get:
+      operationId: getRestaurantStats
+      tags: [restaurant]
+      summary: Restaurant daily stats and top dishes
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantStats"
+
+  /restaurant/hourly-sales:
+    get:
+      operationId: getRestaurantHourlySales
+      tags: [restaurant]
+      summary: Hourly sales chart data
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Hourly sales
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HourlySales"
+
+  # ─── HOTEL ───────────────────────────────────────────────
+  /hotel/rooms:
+    get:
+      operationId: listHotelRooms
+      tags: [hotel]
+      summary: List hotel rooms
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HotelRoom"
+    post:
+      operationId: createHotelRoom
+      tags: [hotel]
+      summary: Create a room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHotelRoomBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelRoom"
+
+  /hotel/reservations:
+    get:
+      operationId: listHotelReservations
+      tags: [hotel]
+      summary: List reservations
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/HotelReservation"
+    post:
+      operationId: createHotelReservation
+      tags: [hotel]
+      summary: Create a reservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateHotelReservationBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelReservation"
+
+  /hotel/reservations/{id}/checkin:
+    post:
+      operationId: hotelCheckIn
+      tags: [hotel]
+      summary: Check in a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Checked in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelReservation"
+
+  /hotel/reservations/{id}/checkout:
+    post:
+      operationId: hotelCheckOut
+      tags: [hotel]
+      summary: Check out a reservation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Checked out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelReservation"
+
+  /hotel/stats:
+    get:
+      operationId: getHotelStats
+      tags: [hotel]
+      summary: Hotel occupancy stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HotelStats"
+
+  # ─── BEAUTY ──────────────────────────────────────────────
+  /beauty/services:
+    get:
+      operationId: listBeautyServices
+      tags: [beauty]
+      summary: List beauty services
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeautyService"
+    post:
+      operationId: createBeautyService
+      tags: [beauty]
+      summary: Create a service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBeautyServiceBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeautyService"
+
+  /beauty/staff:
+    get:
+      operationId: listBeautyStaff
+      tags: [beauty]
+      summary: List beauty staff
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of staff
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeautyStaff"
+    post:
+      operationId: createBeautyStaff
+      tags: [beauty]
+      summary: Create staff member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBeautyStaffBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeautyStaff"
+
+  /beauty/appointments:
+    get:
+      operationId: listBeautyAppointments
+      tags: [beauty]
+      summary: List appointments
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: date
+          in: query
+          schema:
+            type: string
+        - name: staffId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of appointments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeautyAppointment"
+    post:
+      operationId: createBeautyAppointment
+      tags: [beauty]
+      summary: Create an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBeautyAppointmentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeautyAppointment"
+
+  /beauty/stats:
+    get:
+      operationId: getBeautyStats
+      tags: [beauty]
+      summary: Beauty salon daily stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeautyStats"
+
+  # ─── GROCERY ─────────────────────────────────────────────
+  /grocery/products:
+    get:
+      operationId: listGroceryProducts
+      tags: [grocery]
+      summary: List grocery products
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: lowStock
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GroceryProduct"
+    post:
+      operationId: createGroceryProduct
+      tags: [grocery]
+      summary: Create a grocery product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroceryProductBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroceryProduct"
+
+  /grocery/products/{id}:
+    put:
+      operationId: updateGroceryProduct
+      tags: [grocery]
+      summary: Update a grocery product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGroceryProductBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroceryProduct"
+
+  /grocery/suppliers:
+    get:
+      operationId: listGrocerySuppliers
+      tags: [grocery]
+      summary: List grocery suppliers
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createGrocerySupplier
+      tags: [grocery]
+      summary: Create a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+
+  /grocery/stats:
+    get:
+      operationId: getGroceryStats
+      tags: [grocery]
+      summary: Grocery daily stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GroceryStats"
+
+  # ─── PHARMACY ────────────────────────────────────────────
+  /pharmacy/medications:
+    get:
+      operationId: listMedications
+      tags: [pharmacy]
+      summary: List medications
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: expiringSoon
+          in: query
+          schema:
+            type: boolean
+        - name: lowStock
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of medications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medication"
+    post:
+      operationId: createMedication
+      tags: [pharmacy]
+      summary: Create a medication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMedicationBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+
+  /pharmacy/prescriptions:
+    get:
+      operationId: listPrescriptions
+      tags: [pharmacy]
+      summary: List prescriptions
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of prescriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Prescription"
+    post:
+      operationId: createPrescription
+      tags: [pharmacy]
+      summary: Create a prescription record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePrescriptionBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prescription"
+
+  /pharmacy/stats:
+    get:
+      operationId: getPharmacyStats
+      tags: [pharmacy]
+      summary: Pharmacy daily stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PharmacyStats"
+
+  # ─── GARAGE ──────────────────────────────────────────────
+  /garage/vehicles:
+    get:
+      operationId: listGarageVehicles
+      tags: [garage]
+      summary: List vehicles in repair
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of vehicles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GarageVehicle"
+    post:
+      operationId: createGarageVehicle
+      tags: [garage]
+      summary: Create a vehicle repair record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGarageVehicleBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageVehicle"
+
+  /garage/vehicles/{id}/status:
+    put:
+      operationId: updateGarageVehicleStatus
+      tags: [garage]
+      summary: Update vehicle repair status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVehicleStatusBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageVehicle"
+
+  /garage/quotes:
+    get:
+      operationId: listGarageQuotes
+      tags: [garage]
+      summary: List garage quotes
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of quotes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GarageQuote"
+    post:
+      operationId: createGarageQuote
+      tags: [garage]
+      summary: Create a quote
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGarageQuoteBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageQuote"
+
+  /garage/parts:
+    get:
+      operationId: listGarageParts
+      tags: [garage]
+      summary: List garage parts stock
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of parts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GaragePart"
+
+  /garage/stats:
+    get:
+      operationId: getGarageStats
+      tags: [garage]
+      summary: Garage weekly stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageStats"
+
+  # ─── FITNESS ─────────────────────────────────────────────
+  /fitness/members:
+    get:
+      operationId: listFitnessMembers
+      tags: [fitness]
+      summary: List fitness members
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: expiringSoon
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of members
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FitnessMember"
+    post:
+      operationId: createFitnessMember
+      tags: [fitness]
+      summary: Create a fitness member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFitnessMemberBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FitnessMember"
+
+  /fitness/classes:
+    get:
+      operationId: listFitnessClasses
+      tags: [fitness]
+      summary: List fitness classes
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FitnessClass"
+    post:
+      operationId: createFitnessClass
+      tags: [fitness]
+      summary: Create a fitness class
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFitnessClassBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FitnessClass"
+
+  /fitness/checkins:
+    post:
+      operationId: createFitnessCheckin
+      tags: [fitness]
+      summary: Check in a member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFitnessCheckinBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FitnessCheckin"
+
+  /fitness/stats:
+    get:
+      operationId: getFitnessStats
+      tags: [fitness]
+      summary: Fitness club stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FitnessStats"
+
+  # ─── EDUCATION ───────────────────────────────────────────
+  /education/courses:
+    get:
+      operationId: listCourses
+      tags: [education]
+      summary: List courses
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [education]
+      summary: Create a course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /education/students:
+    get:
+      operationId: listStudents
+      tags: [education]
+      summary: List students
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [education]
+      summary: Create a student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /education/enrollments:
+    get:
+      operationId: listEnrollments
+      tags: [education]
+      summary: List enrollments
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+    post:
+      operationId: createEnrollment
+      tags: [education]
+      summary: Create an enrollment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnrollmentBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /education/stats:
+    get:
+      operationId: getEducationStats
+      tags: [education]
+      summary: Education stats
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EducationStats"
+
+  # ─── NOTIFICATIONS ───────────────────────────────────────
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: unread
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +1547,1469 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    # ─── AUTH ─────────────────────────────────────────────
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [SUPER_ADMIN, OWNER, MANAGER, STAFF]
+        businessId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, email, name, role, createdAt]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required: [user, token]
+
+    # ─── SUPER ADMIN ──────────────────────────────────────
+    SuperAdminStats:
+      type: object
+      properties:
+        totalBusinesses:
+          type: integer
+        activeBusinesses:
+          type: integer
+        monthlyRevenue:
+          type: number
+        totalTransactionsToday:
+          type: integer
+        newBusinessesThisMonth:
+          type: integer
+      required: [totalBusinesses, activeBusinesses, monthlyRevenue, totalTransactionsToday, newBusinessesThisMonth]
+
+    MonthlyRevenue:
+      type: object
+      properties:
+        month:
+          type: string
+        revenue:
+          type: number
+        transactions:
+          type: integer
+      required: [month, revenue, transactions]
+
+    # ─── BUSINESS ─────────────────────────────────────────
+    Business:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        sector:
+          type: string
+          enum: [RESTAURANT, HOTEL, BEAUTY, GROCERY, PHARMACY, GARAGE, FITNESS, EDUCATION]
+        ownerId:
+          type: integer
+        plan:
+          type: string
+          enum: [FREE, STARTER, PRO, ENTERPRISE]
+        logoUrl:
+          type: string
+          nullable: true
+        colorTheme:
+          type: string
+          nullable: true
+        city:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        monthlyRevenue:
+          type: number
+      required: [id, name, sector, ownerId, plan, city, isActive, createdAt, monthlyRevenue]
+
+    CreateBusinessBody:
+      type: object
+      properties:
+        name:
+          type: string
+        sector:
+          type: string
+          enum: [RESTAURANT, HOTEL, BEAUTY, GROCERY, PHARMACY, GARAGE, FITNESS, EDUCATION]
+        plan:
+          type: string
+          enum: [FREE, STARTER, PRO, ENTERPRISE]
+        city:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        colorTheme:
+          type: string
+      required: [name, sector, plan, city]
+
+    BusinessStats:
+      type: object
+      properties:
+        dailyRevenue:
+          type: number
+        transactionsCount:
+          type: integer
+        clientsCount:
+          type: integer
+        averageTicket:
+          type: number
+      required: [dailyRevenue, transactionsCount, clientsCount, averageTicket]
+
+    # ─── BRANCH ───────────────────────────────────────────
+    Branch:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+          nullable: true
+        managerId:
+          type: integer
+          nullable: true
+        isActive:
+          type: boolean
+        dailyRevenue:
+          type: number
+        createdAt:
+          type: string
+      required: [id, businessId, name, city, isActive, dailyRevenue, createdAt]
+
+    CreateBranchBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        city:
+          type: string
+        address:
+          type: string
+      required: [businessId, name, city]
+
+    # ─── CLIENTS ──────────────────────────────────────────
+    Client:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        loyaltyPoints:
+          type: integer
+        loyaltyLevel:
+          type: string
+          enum: [BRONZE, SILVER, GOLD, PLATINUM]
+        totalSpent:
+          type: number
+        visitCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, businessId, name, loyaltyPoints, loyaltyLevel, totalSpent, visitCount, createdAt]
+
+    CreateClientBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+      required: [businessId, name]
+
+    # ─── PAYMENTS ─────────────────────────────────────────
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        clientId:
+          type: integer
+          nullable: true
+        amount:
+          type: number
+        method:
+          type: string
+          enum: [CASH, MTN_MOBILE_MONEY, ORANGE_MONEY, CARD]
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED, REFUNDED]
+        reference:
+          type: string
+          nullable: true
+        sector:
+          type: string
+        createdAt:
+          type: string
+      required: [id, businessId, amount, method, status, sector, createdAt]
+
+    CreatePaymentBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        clientId:
+          type: integer
+        amount:
+          type: number
+        method:
+          type: string
+          enum: [CASH, MTN_MOBILE_MONEY, ORANGE_MONEY, CARD]
+        sector:
+          type: string
+        reference:
+          type: string
+      required: [businessId, amount, method, sector]
+
+    PaymentStats:
+      type: object
+      properties:
+        totalRevenue:
+          type: number
+        cash:
+          type: number
+        mtnMobileMoney:
+          type: number
+        orangeMoney:
+          type: number
+        card:
+          type: number
+        cashPercent:
+          type: number
+        mtnPercent:
+          type: number
+        orangePercent:
+          type: number
+        cardPercent:
+          type: number
+      required: [totalRevenue, cash, mtnMobileMoney, orangeMoney, card, cashPercent, mtnPercent, orangePercent, cardPercent]
+
+    # ─── RESTAURANT ───────────────────────────────────────
+    RestaurantProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        category:
+          type: string
+        emoji:
+          type: string
+          nullable: true
+        isAvailable:
+          type: boolean
+        salesCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, businessId, name, price, category, isAvailable, salesCount, createdAt]
+
+    CreateRestaurantProductBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        category:
+          type: string
+        emoji:
+          type: string
+        isAvailable:
+          type: boolean
+      required: [businessId, name, price, category]
+
+    RestaurantOrder:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        branchId:
+          type: integer
+          nullable: true
+        clientId:
+          type: integer
+          nullable: true
+        clientName:
+          type: string
+          nullable: true
+        tableNumber:
+          type: string
+          nullable: true
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        total:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, PREPARING, READY, DELIVERED, CANCELLED]
+        paymentMethod:
+          type: string
+          enum: [CASH, MTN_MOBILE_MONEY, ORANGE_MONEY, CARD]
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, businessId, items, total, status, createdAt]
+
+    OrderItem:
+      type: object
+      properties:
+        productId:
+          type: integer
+        productName:
+          type: string
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        subtotal:
+          type: number
+      required: [productId, productName, quantity, unitPrice, subtotal]
+
+    CreateRestaurantOrderBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        branchId:
+          type: integer
+        clientName:
+          type: string
+        tableNumber:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: integer
+              quantity:
+                type: integer
+            required: [productId, quantity]
+        paymentMethod:
+          type: string
+          enum: [CASH, MTN_MOBILE_MONEY, ORANGE_MONEY, CARD]
+      required: [businessId, items, paymentMethod]
+
+    UpdateOrderStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, PREPARING, READY, DELIVERED, CANCELLED]
+      required: [status]
+
+    RestaurantStats:
+      type: object
+      properties:
+        dailyRevenue:
+          type: number
+        ordersCount:
+          type: integer
+        clientsCount:
+          type: integer
+        averageTicket:
+          type: number
+        topDishes:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              count:
+                type: integer
+              percentage:
+                type: number
+            required: [name, count, percentage]
+      required: [dailyRevenue, ordersCount, clientsCount, averageTicket, topDishes]
+
+    HourlySales:
+      type: object
+      properties:
+        hour:
+          type: string
+        revenue:
+          type: number
+        orders:
+          type: integer
+      required: [hour, revenue, orders]
+
+    # ─── HOTEL ────────────────────────────────────────────
+    HotelRoom:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        number:
+          type: string
+        floor:
+          type: integer
+        type:
+          type: string
+          enum: [STANDARD, SUPERIOR, SUITE, PRESIDENTIAL]
+        pricePerNight:
+          type: number
+        status:
+          type: string
+          enum: [AVAILABLE, OCCUPIED, RESERVED, CLEANING]
+        currentGuestName:
+          type: string
+          nullable: true
+        checkoutDate:
+          type: string
+          nullable: true
+      required: [id, businessId, number, floor, type, pricePerNight, status]
+
+    CreateHotelRoomBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        number:
+          type: string
+        floor:
+          type: integer
+        type:
+          type: string
+          enum: [STANDARD, SUPERIOR, SUITE, PRESIDENTIAL]
+        pricePerNight:
+          type: number
+      required: [businessId, number, floor, type, pricePerNight]
+
+    HotelReservation:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        roomId:
+          type: integer
+        roomNumber:
+          type: string
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+          nullable: true
+        checkInDate:
+          type: string
+        checkOutDate:
+          type: string
+        nights:
+          type: integer
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [RESERVED, CHECKED_IN, CHECKED_OUT, CANCELLED]
+        checkedInAt:
+          type: string
+          nullable: true
+        checkedOutAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, businessId, roomId, roomNumber, guestName, checkInDate, checkOutDate, nights, totalAmount, status, createdAt]
+
+    CreateHotelReservationBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        roomId:
+          type: integer
+        guestName:
+          type: string
+        guestPhone:
+          type: string
+        checkInDate:
+          type: string
+        checkOutDate:
+          type: string
+      required: [businessId, roomId, guestName, checkInDate, checkOutDate]
+
+    HotelStats:
+      type: object
+      properties:
+        occupancyRate:
+          type: number
+        totalRooms:
+          type: integer
+        availableRooms:
+          type: integer
+        occupiedRooms:
+          type: integer
+        reservedRooms:
+          type: integer
+        cleaningRooms:
+          type: integer
+        arrivalsToday:
+          type: integer
+        departuresToday:
+          type: integer
+        nightlyRevenue:
+          type: number
+      required: [occupancyRate, totalRooms, availableRooms, occupiedRooms, reservedRooms, cleaningRooms, arrivalsToday, departuresToday, nightlyRevenue]
+
+    # ─── BEAUTY ───────────────────────────────────────────
+    BeautyService:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+        durationMinutes:
+          type: integer
+        category:
+          type: string
+        isActive:
+          type: boolean
+      required: [id, businessId, name, price, durationMinutes, category, isActive]
+
+    CreateBeautyServiceBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        durationMinutes:
+          type: integer
+        category:
+          type: string
+      required: [businessId, name, price, durationMinutes, category]
+
+    BeautyStaff:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        specialty:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        appointmentsToday:
+          type: integer
+        rating:
+          type: number
+      required: [id, businessId, name, specialty, isActive, appointmentsToday, rating]
+
+    CreateBeautyStaffBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        specialty:
+          type: string
+        phone:
+          type: string
+      required: [businessId, name, specialty]
+
+    BeautyAppointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        clientId:
+          type: integer
+          nullable: true
+        clientName:
+          type: string
+        staffId:
+          type: integer
+        staffName:
+          type: string
+        serviceId:
+          type: integer
+        serviceName:
+          type: string
+        appointmentDate:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        status:
+          type: string
+          enum: [SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED, NO_SHOW]
+        amount:
+          type: number
+      required: [id, businessId, clientName, staffId, staffName, serviceId, serviceName, appointmentDate, startTime, endTime, status, amount]
+
+    CreateBeautyAppointmentBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        clientName:
+          type: string
+        clientId:
+          type: integer
+        staffId:
+          type: integer
+        serviceId:
+          type: integer
+        appointmentDate:
+          type: string
+        startTime:
+          type: string
+      required: [businessId, clientName, staffId, serviceId, appointmentDate, startTime]
+
+    BeautyStats:
+      type: object
+      properties:
+        appointmentsToday:
+          type: integer
+        dailyRevenue:
+          type: number
+        waitingClients:
+          type: integer
+        satisfactionRate:
+          type: number
+        completedToday:
+          type: integer
+      required: [appointmentsToday, dailyRevenue, waitingClients, satisfactionRate, completedToday]
+
+    # ─── GROCERY ──────────────────────────────────────────
+    GroceryProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        barcode:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [ALIMENTAIRE, BOISSONS, HYGIENE, PRODUITS_FRAIS, AUTRES]
+        price:
+          type: number
+        costPrice:
+          type: number
+        stock:
+          type: integer
+        minStock:
+          type: integer
+        supplierId:
+          type: integer
+          nullable: true
+        supplierName:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+      required: [id, businessId, name, category, price, costPrice, stock, minStock, isActive]
+
+    CreateGroceryProductBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        barcode:
+          type: string
+        category:
+          type: string
+          enum: [ALIMENTAIRE, BOISSONS, HYGIENE, PRODUITS_FRAIS, AUTRES]
+        price:
+          type: number
+        costPrice:
+          type: number
+        stock:
+          type: integer
+        minStock:
+          type: integer
+        supplierId:
+          type: integer
+      required: [businessId, name, category, price, costPrice, stock, minStock]
+
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        lastOrderDate:
+          type: string
+          nullable: true
+        totalOrders:
+          type: integer
+      required: [id, businessId, name, isActive, totalOrders]
+
+    CreateSupplierBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+      required: [businessId, name]
+
+    GroceryStats:
+      type: object
+      properties:
+        dailySales:
+          type: number
+        itemsSoldToday:
+          type: integer
+        lowStockCount:
+          type: integer
+        activeSuppliers:
+          type: integer
+      required: [dailySales, itemsSoldToday, lowStockCount, activeSuppliers]
+
+    # ─── PHARMACY ─────────────────────────────────────────
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        dci:
+          type: string
+          nullable: true
+        dosage:
+          type: string
+          nullable: true
+        form:
+          type: string
+          nullable: true
+        price:
+          type: number
+        stock:
+          type: integer
+        minStock:
+          type: integer
+        expirationDate:
+          type: string
+        supplierId:
+          type: integer
+          nullable: true
+        requiresPrescription:
+          type: boolean
+      required: [id, businessId, name, price, stock, minStock, expirationDate, requiresPrescription]
+
+    CreateMedicationBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        dci:
+          type: string
+        dosage:
+          type: string
+        form:
+          type: string
+        price:
+          type: number
+        stock:
+          type: integer
+        minStock:
+          type: integer
+        expirationDate:
+          type: string
+        requiresPrescription:
+          type: boolean
+      required: [businessId, name, price, stock, minStock, expirationDate]
+
+    Prescription:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        patientRef:
+          type: string
+        doctorName:
+          type: string
+          nullable: true
+        medications:
+          type: array
+          items:
+            type: object
+            properties:
+              medicationId:
+                type: integer
+              medicationName:
+                type: string
+              quantity:
+                type: integer
+              dosageInstructions:
+                type: string
+            required: [medicationId, medicationName, quantity, dosageInstructions]
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [PENDING, DISPENSED, PARTIAL, CANCELLED]
+        createdAt:
+          type: string
+      required: [id, businessId, patientRef, medications, totalAmount, status, createdAt]
+
+    CreatePrescriptionBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        patientRef:
+          type: string
+        doctorName:
+          type: string
+        medications:
+          type: array
+          items:
+            type: object
+            properties:
+              medicationId:
+                type: integer
+              quantity:
+                type: integer
+              dosageInstructions:
+                type: string
+            required: [medicationId, quantity, dosageInstructions]
+      required: [businessId, patientRef, medications]
+
+    PharmacyStats:
+      type: object
+      properties:
+        prescriptionsToday:
+          type: integer
+        medicationsSold:
+          type: integer
+        dailyRevenue:
+          type: number
+        criticalStockCount:
+          type: integer
+        expiringCount:
+          type: integer
+      required: [prescriptionsToday, medicationsSold, dailyRevenue, criticalStockCount, expiringCount]
+
+    # ─── GARAGE ───────────────────────────────────────────
+    GarageVehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        clientName:
+          type: string
+        clientPhone:
+          type: string
+          nullable: true
+        plate:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+          nullable: true
+        year:
+          type: integer
+          nullable: true
+        problem:
+          type: string
+        status:
+          type: string
+          enum: [DIAGNOSTIC, IN_PROGRESS, WAITING_PARTS, COMPLETED, DELIVERED]
+        progressPercent:
+          type: integer
+        estimatedAmount:
+          type: number
+          nullable: true
+        finalAmount:
+          type: number
+          nullable: true
+        mechanicName:
+          type: string
+          nullable: true
+        entryDate:
+          type: string
+        deliveryDate:
+          type: string
+          nullable: true
+      required: [id, businessId, clientName, plate, brand, problem, status, progressPercent, entryDate]
+
+    CreateGarageVehicleBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        clientName:
+          type: string
+        clientPhone:
+          type: string
+        plate:
+          type: string
+        brand:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        problem:
+          type: string
+        estimatedAmount:
+          type: number
+        mechanicName:
+          type: string
+      required: [businessId, clientName, plate, brand, problem]
+
+    UpdateVehicleStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [DIAGNOSTIC, IN_PROGRESS, WAITING_PARTS, COMPLETED, DELIVERED]
+        progressPercent:
+          type: integer
+        finalAmount:
+          type: number
+      required: [status]
+
+    GarageQuote:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        vehicleId:
+          type: integer
+          nullable: true
+        clientName:
+          type: string
+        plate:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              quantity:
+                type: integer
+              unitPrice:
+                type: number
+              subtotal:
+                type: number
+            required: [description, quantity, unitPrice, subtotal]
+        laborCost:
+          type: number
+        totalAmount:
+          type: number
+        status:
+          type: string
+          enum: [DRAFT, SENT, ACCEPTED, REJECTED]
+        createdAt:
+          type: string
+      required: [id, businessId, clientName, plate, items, laborCost, totalAmount, status, createdAt]
+
+    CreateGarageQuoteBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        vehicleId:
+          type: integer
+        clientName:
+          type: string
+        plate:
+          type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              description:
+                type: string
+              quantity:
+                type: integer
+              unitPrice:
+                type: number
+            required: [description, quantity, unitPrice]
+        laborCost:
+          type: number
+      required: [businessId, clientName, plate, items, laborCost]
+
+    GaragePart:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        reference:
+          type: string
+          nullable: true
+        stock:
+          type: integer
+        minStock:
+          type: integer
+        unitPrice:
+          type: number
+        compatible:
+          type: string
+          nullable: true
+      required: [id, businessId, name, stock, minStock, unitPrice]
+
+    GarageStats:
+      type: object
+      properties:
+        vehiclesInProgress:
+          type: integer
+        pendingQuotes:
+          type: integer
+        weeklyRevenue:
+          type: number
+        criticalPartsCount:
+          type: integer
+      required: [vehiclesInProgress, pendingQuotes, weeklyRevenue, criticalPartsCount]
+
+    # ─── FITNESS ──────────────────────────────────────────
+    FitnessMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        subscriptionType:
+          type: string
+          enum: [MONTHLY, QUARTERLY, ANNUAL]
+        subscriptionStartDate:
+          type: string
+        subscriptionEndDate:
+          type: string
+        isActive:
+          type: boolean
+        isPresentNow:
+          type: boolean
+        checkinCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, businessId, name, subscriptionType, subscriptionStartDate, subscriptionEndDate, isActive, isPresentNow, checkinCount, createdAt]
+
+    CreateFitnessMemberBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        subscriptionType:
+          type: string
+          enum: [MONTHLY, QUARTERLY, ANNUAL]
+        subscriptionStartDate:
+          type: string
+      required: [businessId, name, subscriptionType, subscriptionStartDate]
+
+    FitnessClass:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        coachName:
+          type: string
+        schedule:
+          type: string
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        capacity:
+          type: integer
+        enrolledCount:
+          type: integer
+        isActive:
+          type: boolean
+      required: [id, businessId, name, coachName, schedule, dayOfWeek, startTime, capacity, enrolledCount, isActive]
+
+    CreateFitnessClassBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        coachName:
+          type: string
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        capacity:
+          type: integer
+      required: [businessId, name, coachName, dayOfWeek, startTime, capacity]
+
+    FitnessCheckin:
+      type: object
+      properties:
+        id:
+          type: integer
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        businessId:
+          type: integer
+        checkinAt:
+          type: string
+      required: [id, memberId, memberName, businessId, checkinAt]
+
+    CreateFitnessCheckinBody:
+      type: object
+      properties:
+        memberId:
+          type: integer
+        businessId:
+          type: integer
+      required: [memberId, businessId]
+
+    FitnessStats:
+      type: object
+      properties:
+        activeMembers:
+          type: integer
+        subscriptionsThisMonth:
+          type: integer
+        monthlyRevenue:
+          type: number
+        presentNow:
+          type: integer
+        expiringThisWeek:
+          type: integer
+      required: [activeMembers, subscriptionsThisMonth, monthlyRevenue, presentNow, expiringThisWeek]
+
+    # ─── EDUCATION ────────────────────────────────────────
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        durationMonths:
+          type: integer
+        price:
+          type: number
+        availableSpots:
+          type: integer
+        enrolledCount:
+          type: integer
+        startDate:
+          type: string
+        isActive:
+          type: boolean
+      required: [id, businessId, name, durationMonths, price, availableSpots, enrolledCount, startDate, isActive]
+
+    CreateCourseBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        durationMonths:
+          type: integer
+        price:
+          type: number
+        availableSpots:
+          type: integer
+        startDate:
+          type: string
+      required: [businessId, name, durationMonths, price, availableSpots, startDate]
+
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        courseId:
+          type: integer
+          nullable: true
+        courseName:
+          type: string
+          nullable: true
+        enrollmentDate:
+          type: string
+          nullable: true
+        attendanceRate:
+          type: number
+        paymentStatus:
+          type: string
+          enum: [PAID, PARTIAL, PENDING, OVERDUE]
+        createdAt:
+          type: string
+      required: [id, businessId, name, attendanceRate, paymentStatus, createdAt]
+
+    CreateStudentBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+      required: [businessId, name]
+
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        courseId:
+          type: integer
+        courseName:
+          type: string
+        enrollmentDate:
+          type: string
+        totalAmount:
+          type: number
+        amountPaid:
+          type: number
+        installments:
+          type: integer
+        paymentStatus:
+          type: string
+          enum: [PAID, PARTIAL, PENDING, OVERDUE]
+        createdAt:
+          type: string
+      required: [id, businessId, studentId, studentName, courseId, courseName, enrollmentDate, totalAmount, amountPaid, installments, paymentStatus, createdAt]
+
+    CreateEnrollmentBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        studentId:
+          type: integer
+        courseId:
+          type: integer
+        totalAmount:
+          type: number
+        amountPaid:
+          type: number
+        installments:
+          type: integer
+      required: [businessId, studentId, courseId, totalAmount, amountPaid]
+
+    EducationStats:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+        activeCourses:
+          type: integer
+        pendingPayments:
+          type: integer
+        attendanceRate:
+          type: number
+        monthlyRevenue:
+          type: number
+      required: [totalStudents, activeCourses, pendingPayments, attendanceRate, monthlyRevenue]
+
+    # ─── NOTIFICATIONS ────────────────────────────────────
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [INFO, WARNING, SUCCESS, ERROR, PAYMENT, STOCK_ALERT, EXPIRY_ALERT]
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+      required: [id, businessId, title, message, type, isRead, createdAt]
