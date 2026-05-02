@@ -4,14 +4,17 @@ import { useEffect, useRef } from 'react';
 import { formatXAF } from '@/lib/utils';
 import { LucideIcon, TrendingUp, TrendingDown } from 'lucide-react';
 
-export function AnimatedNumber({ value, isCurrency = false }: { value: number; isCurrency?: boolean }) {
+export function AnimatedNumber({ value, isCurrency = false }: { value: number | string; isCurrency?: boolean }) {
   const ref = useRef<HTMLSpanElement>(null);
   const motionValue = useMotionValue(0);
   const isInView = useInView(ref, { once: true, margin: '-10%' });
 
+  const isString = typeof value === 'string';
+
   useEffect(() => {
+    if (isString) return;
     if (isInView) {
-      const controls = animate(motionValue, value, {
+      const controls = animate(motionValue, value as number, {
         duration: 1.4,
         ease: [0.25, 0.46, 0.45, 0.94],
         onUpdate: (latest) => {
@@ -25,14 +28,15 @@ export function AnimatedNumber({ value, isCurrency = false }: { value: number; i
       return controls.stop;
     }
     return undefined;
-  }, [value, isInView, isCurrency, motionValue]);
+  }, [value, isInView, isCurrency, motionValue, isString]);
 
+  if (isString) return <span ref={ref}>{value}</span>;
   return <span ref={ref}>{isCurrency ? formatXAF(0) : '0'}</span>;
 }
 
 interface KPICardProps {
   title: string;
-  value: number;
+  value: number | string;
   icon: LucideIcon;
   isCurrency?: boolean;
   trend?: { value: number; isPositive: boolean };

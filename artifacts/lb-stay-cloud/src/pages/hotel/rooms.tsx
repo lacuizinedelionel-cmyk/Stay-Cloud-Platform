@@ -14,6 +14,7 @@ import {
   HotelRoomType,
   HotelReservation,
 } from '@workspace/api-client-react';
+import { DashboardHero } from '@/components/dashboard-hero';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { formatXAF } from '@/lib/utils';
@@ -571,23 +572,21 @@ export default function HotelRoomsPage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
-            Grille des chambres
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {rooms?.length ?? 0} chambres · <span style={{ color: '#10B981' }}>Libres → cliquez pour réserver</span>
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-          style={{ background: 'hsl(160 84% 39% / 0.12)', color: '#10B981' }}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-          Temps réel
-        </div>
-      </div>
+    <div className="p-6 md:p-8 space-y-6 page-enter">
+      <DashboardHero
+        title="Grille des chambres"
+        subtitle="Cliquez sur une chambre libre pour réserver · Temps réel"
+        gradient="linear-gradient(135deg,#1D4ED8,#3B82F6)"
+        color="#60A5FA"
+        bg="rgba(96,165,250,0.08)"
+        icon={BedDouble}
+        badge="LIVE"
+        stats={stats ? [
+          { label: 'occupation', value: `${Math.round(stats.occupancyRate)}%` },
+          { label: 'libres', value: String(stats.availableRooms) },
+          { label: 'arrivées', value: String(stats.arrivalsToday) },
+        ] : undefined}
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

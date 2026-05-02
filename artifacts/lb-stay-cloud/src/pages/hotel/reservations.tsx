@@ -10,6 +10,7 @@ import {
   HotelReservation,
   HotelReservationStatus,
 } from '@workspace/api-client-react';
+import { DashboardHero } from '@/components/dashboard-hero';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { formatXAF } from '@/lib/utils';
@@ -332,24 +333,21 @@ export default function HotelReservationsPage() {
   }, [reservations]);
 
   return (
-    <div className="p-6 md:p-8 space-y-6 relative">
-
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
-            Réservations
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {counts.total} réservation{counts.total !== 1 ? 's' : ''} · Cliquez pour voir les détails
-          </p>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full"
-          style={{ background: 'hsl(160 84% 39% / 0.12)', color: '#10B981' }}>
-          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-          En direct
-        </div>
-      </div>
+    <div className="p-6 md:p-8 space-y-6 relative page-enter">
+      <DashboardHero
+        title="Réservations"
+        subtitle={`${counts.total} réservation${counts.total !== 1 ? 's' : ''} · Cliquez sur une ligne pour voir les détails`}
+        gradient="linear-gradient(135deg,#1D4ED8,#3B82F6)"
+        color="#60A5FA"
+        bg="rgba(96,165,250,0.08)"
+        icon={Calendar}
+        badge="LIVE"
+        stats={[
+          { label: 'en attente', value: String(counts.reserved) },
+          { label: 'en séjour',  value: String(counts.checkedIn) },
+          { label: 'CA total',   value: new Intl.NumberFormat('fr-FR').format(counts.revenue) + ' FCFA' },
+        ]}
+      />
 
       {/* KPI bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
