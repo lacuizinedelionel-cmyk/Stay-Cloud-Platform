@@ -76,3 +76,14 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 - Stocké en base64 (dataURL) via l'API billing/settings (champ `logoUrl`)
 - Preview immédiate avant sauvegarde, bouton supprimer
 - Taille max 2 Mo, formats PNG/JPG/SVG
+
+**Super Admin — Abonnements & Facturation** (`/superadmin/billing`) :
+- Page `artifacts/lb-stay-cloud/src/pages/superadmin/billing.tsx`
+- Route `/superadmin/billing` dans App.tsx + lien sidebar "Facturation" (icône Receipt) dans layout.tsx
+- 4 KPI cards : MRR plateforme (320K XAF), Actifs (6), En retard (1), Renouvellements juin
+- Tableau 8 enseignes : Plan badge (Starter/Pro/Elite), Status badge (Actif/En retard/Suspendu), date renouvellement, montant mensuel
+- Actions par ligne : Modifier plan (modal), Émettre facture (modal aperçu PDF), Marquer payé, Suspendre/Réactiver
+- Modal changement plan : 3 plans sélectionnables, calcul diff mensuel, confirmation
+- Modal facture : aperçu PDF réaliste (N° facture, TVA 19.25%, totaux, coordonnées, boutons Imprimer/PDF)
+- 3 cartes Plan Distribution en bas (Starter/Pro/Elite avec revenu mensuel et barre de progression)
+- Données 100% frontend (React state) — interactif pour démos (changements persistés en session)

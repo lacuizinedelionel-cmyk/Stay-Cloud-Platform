@@ -12,6 +12,7 @@ import ActivatePage from "@/pages/activate";
 import SignupPage from "@/pages/signup";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import SuperAdminAnalyticsPage from "@/pages/superadmin/analytics";
+import SuperAdminBillingPage from "@/pages/superadmin/billing";
 
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
 import RestaurantOrdersPage from "@/pages/restaurant/orders";
@@ -116,6 +117,7 @@ function Router() {
       <Route path="/messages">{() => <ProtectedRoute component={MessagesPage} />}</Route>
       <Route path="/superadmin/messages">{() => <ProtectedRoute component={SuperAdminMessagesPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
       <Route path="/superadmin/analytics">{() => <ProtectedRoute component={SuperAdminAnalyticsPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
+      <Route path="/superadmin/billing">{() => <ProtectedRoute component={SuperAdminBillingPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
 
       <Route path="/dashboard">
         {() => {
