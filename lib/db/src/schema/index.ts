@@ -16,3 +16,4 @@ export * from "./inventory_movements";
 export * from "./suppliers";
 export * from "./customer_credits";
 export * from "./billing_settings";
+export * from "./activity_logs";

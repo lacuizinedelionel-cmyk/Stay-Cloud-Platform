@@ -27,6 +27,7 @@ tags:
   - name: suppliers
   - name: credits
   - name: billing
+  - name: audit
 
 paths:
   /healthz:
@@ -3986,6 +3987,82 @@ components:
           type: string
           nullable: true
       required: [businessId, invoicePrefix, nextInvoiceNumber, taxRate, currency, showTax, showLogo, primaryColor]
+
+    # ─── AUDIT ────────────────────────────────────────────
+    ActivityLog:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+          nullable: true
+        userId:
+          type: integer
+          nullable: true
+        userName:
+          type: string
+        userRole:
+          type: string
+        action:
+          type: string
+        entityType:
+          type: string
+          nullable: true
+        entityId:
+          type: string
+          nullable: true
+        description:
+          type: string
+        metadata:
+          type: object
+          nullable: true
+          additionalProperties: true
+        ipAddress:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, userName, userRole, action, description, createdAt]
+
+    ListActivityLogsResponse:
+      type: object
+      properties:
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityLog"
+        total:
+          type: integer
+      required: [logs, total]
+
+    # ─── AUDIT TEAM ───────────────────────────────────────
+    TeamMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [SUPER_ADMIN, OWNER, MANAGER, STAFF]
+        businessId:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, name, email, role, createdAt]
+
+    ChangeRoleBody:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [OWNER, MANAGER, STAFF]
+      required: [role]
 
     UpsertBillingSettingsBody:
       type: object

@@ -8,8 +8,9 @@ import {
   Pill, Wrench, Dumbbell, GraduationCap, BarChart2,
   Calendar, Package, ClipboardList, Zap, ChevronDown,
   BedDouble, CreditCard, TrendingUp, Star, ShoppingCart,
-  UserCheck, BookOpen, Activity, Wallet,
+  UserCheck, BookOpen, Activity, Wallet, Shield,
 } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 /* ══════════════════════════════════════
    Types
@@ -311,13 +312,16 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
     ? { id: String(business.id), name: business.name, sector, badge: 'PRO' }
     : null;
 
+  const { canViewAudit, canViewBilling } = usePermissions();
+
   const sharedItems = [
-    { href: '/clients',       label: 'Clients',       icon: Users    },
-    { href: '/analytics',     label: 'Analyses',      icon: BarChart2 },
-    { href: '/billing',       label: 'Abonnement',    icon: Wallet   },
-    { href: '/notifications', label: 'Notifications', icon: Bell     },
-    { href: '/settings',      label: 'Paramètres',    icon: Settings },
-  ];
+    { href: '/clients',       label: 'Clients',              icon: Users,   always: true  },
+    { href: '/analytics',     label: 'Analyses',             icon: BarChart2, always: true },
+    { href: '/audit',         label: 'Sécurité & Audit',     icon: Shield,  always: canViewAudit   },
+    { href: '/billing',       label: 'Abonnement',           icon: Wallet,  always: canViewBilling },
+    { href: '/notifications', label: 'Notifications',        icon: Bell,    always: true  },
+    { href: '/settings',      label: 'Paramètres',           icon: Settings, always: true },
+  ].filter(i => i.always);
 
   return (
     <div

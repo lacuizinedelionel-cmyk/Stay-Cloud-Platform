@@ -1258,6 +1258,60 @@ export interface BillingSettings {
   updatedAt?: string | null;
 }
 
+export type ActivityLogMetadata = { [key: string]: unknown } | null;
+
+export interface ActivityLog {
+  id: number;
+  businessId?: number | null;
+  userId?: number | null;
+  userName: string;
+  userRole: string;
+  action: string;
+  entityType?: string | null;
+  entityId?: string | null;
+  description: string;
+  metadata?: ActivityLogMetadata;
+  ipAddress?: string | null;
+  createdAt: string;
+}
+
+export interface ListActivityLogsResponse {
+  logs: ActivityLog[];
+  total: number;
+}
+
+export type TeamMemberRole =
+  (typeof TeamMemberRole)[keyof typeof TeamMemberRole];
+
+export const TeamMemberRole = {
+  SUPER_ADMIN: "SUPER_ADMIN",
+  OWNER: "OWNER",
+  MANAGER: "MANAGER",
+  STAFF: "STAFF",
+} as const;
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  email: string;
+  role: TeamMemberRole;
+  businessId?: number | null;
+  createdAt: string;
+}
+
+export type ChangeRoleBodyRole =
+  (typeof ChangeRoleBodyRole)[keyof typeof ChangeRoleBodyRole];
+
+export const ChangeRoleBodyRole = {
+  OWNER: "OWNER",
+  MANAGER: "MANAGER",
+  STAFF: "STAFF",
+} as const;
+
+export interface ChangeRoleBody {
+  role: ChangeRoleBodyRole;
+}
+
 export interface UpsertBillingSettingsBody {
   businessId: number;
   businessName?: string;

@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./activityLog";
+export * from "./activityLogMetadata";
 export * from "./authResponse";
 export * from "./beautyAppointment";
 export * from "./beautyAppointmentStatus";
@@ -18,6 +20,8 @@ export * from "./business";
 export * from "./businessPlan";
 export * from "./businessSector";
 export * from "./businessStats";
+export * from "./changeRoleBody";
+export * from "./changeRoleBodyRole";
 export * from "./client";
 export * from "./clientLoyaltyLevel";
 export * from "./course";
@@ -110,6 +114,7 @@ export * from "./inventoryMovement";
 export * from "./inventoryMovementMovementType";
 export * from "./inventoryMovementProductSector";
 export * from "./inventoryStats";
+export * from "./listActivityLogsResponse";
 export * from "./listBeautyAppointmentsParams";
 export * from "./listBeautyServicesParams";
 export * from "./listBeautyStaffParams";
@@ -167,6 +172,8 @@ export * from "./student";
 export * from "./studentPaymentStatus";
 export * from "./superAdminStats";
 export * from "./supplier";
+export * from "./teamMember";
+export * from "./teamMemberRole";
 export * from "./updateOrderStatusBody";
 export * from "./updateOrderStatusBodyStatus";
 export * from "./updateQuoteStatusBody";

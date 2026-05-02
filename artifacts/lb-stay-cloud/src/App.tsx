@@ -39,6 +39,7 @@ import AnalyticsPage from "@/pages/analytics";
 import NotificationsPage from "@/pages/notifications";
 import SettingsPage from "@/pages/settings";
 import BillingPage from "@/pages/billing";
+import AuditPage from "@/pages/audit";
 
 const queryClient = new QueryClient();
 
@@ -105,6 +106,7 @@ function Router() {
       <Route path="/notifications">{() => <ProtectedRoute component={NotificationsPage} />}</Route>
       <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
+      <Route path="/audit">{() => <ProtectedRoute component={AuditPage} />}</Route>
 
       <Route path="/dashboard">
         {() => {
