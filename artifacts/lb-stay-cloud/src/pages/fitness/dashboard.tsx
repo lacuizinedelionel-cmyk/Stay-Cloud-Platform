@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useAuth } from '@/context/AuthContext';
 import { 
   useGetFitnessStats,
@@ -149,6 +150,8 @@ export default function FitnessDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {business && <ReviewsSection businessId={business.id} sector="FITNESS" />}
     </div>
   );
 }

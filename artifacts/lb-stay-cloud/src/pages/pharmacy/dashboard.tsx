@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useAuth } from '@/context/AuthContext';
 import { 
   useGetPharmacyStats,
@@ -179,6 +180,8 @@ export default function PharmacyDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {business && <ReviewsSection businessId={business.id} sector="PHARMACY" />}
     </div>
   );
 }

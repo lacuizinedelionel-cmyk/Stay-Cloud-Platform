@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useAuth } from '@/context/AuthContext';
 import { 
   useGetGarageStats,
@@ -121,6 +122,8 @@ export default function GarageDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {business && <ReviewsSection businessId={business.id} sector="GARAGE" />}
     </div>
   );
 }

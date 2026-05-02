@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useAuth } from '@/context/AuthContext';
 import { 
   useGetGroceryStats,
@@ -162,6 +163,8 @@ export default function GroceryDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {business && <ReviewsSection businessId={business.id} sector="GROCERY" />}
     </div>
   );
 }

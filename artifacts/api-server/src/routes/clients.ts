@@ -31,4 +31,22 @@ router.get("/clients/:id", async (req, res): Promise<void> => {
   res.json({ ...client, totalSpent: parseFloat(client.totalSpent ?? "0"), createdAt: client.createdAt.toISOString() });
 });
 
+router.put("/clients/:id", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  const { name, phone, email, city } = req.body;
+  const [updated] = await db
+    .update(clientsTable)
+    .set({ ...(name && { name }), ...(phone !== undefined && { phone }), ...(email !== undefined && { email }), ...(city !== undefined && { city }) })
+    .where(eq(clientsTable.id, id))
+    .returning();
+  if (!updated) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...updated, totalSpent: parseFloat(updated.totalSpent ?? "0"), createdAt: updated.createdAt.toISOString() });
+});
+
+router.delete("/clients/:id", async (req, res): Promise<void> => {
+  const id = parseInt(req.params.id, 10);
+  await db.delete(clientsTable).where(eq(clientsTable.id, id));
+  res.json({ success: true });
+});
+
 export default router;

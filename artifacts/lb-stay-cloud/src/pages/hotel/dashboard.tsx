@@ -25,6 +25,7 @@ import {
   Sparkles, Crown, Star, RefreshCw, X,
   Moon, User, Phone, PlusCircle, CheckCircle2,
 } from 'lucide-react';
+import { ReviewsSection } from '@/components/reviews-section';
 
 /* ═══════════════════════════════════════════
    HELPERS
@@ -849,6 +850,8 @@ export default function HotelDashboard() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {business && <ReviewsSection businessId={business.id} sector="HOTEL" />}
     </div>
   );
 }

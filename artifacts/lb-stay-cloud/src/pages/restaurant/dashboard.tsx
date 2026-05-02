@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useGetRestaurantStats, getGetRestaurantStatsQueryKey, useGetRestaurantHourlySales, getGetRestaurantHourlySalesQueryKey, useListRestaurantOrders, getListRestaurantOrdersQueryKey, RestaurantOrderStatus } from '@workspace/api-client-react';
 import { useAuth } from '@/context/AuthContext';
 import { KPICard } from '@/components/kpi-card';
@@ -201,6 +202,8 @@ export default function RestaurantDashboard() {
           )}
         </CardContent>
       </Card>
+
+      {business && <ReviewsSection businessId={business.id} sector="RESTAURANT" />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { ReviewsSection } from '@/components/reviews-section';
 import { useAuth } from '@/context/AuthContext';
 import { 
   useGetEducationStats,
@@ -136,6 +137,8 @@ export default function EducationDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {business && <ReviewsSection businessId={business.id} sector="EDUCATION" />}
     </div>
   );
 }
