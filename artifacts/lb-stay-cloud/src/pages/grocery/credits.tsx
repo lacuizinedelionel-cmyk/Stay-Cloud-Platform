@@ -21,7 +21,7 @@ import {
   Plus, Search, X, Check, Wallet, AlertTriangle,
   TrendingUp, Users, Phone, ChevronDown, Trash2,
   ClipboardList, ShoppingCart, CreditCard, Edit2,
-  ArrowDownCircle, ArrowUpCircle, Clock, Shield,
+  ArrowDownCircle, ArrowUpCircle, Clock, Shield, MessageCircle,
 } from 'lucide-react';
 
 /* ───── Status config ─────────────────────────────────────────── */
@@ -181,6 +181,22 @@ function ClientCard({
           <Trash2 className="w-3 h-3" />
         </button>
       </div>
+
+      {/* WhatsApp reminder — visible seulement si téléphone renseigné et dette > 0 */}
+      {credit.clientPhone && credit.totalDebt > 0 && (
+        <a
+          href={`https://wa.me/${credit.clientPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+            `Bonjour ${credit.clientName} 👋\n\nNous vous informons que votre ardoise s'élève actuellement à *${credit.totalDebt.toLocaleString('fr-FR')} FCFA* sur un plafond de ${credit.creditLimit.toLocaleString('fr-FR')} FCFA.\n\nMerci de nous contacter pour régulariser votre situation. 🙏\n\n— LB Stay Cloud`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-[11px] font-semibold transition-all hover:opacity-80"
+          style={{ background: '#25D36612', color: '#25D366', border: '1px solid #25D36630' }}
+        >
+          <MessageCircle className="w-3 h-3" />
+          Rappel WhatsApp · {formatXAF(credit.totalDebt)}
+        </a>
+      )}
     </motion.div>
   );
 }
