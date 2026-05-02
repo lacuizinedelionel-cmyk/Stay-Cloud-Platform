@@ -1115,6 +1115,74 @@ export const CreateMedicationBody = zod.object({
 });
 
 /**
+ * @summary Update a medication
+ */
+export const UpdateMedicationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateMedicationBody = zod.object({
+  businessId: zod.number(),
+  name: zod.string(),
+  dci: zod.string().optional(),
+  dosage: zod.string().optional(),
+  form: zod.string().optional(),
+  price: zod.number(),
+  stock: zod.number(),
+  minStock: zod.number(),
+  expirationDate: zod.string(),
+  requiresPrescription: zod.boolean().optional(),
+});
+
+export const UpdateMedicationResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  name: zod.string(),
+  dci: zod.string().nullish(),
+  dosage: zod.string().nullish(),
+  form: zod.string().nullish(),
+  price: zod.number(),
+  stock: zod.number(),
+  minStock: zod.number(),
+  expirationDate: zod.string(),
+  supplierId: zod.number().nullish(),
+  requiresPrescription: zod.boolean(),
+});
+
+/**
+ * @summary Delete a medication
+ */
+export const DeleteMedicationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Adjust medication stock (delta)
+ */
+export const AdjustMedicationStockParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AdjustMedicationStockBody = zod.object({
+  delta: zod.number().describe("Positive to add stock, negative to remove"),
+});
+
+export const AdjustMedicationStockResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  name: zod.string(),
+  dci: zod.string().nullish(),
+  dosage: zod.string().nullish(),
+  form: zod.string().nullish(),
+  price: zod.number(),
+  stock: zod.number(),
+  minStock: zod.number(),
+  expirationDate: zod.string(),
+  supplierId: zod.number().nullish(),
+  requiresPrescription: zod.boolean(),
+});
+
+/**
  * @summary List prescriptions
  */
 export const ListPrescriptionsQueryParams = zod.object({
@@ -1157,6 +1225,35 @@ export const CreatePrescriptionBody = zod.object({
       dosageInstructions: zod.string(),
     }),
   ),
+});
+
+/**
+ * @summary Update prescription status
+ */
+export const UpdatePrescriptionStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdatePrescriptionStatusBody = zod.object({
+  status: zod.enum(["PENDING", "DISPENSED", "PARTIAL", "CANCELLED"]),
+});
+
+export const UpdatePrescriptionStatusResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  patientRef: zod.string(),
+  doctorName: zod.string().nullish(),
+  medications: zod.array(
+    zod.object({
+      medicationId: zod.number(),
+      medicationName: zod.string(),
+      quantity: zod.number(),
+      dosageInstructions: zod.string(),
+    }),
+  ),
+  totalAmount: zod.number(),
+  status: zod.enum(["PENDING", "DISPENSED", "PARTIAL", "CANCELLED"]),
+  createdAt: zod.string(),
 });
 
 /**

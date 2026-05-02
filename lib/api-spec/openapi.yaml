@@ -1125,6 +1125,69 @@ paths:
               schema:
                 $ref: "#/components/schemas/Medication"
 
+  /pharmacy/medications/{id}:
+    put:
+      operationId: updateMedication
+      tags: [pharmacy]
+      summary: Update a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMedicationBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+    delete:
+      operationId: deleteMedication
+      tags: [pharmacy]
+      summary: Delete a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /pharmacy/medications/{id}/stock:
+    patch:
+      operationId: adjustMedicationStock
+      tags: [pharmacy]
+      summary: Adjust medication stock (delta)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StockAdjustBody"
+      responses:
+        "200":
+          description: Updated medication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+
   /pharmacy/prescriptions:
     get:
       operationId: listPrescriptions
@@ -1162,6 +1225,31 @@ paths:
       responses:
         "201":
           description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prescription"
+
+  /pharmacy/prescriptions/{id}/status:
+    patch:
+      operationId: updatePrescriptionStatus
+      tags: [pharmacy]
+      summary: Update prescription status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrescriptionStatusBody"
+      responses:
+        "200":
+          description: Updated prescription
           content:
             application/json:
               schema:
@@ -2528,6 +2616,14 @@ components:
           type: integer
           description: Positive to add stock, negative to remove
       required: [delta]
+
+    PrescriptionStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [PENDING, DISPENSED, PARTIAL, CANCELLED]
+      required: [status]
 
     GroceryStats:
       type: object

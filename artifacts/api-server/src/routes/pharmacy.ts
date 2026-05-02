@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { db, medicationsTable, prescriptionsTable } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -24,6 +24,35 @@ router.post("/pharmacy/medications", async (req, res): Promise<void> => {
     businessId, name, dci, dosage, form, price: price.toString(), stock: stock ?? 0, minStock: minStock ?? 10, expirationDate, requiresPrescription: requiresPrescription ?? false
   }).returning();
   res.status(201).json({ ...med, price: parseFloat(med.price) });
+});
+
+router.put("/pharmacy/medications/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { name, dci, dosage, form, price, stock, minStock, expirationDate, requiresPrescription } = req.body;
+  const [med] = await db.update(medicationsTable).set({
+    name, dci, dosage, form,
+    price: price?.toString(),
+    stock, minStock, expirationDate, requiresPrescription,
+  }).where(eq(medicationsTable.id, id)).returning();
+  if (!med) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...med, price: parseFloat(med.price) });
+});
+
+router.patch("/pharmacy/medications/:id/stock", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { delta } = req.body;
+  if (delta === undefined) { res.status(400).json({ error: "delta required" }); return; }
+  const [med] = await db.update(medicationsTable)
+    .set({ stock: sql`GREATEST(0, ${medicationsTable.stock} + ${delta})` })
+    .where(eq(medicationsTable.id, id)).returning();
+  if (!med) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...med, price: parseFloat(med.price) });
+});
+
+router.delete("/pharmacy/medications/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  await db.delete(medicationsTable).where(eq(medicationsTable.id, id));
+  res.sendStatus(204);
 });
 
 router.get("/pharmacy/prescriptions", async (req, res): Promise<void> => {
@@ -52,6 +81,17 @@ router.post("/pharmacy/prescriptions", async (req, res): Promise<void> => {
     businessId, patientRef, doctorName, medications: items, totalAmount: total.toString()
   }).returning();
   res.status(201).json({ ...prescription, totalAmount: parseFloat(prescription.totalAmount), createdAt: prescription.createdAt.toISOString() });
+});
+
+router.patch("/pharmacy/prescriptions/:id/status", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { status } = req.body;
+  if (!status) { res.status(400).json({ error: "status required" }); return; }
+  const [prescription] = await db.update(prescriptionsTable)
+    .set({ status })
+    .where(eq(prescriptionsTable.id, id)).returning();
+  if (!prescription) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...prescription, totalAmount: parseFloat(prescription.totalAmount), createdAt: prescription.createdAt.toISOString() });
 });
 
 router.get("/pharmacy/stats", async (req, res): Promise<void> => {

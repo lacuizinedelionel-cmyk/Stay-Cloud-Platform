@@ -648,6 +648,20 @@ export interface StockAdjustBody {
   delta: number;
 }
 
+export type PrescriptionStatusBodyStatus =
+  (typeof PrescriptionStatusBodyStatus)[keyof typeof PrescriptionStatusBodyStatus];
+
+export const PrescriptionStatusBodyStatus = {
+  PENDING: "PENDING",
+  DISPENSED: "DISPENSED",
+  PARTIAL: "PARTIAL",
+  CANCELLED: "CANCELLED",
+} as const;
+
+export interface PrescriptionStatusBody {
+  status: PrescriptionStatusBodyStatus;
+}
+
 export interface GroceryStats {
   dailySales: number;
   itemsSoldToday: number;

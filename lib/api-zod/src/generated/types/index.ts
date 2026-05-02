@@ -128,6 +128,8 @@ export * from "./pharmacyStats";
 export * from "./prescription";
 export * from "./prescriptionMedicationsItem";
 export * from "./prescriptionStatus";
+export * from "./prescriptionStatusBody";
+export * from "./prescriptionStatusBodyStatus";
 export * from "./recentActivity";
 export * from "./restaurantOrder";
 export * from "./restaurantOrderPaymentMethod";
