@@ -746,6 +746,20 @@ export interface PharmacyStats {
   expiringCount: number;
 }
 
+export type UpdateQuoteStatusBodyStatus =
+  (typeof UpdateQuoteStatusBodyStatus)[keyof typeof UpdateQuoteStatusBodyStatus];
+
+export const UpdateQuoteStatusBodyStatus = {
+  DRAFT: "DRAFT",
+  SENT: "SENT",
+  ACCEPTED: "ACCEPTED",
+  REJECTED: "REJECTED",
+} as const;
+
+export interface UpdateQuoteStatusBody {
+  status: UpdateQuoteStatusBodyStatus;
+}
+
 export type GarageVehicleStatus =
   (typeof GarageVehicleStatus)[keyof typeof GarageVehicleStatus];
 

@@ -121,6 +121,7 @@ import type {
   SuperAdminStats,
   Supplier,
   UpdateOrderStatusBody,
+  UpdateQuoteStatusBody,
   UpdateVehicleStatusBody,
   User,
 } from "./api.schemas";
@@ -5888,6 +5889,177 @@ export const useCreateGarageVehicle = <
 };
 
 /**
+ * @summary Update vehicle details
+ */
+export const getUpdateGarageVehicleUrl = (id: number) => {
+  return `/api/garage/vehicles/${id}`;
+};
+
+export const updateGarageVehicle = async (
+  id: number,
+  createGarageVehicleBody: CreateGarageVehicleBody,
+  options?: RequestInit,
+): Promise<GarageVehicle> => {
+  return customFetch<GarageVehicle>(getUpdateGarageVehicleUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createGarageVehicleBody),
+  });
+};
+
+export const getUpdateGarageVehicleMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGarageVehicle>>,
+    TError,
+    { id: number; data: BodyType<CreateGarageVehicleBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateGarageVehicle>>,
+  TError,
+  { id: number; data: BodyType<CreateGarageVehicleBody> },
+  TContext
+> => {
+  const mutationKey = ["updateGarageVehicle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateGarageVehicle>>,
+    { id: number; data: BodyType<CreateGarageVehicleBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateGarageVehicle(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateGarageVehicleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateGarageVehicle>>
+>;
+export type UpdateGarageVehicleMutationBody = BodyType<CreateGarageVehicleBody>;
+export type UpdateGarageVehicleMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update vehicle details
+ */
+export const useUpdateGarageVehicle = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGarageVehicle>>,
+    TError,
+    { id: number; data: BodyType<CreateGarageVehicleBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateGarageVehicle>>,
+  TError,
+  { id: number; data: BodyType<CreateGarageVehicleBody> },
+  TContext
+> => {
+  return useMutation(getUpdateGarageVehicleMutationOptions(options));
+};
+
+/**
+ * @summary Delete a vehicle record
+ */
+export const getDeleteGarageVehicleUrl = (id: number) => {
+  return `/api/garage/vehicles/${id}`;
+};
+
+export const deleteGarageVehicle = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGarageVehicleUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGarageVehicleMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGarageVehicle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGarageVehicle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGarageVehicle"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGarageVehicle>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteGarageVehicle(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGarageVehicleMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGarageVehicle>>
+>;
+
+export type DeleteGarageVehicleMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a vehicle record
+ */
+export const useDeleteGarageVehicle = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGarageVehicle>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGarageVehicle>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteGarageVehicleMutationOptions(options));
+};
+
+/**
  * @summary Update vehicle repair status
  */
 export const getUpdateGarageVehicleStatusUrl = (id: number) => {
@@ -6156,6 +6328,178 @@ export const useCreateGarageQuote = <
   TContext
 > => {
   return useMutation(getCreateGarageQuoteMutationOptions(options));
+};
+
+/**
+ * @summary Update quote status
+ */
+export const getUpdateGarageQuoteStatusUrl = (id: number) => {
+  return `/api/garage/quotes/${id}/status`;
+};
+
+export const updateGarageQuoteStatus = async (
+  id: number,
+  updateQuoteStatusBody: UpdateQuoteStatusBody,
+  options?: RequestInit,
+): Promise<GarageQuote> => {
+  return customFetch<GarageQuote>(getUpdateGarageQuoteStatusUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateQuoteStatusBody),
+  });
+};
+
+export const getUpdateGarageQuoteStatusMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGarageQuoteStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateQuoteStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateGarageQuoteStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateQuoteStatusBody> },
+  TContext
+> => {
+  const mutationKey = ["updateGarageQuoteStatus"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateGarageQuoteStatus>>,
+    { id: number; data: BodyType<UpdateQuoteStatusBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateGarageQuoteStatus(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateGarageQuoteStatusMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateGarageQuoteStatus>>
+>;
+export type UpdateGarageQuoteStatusMutationBody =
+  BodyType<UpdateQuoteStatusBody>;
+export type UpdateGarageQuoteStatusMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update quote status
+ */
+export const useUpdateGarageQuoteStatus = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateGarageQuoteStatus>>,
+    TError,
+    { id: number; data: BodyType<UpdateQuoteStatusBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateGarageQuoteStatus>>,
+  TError,
+  { id: number; data: BodyType<UpdateQuoteStatusBody> },
+  TContext
+> => {
+  return useMutation(getUpdateGarageQuoteStatusMutationOptions(options));
+};
+
+/**
+ * @summary Delete a quote
+ */
+export const getDeleteGarageQuoteUrl = (id: number) => {
+  return `/api/garage/quotes/${id}`;
+};
+
+export const deleteGarageQuote = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteGarageQuoteUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteGarageQuoteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGarageQuote>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteGarageQuote>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteGarageQuote"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteGarageQuote>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteGarageQuote(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteGarageQuoteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteGarageQuote>>
+>;
+
+export type DeleteGarageQuoteMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a quote
+ */
+export const useDeleteGarageQuote = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteGarageQuote>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteGarageQuote>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteGarageQuoteMutationOptions(options));
 };
 
 /**

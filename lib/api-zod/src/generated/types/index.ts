@@ -145,6 +145,8 @@ export * from "./superAdminStats";
 export * from "./supplier";
 export * from "./updateOrderStatusBody";
 export * from "./updateOrderStatusBodyStatus";
+export * from "./updateQuoteStatusBody";
+export * from "./updateQuoteStatusBodyStatus";
 export * from "./updateVehicleStatusBody";
 export * from "./updateVehicleStatusBodyStatus";
 export * from "./user";

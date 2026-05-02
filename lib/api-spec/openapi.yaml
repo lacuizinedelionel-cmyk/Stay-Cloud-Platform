@@ -1317,6 +1317,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/GarageVehicle"
 
+  /garage/vehicles/{id}:
+    put:
+      operationId: updateGarageVehicle
+      tags: [garage]
+      summary: Update vehicle details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGarageVehicleBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageVehicle"
+    delete:
+      operationId: deleteGarageVehicle
+      tags: [garage]
+      summary: Delete a vehicle record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
   /garage/vehicles/{id}/status:
     put:
       operationId: updateGarageVehicleStatus
@@ -1379,6 +1417,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GarageQuote"
+
+  /garage/quotes/{id}/status:
+    put:
+      operationId: updateGarageQuoteStatus
+      tags: [garage]
+      summary: Update quote status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateQuoteStatusBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GarageQuote"
+
+  /garage/quotes/{id}:
+    delete:
+      operationId: deleteGarageQuote
+      tags: [garage]
+      summary: Delete a quote
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
 
   /garage/parts:
     get:
@@ -2769,6 +2847,14 @@ components:
         expiringCount:
           type: integer
       required: [prescriptionsToday, medicationsSold, dailyRevenue, criticalStockCount, expiringCount]
+
+    UpdateQuoteStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [DRAFT, SENT, ACCEPTED, REJECTED]
+      required: [status]
 
     # ─── GARAGE ───────────────────────────────────────────
     GarageVehicle:

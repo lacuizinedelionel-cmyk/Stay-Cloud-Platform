@@ -29,6 +29,17 @@ router.post("/garage/vehicles", async (req, res): Promise<void> => {
   res.status(201).json({ ...vehicle, estimatedAmount: vehicle.estimatedAmount ? parseFloat(vehicle.estimatedAmount) : null, finalAmount: null, createdAt: vehicle.createdAt.toISOString() });
 });
 
+router.put("/garage/vehicles/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { clientName, clientPhone, plate, brand, model, year, problem, estimatedAmount, mechanicName, deliveryDate } = req.body;
+  const [vehicle] = await db.update(garageVehiclesTable).set({
+    clientName, clientPhone, plate, brand, model, year, problem,
+    estimatedAmount: estimatedAmount?.toString(), mechanicName, deliveryDate,
+  }).where(eq(garageVehiclesTable.id, id)).returning();
+  if (!vehicle) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...vehicle, estimatedAmount: vehicle.estimatedAmount ? parseFloat(vehicle.estimatedAmount) : null, finalAmount: vehicle.finalAmount ? parseFloat(vehicle.finalAmount) : null, createdAt: vehicle.createdAt.toISOString() });
+});
+
 router.put("/garage/vehicles/:id/status", async (req, res): Promise<void> => {
   const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
   const { status, progressPercent, finalAmount } = req.body;
@@ -37,6 +48,12 @@ router.put("/garage/vehicles/:id/status", async (req, res): Promise<void> => {
   }).where(eq(garageVehiclesTable.id, id)).returning();
   if (!vehicle) { res.status(404).json({ error: "Not found" }); return; }
   res.json({ ...vehicle, estimatedAmount: vehicle.estimatedAmount ? parseFloat(vehicle.estimatedAmount) : null, finalAmount: vehicle.finalAmount ? parseFloat(vehicle.finalAmount) : null, createdAt: vehicle.createdAt.toISOString() });
+});
+
+router.delete("/garage/vehicles/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  await db.delete(garageVehiclesTable).where(eq(garageVehiclesTable.id, id));
+  res.sendStatus(204);
 });
 
 router.get("/garage/quotes", async (req, res): Promise<void> => {
@@ -55,6 +72,21 @@ router.post("/garage/quotes", async (req, res): Promise<void> => {
     businessId, vehicleId, clientName, plate, items: quoteItems, laborCost: (laborCost ?? 0).toString(), totalAmount: total.toString()
   }).returning();
   res.status(201).json({ ...quote, laborCost: parseFloat(quote.laborCost), totalAmount: parseFloat(quote.totalAmount), createdAt: quote.createdAt.toISOString() });
+});
+
+router.put("/garage/quotes/:id/status", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { status } = req.body;
+  if (!status) { res.status(400).json({ error: "status required" }); return; }
+  const [quote] = await db.update(garageQuotesTable).set({ status }).where(eq(garageQuotesTable.id, id)).returning();
+  if (!quote) { res.status(404).json({ error: "Not found" }); return; }
+  res.json({ ...quote, laborCost: parseFloat(quote.laborCost), totalAmount: parseFloat(quote.totalAmount), createdAt: quote.createdAt.toISOString() });
+});
+
+router.delete("/garage/quotes/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  await db.delete(garageQuotesTable).where(eq(garageQuotesTable.id, id));
+  res.sendStatus(204);
 });
 
 router.get("/garage/parts", async (req, res): Promise<void> => {

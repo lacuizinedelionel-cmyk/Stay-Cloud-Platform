@@ -1324,6 +1324,58 @@ export const CreateGarageVehicleBody = zod.object({
 });
 
 /**
+ * @summary Update vehicle details
+ */
+export const UpdateGarageVehicleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateGarageVehicleBody = zod.object({
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().optional(),
+  plate: zod.string(),
+  brand: zod.string(),
+  model: zod.string().optional(),
+  year: zod.number().optional(),
+  problem: zod.string(),
+  estimatedAmount: zod.number().optional(),
+  mechanicName: zod.string().optional(),
+});
+
+export const UpdateGarageVehicleResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().nullish(),
+  plate: zod.string(),
+  brand: zod.string(),
+  model: zod.string().nullish(),
+  year: zod.number().nullish(),
+  problem: zod.string(),
+  status: zod.enum([
+    "DIAGNOSTIC",
+    "IN_PROGRESS",
+    "WAITING_PARTS",
+    "COMPLETED",
+    "DELIVERED",
+  ]),
+  progressPercent: zod.number(),
+  estimatedAmount: zod.number().nullish(),
+  finalAmount: zod.number().nullish(),
+  mechanicName: zod.string().nullish(),
+  entryDate: zod.string(),
+  deliveryDate: zod.string().nullish(),
+});
+
+/**
+ * @summary Delete a vehicle record
+ */
+export const DeleteGarageVehicleParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
  * @summary Update vehicle repair status
  */
 export const UpdateGarageVehicleStatusParams = zod.object({
@@ -1411,6 +1463,44 @@ export const CreateGarageQuoteBody = zod.object({
     }),
   ),
   laborCost: zod.number(),
+});
+
+/**
+ * @summary Update quote status
+ */
+export const UpdateGarageQuoteStatusParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateGarageQuoteStatusBody = zod.object({
+  status: zod.enum(["DRAFT", "SENT", "ACCEPTED", "REJECTED"]),
+});
+
+export const UpdateGarageQuoteStatusResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  vehicleId: zod.number().nullish(),
+  clientName: zod.string(),
+  plate: zod.string(),
+  items: zod.array(
+    zod.object({
+      description: zod.string(),
+      quantity: zod.number(),
+      unitPrice: zod.number(),
+      subtotal: zod.number(),
+    }),
+  ),
+  laborCost: zod.number(),
+  totalAmount: zod.number(),
+  status: zod.enum(["DRAFT", "SENT", "ACCEPTED", "REJECTED"]),
+  createdAt: zod.string(),
+});
+
+/**
+ * @summary Delete a quote
+ */
+export const DeleteGarageQuoteParams = zod.object({
+  id: zod.coerce.number(),
 });
 
 /**

@@ -28,6 +28,8 @@ import PharmacyDashboard from "@/pages/pharmacy/dashboard";
 import PharmacyMedicationsPage from "@/pages/pharmacy/medications";
 import PharmacyPrescriptionsPage from "@/pages/pharmacy/prescriptions";
 import GarageDashboard from "@/pages/garage/dashboard";
+import GarageVehiclesPage from "@/pages/garage/vehicles";
+import GarageQuotesPage from "@/pages/garage/quotes";
 import FitnessDashboard from "@/pages/fitness/dashboard";
 import EducationDashboard from "@/pages/education/dashboard";
 
@@ -89,6 +91,8 @@ function Router() {
       <Route path="/pharmacy/medications">{() => <ProtectedRoute component={PharmacyMedicationsPage} />}</Route>
       <Route path="/pharmacy/prescriptions">{() => <ProtectedRoute component={PharmacyPrescriptionsPage} />}</Route>
       <Route path="/garage/dashboard">{() => <ProtectedRoute component={GarageDashboard} />}</Route>
+      <Route path="/garage/vehicles">{() => <ProtectedRoute component={GarageVehiclesPage} />}</Route>
+      <Route path="/garage/quotes">{() => <ProtectedRoute component={GarageQuotesPage} />}</Route>
       <Route path="/fitness/dashboard">{() => <ProtectedRoute component={FitnessDashboard} />}</Route>
       <Route path="/education/dashboard">{() => <ProtectedRoute component={EducationDashboard} />}</Route>
 
