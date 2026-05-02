@@ -8,6 +8,7 @@ import {
 } from '@workspace/api-client-react';
 import { useAuth } from '@/context/AuthContext';
 import { formatXAF } from '@/lib/utils';
+import { generateStockReportPDF } from '@/lib/invoice';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertTriangle,
@@ -15,8 +16,9 @@ import {
   TrendingDown,
   CheckCircle2,
   Search,
-  Filter,
   ArrowUpDown,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -53,6 +55,7 @@ export default function GroceryStockPage() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'ALL' | 'LOW' | 'CRITICAL'>('ALL');
   const [sort, setSort] = useState<'name' | 'stock' | 'value'>('stock');
+  const [isExporting, setIsExporting] = useState(false);
 
   const productsKey = getListGroceryProductsQueryKey({ businessId: bId });
   const statsKey = getGetGroceryStatsQueryKey({ businessId: bId });
@@ -91,12 +94,41 @@ export default function GroceryStockPage() {
     { value: 'CRITICAL' as const, label: 'Rupture', count: criticalCount, color: '#EF4444' },
   ];
 
+  const handleExportPDF = async () => {
+    if (!products || products.length === 0) return;
+    setIsExporting(true);
+    try {
+      await generateStockReportPDF(business?.name ?? 'Épicerie', products);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="p-6 md:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>Gestion des stocks</h1>
-        <p className="text-xs text-muted-foreground mt-1">Inventaire en temps réel · Alertes automatiques</p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>Gestion des stocks</h1>
+          <p className="text-xs text-muted-foreground mt-1">Inventaire en temps réel · Alertes automatiques</p>
+        </div>
+        <button
+          onClick={handleExportPDF}
+          disabled={isExporting || !products || products.length === 0}
+          className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            background: 'linear-gradient(135deg, hsl(38 90% 56%), hsl(38 90% 46%))',
+            color: '#000',
+            boxShadow: '0 4px 14px hsl(38 90% 56% / 0.3)',
+          }}
+        >
+          {isExporting ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <FileDown className="w-4 h-4" />
+          )}
+          {isExporting ? 'Export...' : 'Rapport PDF'}
+        </button>
       </div>
 
       {/* Alert banner */}
@@ -109,7 +141,10 @@ export default function GroceryStockPage() {
             className="flex items-center gap-3 px-4 py-3 rounded-xl"
             style={{ background: 'hsl(0 72% 51% / 0.08)', border: '1px solid hsl(0 72% 51% / 0.25)' }}
           >
-            <AlertTriangle className="w-4 h-4 shrink-0" style={{ color: '#EF4444' }} />
+            <span className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: '#EF4444' }} />
+              <span className="relative inline-flex h-3 w-3 rounded-full" style={{ background: '#EF4444' }} />
+            </span>
             <p className="text-xs font-semibold text-foreground">
               {criticalCount > 0 && <span style={{ color: '#EF4444' }}>{criticalCount} rupture(s) de stock</span>}
               {criticalCount > 0 && lowCount > 0 && ' · '}
@@ -124,13 +159,29 @@ export default function GroceryStockPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: 'Total produits', value: products?.length ?? '—', icon: Package, color: '#3B82F6' },
-          { label: 'Rupture de stock', value: criticalCount, icon: TrendingDown, color: '#EF4444' },
-          { label: 'Stock bas', value: lowCount, icon: AlertTriangle, color: '#F59E0B' },
+          { label: 'Rupture de stock', value: criticalCount, icon: TrendingDown, color: '#EF4444', pulse: criticalCount > 0 },
+          { label: 'Stock bas', value: lowCount, icon: AlertTriangle, color: '#F59E0B', pulse: lowCount > 0 },
           { label: 'Valeur stock', value: formatXAF(totalValue), icon: CheckCircle2, color: '#10B981' },
         ].map((s, i) => {
           const Icon = s.icon;
+          const pulse = 'pulse' in s && s.pulse;
           return (
-            <div key={i} className="flex items-center gap-3 p-4 rounded-xl" style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+            <div
+              key={i}
+              className="flex items-center gap-3 p-4 rounded-xl relative overflow-hidden"
+              style={{
+                background: 'hsl(var(--card))',
+                border: `1px solid ${pulse ? s.color + '40' : 'hsl(var(--border))'}`,
+              }}
+            >
+              {pulse && (
+                <span className="absolute top-2 right-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: s.color }} />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+                  </span>
+                </span>
+              )}
               <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${s.color}18` }}>
                 <Icon className="w-4 h-4" style={{ color: s.color }} strokeWidth={1.5} />
               </div>
@@ -222,7 +273,6 @@ export default function GroceryStockPage() {
                 <span className="text-xs font-semibold text-foreground hidden md:block">{formatXAF(p.price)}</span>
                 <span className="text-xs font-bold text-foreground hidden md:block">{formatXAF(p.stock * p.price)}</span>
 
-                {/* Mobile layout */}
                 <div className="md:hidden flex items-center justify-between">
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>Qté : <span className="font-bold text-foreground">{p.stock}</span></span>

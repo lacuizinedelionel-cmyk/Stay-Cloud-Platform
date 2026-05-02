@@ -8,6 +8,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { formatXAF } from '@/lib/utils';
+import { generateInvoicePDF, generateInvoiceNumber } from '@/lib/invoice';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -25,6 +26,8 @@ import {
   ChevronRight,
   CheckCircle2,
   X,
+  FileDown,
+  Loader2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -46,13 +49,21 @@ const PAYMENT_OPTIONS: { value: PaymentMethod; label: string; icon: React.Elemen
   { value: 'CARD', label: 'Carte', icon: CreditCard, color: '#3B82F6' },
 ];
 
-function SuccessOverlay({ onClose }: { onClose: () => void }) {
+function SuccessOverlay({
+  onClose,
+  onPrintInvoice,
+  isPrinting,
+}: {
+  onClose: () => void;
+  onPrintInvoice: () => Promise<void>;
+  isPrinting: boolean;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl"
+      className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl gap-3"
       style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
     >
       <motion.div
@@ -73,13 +84,34 @@ function SuccessOverlay({ onClose }: { onClose: () => void }) {
           </p>
           <p className="text-sm text-muted-foreground mt-1">La cuisine a reçu la commande</p>
         </div>
-        <button
-          onClick={onClose}
-          className="mt-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
-        >
-          Nouvelle commande
-        </button>
+
+        <div className="flex flex-col gap-2 w-full px-4">
+          <button
+            onClick={onPrintInvoice}
+            disabled={isPrinting}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-60"
+            style={{
+              background: 'hsl(38 90% 56% / 0.12)',
+              border: '1px solid hsl(38 90% 56% / 0.4)',
+              color: 'hsl(38 90% 56%)',
+            }}
+          >
+            {isPrinting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileDown className="w-4 h-4" />
+            )}
+            {isPrinting ? 'Génération...' : 'Télécharger la facture'}
+          </button>
+
+          <button
+            onClick={onClose}
+            className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
+            style={{ background: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
+          >
+            Nouvelle commande
+          </button>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -97,6 +129,8 @@ export default function POSPage() {
   const [clientName, setClientName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const productsQueryKey = getListRestaurantProductsQueryKey({ businessId: business?.id ?? 0 });
   const { data: products, isLoading } = useListRestaurantProducts(
@@ -116,14 +150,12 @@ export default function POSPage() {
     },
   });
 
-  // Categories
   const categories = useMemo(() => {
     if (!products) return ['TOUS'];
     const cats = Array.from(new Set(products.map((p) => p.category)));
     return ['TOUS', ...cats];
   }, [products]);
 
-  // Filtered products
   const filtered = useMemo(() => {
     if (!products) return [];
     return products.filter((p) => {
@@ -133,7 +165,6 @@ export default function POSPage() {
     });
   }, [products, activeCategory, search]);
 
-  // Cart helpers
   const addToCart = (product: { id: number; name: string; price: number; emoji?: string | null }) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.productId === product.id);
@@ -156,6 +187,8 @@ export default function POSPage() {
 
   const handleSubmit = () => {
     if (!business?.id || cart.length === 0) return;
+    const invNum = generateInvoiceNumber();
+    setInvoiceNumber(invNum);
     createOrder({
       data: {
         businessId: business.id,
@@ -167,12 +200,34 @@ export default function POSPage() {
     });
   };
 
+  const handlePrintInvoice = async () => {
+    if (!business || cart.length === 0) return;
+    setIsPrinting(true);
+    try {
+      await generateInvoicePDF({
+        businessName: business.name,
+        invoiceNumber,
+        date: new Date().toLocaleDateString('fr-FR'),
+        items: cart.map((i) => ({ name: i.name, quantity: i.quantity, unitPrice: i.price })),
+        paymentMethod: PAYMENT_OPTIONS.find((p) => p.value === paymentMethod)?.label ?? String(paymentMethod),
+        clientName: clientName || undefined,
+        tableNumber: tableNumber || undefined,
+        withTVA: false,
+      });
+    } catch {
+      toast({ title: 'Erreur', description: 'Impossible de générer la facture', variant: 'destructive' });
+    } finally {
+      setIsPrinting(false);
+    }
+  };
+
   const handleSuccessClose = () => {
     setShowSuccess(false);
     setCart([]);
     setTableNumber('');
     setClientName('');
     setPaymentMethod('CASH');
+    setInvoiceNumber('');
   };
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
@@ -181,7 +236,6 @@ export default function POSPage() {
     <div className="flex h-screen overflow-hidden" style={{ background: 'hsl(var(--background))' }}>
       {/* LEFT — Product catalog */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Top bar */}
         <div
           className="shrink-0 flex items-center gap-4 px-5 py-3"
           style={{ borderBottom: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
@@ -205,7 +259,6 @@ export default function POSPage() {
           </div>
         </div>
 
-        {/* Category tabs */}
         <div
           className="shrink-0 flex gap-2 px-5 py-3 overflow-x-auto"
           style={{ borderBottom: '1px solid hsl(var(--border))' }}
@@ -216,9 +269,7 @@ export default function POSPage() {
               onClick={() => setActiveCategory(cat)}
               className={cn(
                 'shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all',
-                activeCategory === cat
-                  ? 'text-white'
-                  : 'text-muted-foreground hover:text-foreground',
+                activeCategory === cat ? 'text-white' : 'text-muted-foreground hover:text-foreground',
               )}
               style={
                 activeCategory === cat
@@ -231,7 +282,6 @@ export default function POSPage() {
           ))}
         </div>
 
-        {/* Product grid */}
         <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -288,7 +338,13 @@ export default function POSPage() {
         style={{ borderLeft: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
       >
         <AnimatePresence>
-          {showSuccess && <SuccessOverlay onClose={handleSuccessClose} />}
+          {showSuccess && (
+            <SuccessOverlay
+              onClose={handleSuccessClose}
+              onPrintInvoice={handlePrintInvoice}
+              isPrinting={isPrinting}
+            />
+          )}
         </AnimatePresence>
 
         {/* Cart header */}
@@ -392,7 +448,6 @@ export default function POSPage() {
 
         {/* Payment + Submit */}
         <div className="shrink-0 px-5 py-4 space-y-4" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-          {/* Payment method */}
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               Mode de paiement
@@ -420,7 +475,6 @@ export default function POSPage() {
             </div>
           </div>
 
-          {/* Total */}
           <div
             className="flex items-center justify-between px-4 py-3 rounded-xl"
             style={{ background: 'hsl(var(--muted))' }}
@@ -431,15 +485,17 @@ export default function POSPage() {
             </span>
           </div>
 
-          {/* Submit button */}
           <motion.button
             onClick={handleSubmit}
             disabled={cart.length === 0 || isPending}
             whileTap={{ scale: 0.98 }}
             className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: cart.length > 0 ? 'hsl(38 90% 56%)' : 'hsl(var(--muted))',
+              background: cart.length > 0
+                ? 'linear-gradient(135deg, hsl(38 90% 56%), hsl(38 90% 46%))'
+                : 'hsl(var(--muted))',
               color: cart.length > 0 ? '#000' : 'hsl(var(--muted-foreground))',
+              boxShadow: cart.length > 0 ? '0 4px 16px hsl(38 90% 56% / 0.3)' : 'none',
             }}
           >
             {isPending ? (
