@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, sql, gte, desc } from "drizzle-orm";
-import { db, restaurantProductsTable, restaurantOrdersTable, paymentsTable } from "@workspace/db";
+import { db, restaurantProductsTable, restaurantOrdersTable, paymentsTable, caisseJournalTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -148,6 +148,130 @@ router.get("/restaurant/hourly-sales", async (req, res): Promise<void> => {
     { hour: "22h", revenue: 67000, orders: 12 },
   ];
   res.json(hours);
+});
+
+/* ══════════════════════════════════════
+   JOURNAL DE CAISSE
+══════════════════════════════════════ */
+
+/* GET /restaurant/caisse?businessId=X&date=YYYY-MM-DD — résumé du jour */
+router.get("/restaurant/caisse", async (req, res): Promise<void> => {
+  const businessId = parseInt(req.query.businessId as string, 10);
+  if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+
+  const date = (req.query.date as string) ?? new Date().toISOString().split("T")[0];
+  const dayStart = new Date(`${date}T00:00:00`);
+  const dayEnd   = new Date(`${date}T23:59:59`);
+
+  const orders = await db.select().from(restaurantOrdersTable).where(
+    and(
+      eq(restaurantOrdersTable.businessId, businessId),
+      gte(restaurantOrdersTable.createdAt, dayStart),
+      sql`${restaurantOrdersTable.createdAt} <= ${dayEnd}`
+    )
+  ).orderBy(desc(restaurantOrdersTable.createdAt));
+
+  const mapped = orders.map(o => ({
+    ...o,
+    total: parseFloat(o.total),
+    createdAt: o.createdAt.toISOString(),
+  }));
+
+  const totalCash        = mapped.filter(o => o.paymentMethod === 'CASH').reduce((s, o) => s + o.total, 0);
+  const totalMoMo        = mapped.filter(o => o.paymentMethod === 'MTN_MOMO').reduce((s, o) => s + o.total, 0);
+  const totalOrangeMoney = mapped.filter(o => o.paymentMethod === 'ORANGE_MONEY').reduce((s, o) => s + o.total, 0);
+  const totalOther       = mapped.filter(o => !['CASH','MTN_MOMO','ORANGE_MONEY'].includes(o.paymentMethod ?? '')).reduce((s, o) => s + o.total, 0);
+  const totalAmount      = totalCash + totalMoMo + totalOrangeMoney + totalOther;
+
+  // Already closed for this date?
+  const [closed] = await db.select().from(caisseJournalTable).where(
+    and(eq(caisseJournalTable.businessId, businessId), eq(caisseJournalTable.date, date))
+  );
+
+  res.json({
+    date,
+    orders: mapped,
+    summary: { totalCash, totalMoMo, totalOrangeMoney, totalOther, totalAmount, orderCount: mapped.length },
+    isClosed: !!closed,
+    closedEntry: closed ? { ...closed, totalAmount: parseFloat(closed.totalAmount), totalCash: parseFloat(closed.totalCash), totalMoMo: parseFloat(closed.totalMoMo), totalOrangeMoney: parseFloat(closed.totalOrangeMoney), totalOther: parseFloat(closed.totalOther), closedAt: closed.closedAt.toISOString() } : null,
+  });
+});
+
+/* GET /restaurant/caisse/history?businessId=X — historique des clôtures */
+router.get("/restaurant/caisse/history", async (req, res): Promise<void> => {
+  const businessId = parseInt(req.query.businessId as string, 10);
+  if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+  const entries = await db.select().from(caisseJournalTable)
+    .where(eq(caisseJournalTable.businessId, businessId))
+    .orderBy(desc(caisseJournalTable.closedAt));
+  res.json(entries.map(e => ({
+    ...e,
+    totalAmount: parseFloat(e.totalAmount),
+    totalCash: parseFloat(e.totalCash),
+    totalMoMo: parseFloat(e.totalMoMo),
+    totalOrangeMoney: parseFloat(e.totalOrangeMoney),
+    totalOther: parseFloat(e.totalOther),
+    closedAt: e.closedAt.toISOString(),
+  })));
+});
+
+/* POST /restaurant/caisse/cloture — clôturer la caisse du jour */
+router.post("/restaurant/caisse/cloture", async (req, res): Promise<void> => {
+  const { businessId, date, note } = req.body;
+  if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+
+  const theDate = date ?? new Date().toISOString().split("T")[0];
+  const dayStart = new Date(`${theDate}T00:00:00`);
+  const dayEnd   = new Date(`${theDate}T23:59:59`);
+
+  // Check if already closed
+  const [existing] = await db.select().from(caisseJournalTable).where(
+    and(eq(caisseJournalTable.businessId, businessId), eq(caisseJournalTable.date, theDate))
+  );
+  if (existing) { res.status(409).json({ error: "La caisse est déjà clôturée pour cette date" }); return; }
+
+  const orders = await db.select().from(restaurantOrdersTable).where(
+    and(
+      eq(restaurantOrdersTable.businessId, businessId),
+      gte(restaurantOrdersTable.createdAt, dayStart),
+      sql`${restaurantOrdersTable.createdAt} <= ${dayEnd}`
+    )
+  );
+
+  const totalCash        = orders.filter(o => o.paymentMethod === 'CASH').reduce((s, o) => s + parseFloat(o.total), 0);
+  const totalMoMo        = orders.filter(o => o.paymentMethod === 'MTN_MOMO').reduce((s, o) => s + parseFloat(o.total), 0);
+  const totalOrangeMoney = orders.filter(o => o.paymentMethod === 'ORANGE_MONEY').reduce((s, o) => s + parseFloat(o.total), 0);
+  const totalOther       = orders.filter(o => !['CASH','MTN_MOMO','ORANGE_MONEY'].includes(o.paymentMethod ?? '')).reduce((s, o) => s + parseFloat(o.total), 0);
+  const totalAmount      = totalCash + totalMoMo + totalOrangeMoney + totalOther;
+
+  const [entry] = await db.insert(caisseJournalTable).values({
+    businessId,
+    date: theDate,
+    totalCash: totalCash.toString(),
+    totalMoMo: totalMoMo.toString(),
+    totalOrangeMoney: totalOrangeMoney.toString(),
+    totalOther: totalOther.toString(),
+    totalAmount: totalAmount.toString(),
+    orderCount: orders.length,
+    note: note ?? null,
+  }).returning();
+
+  res.status(201).json({
+    ...entry,
+    totalAmount: parseFloat(entry.totalAmount),
+    totalCash: parseFloat(entry.totalCash),
+    totalMoMo: parseFloat(entry.totalMoMo),
+    totalOrangeMoney: parseFloat(entry.totalOrangeMoney),
+    totalOther: parseFloat(entry.totalOther),
+    closedAt: entry.closedAt.toISOString(),
+  });
+});
+
+/* DELETE /restaurant/caisse/:id — ré-ouvrir une clôture (admin) */
+router.delete("/restaurant/caisse/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  await db.delete(caisseJournalTable).where(eq(caisseJournalTable.id, id));
+  res.json({ success: true });
 });
 
 export default router;

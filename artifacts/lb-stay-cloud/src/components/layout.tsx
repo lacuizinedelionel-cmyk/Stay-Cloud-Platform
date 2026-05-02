@@ -74,6 +74,7 @@ const SUB_MENUS: Record<Sector, SubItem[]> = {
   RESTAURANT: [
     { label: 'Tableau de bord',  href: '/restaurant/dashboard', icon: LayoutDashboard },
     { label: 'Caisse (POS)',      href: '/restaurant/pos',       icon: CreditCard      },
+    { label: 'Journal de Caisse', href: '/restaurant/caisse',   icon: Wallet          },
     { label: 'Commandes',         href: '/restaurant/orders',    icon: Package         },
     { label: 'Menu & Carte',      href: '/restaurant/menu',      icon: ClipboardList   },
     { label: 'Analyses',          href: '/analytics',            icon: TrendingUp      },

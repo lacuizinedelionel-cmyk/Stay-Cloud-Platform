@@ -15,6 +15,7 @@ import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
 import RestaurantOrdersPage from "@/pages/restaurant/orders";
 import POSPage from "@/pages/restaurant/pos";
+import CaissePage from "@/pages/restaurant/caisse";
 
 import HotelDashboard from "@/pages/hotel/dashboard";
 import HotelRoomsPage from "@/pages/hotel/rooms";
@@ -82,6 +83,7 @@ function Router() {
       <Route path="/restaurant/dashboard">{() => <ProtectedRoute component={RestaurantDashboard} />}</Route>
       <Route path="/restaurant/orders">{() => <ProtectedRoute component={RestaurantOrdersPage} />}</Route>
       <Route path="/restaurant/pos">{() => <ProtectedRoute component={POSPage} />}</Route>
+      <Route path="/restaurant/caisse">{() => <ProtectedRoute component={CaissePage} />}</Route>
 
       {/* Hôtel */}
       <Route path="/hotel/dashboard">{() => <ProtectedRoute component={HotelDashboard} />}</Route>

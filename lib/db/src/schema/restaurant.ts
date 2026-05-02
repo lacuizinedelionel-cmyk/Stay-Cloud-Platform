@@ -31,6 +31,20 @@ export const restaurantOrdersTable = pgTable("restaurant_orders", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const caisseJournalTable = pgTable("caisse_journal", {
+  id: serial("id").primaryKey(),
+  businessId: integer("business_id").notNull(),
+  date: text("date").notNull(),
+  totalCash: numeric("total_cash", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalMoMo: numeric("total_momo", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalOrangeMoney: numeric("total_orange_money", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalOther: numeric("total_other", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
+  orderCount: integer("order_count").notNull().default(0),
+  note: text("note"),
+  closedAt: timestamp("closed_at").defaultNow().notNull(),
+});
+
 export const insertRestaurantProductSchema = createInsertSchema(restaurantProductsTable).omit({ id: true, createdAt: true });
 export type InsertRestaurantProduct = z.infer<typeof insertRestaurantProductSchema>;
 export type RestaurantProduct = typeof restaurantProductsTable.$inferSelect;
