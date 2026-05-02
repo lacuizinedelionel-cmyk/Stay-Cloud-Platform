@@ -18,6 +18,7 @@ const DEMO_ACCOUNTS = [
   { label: 'Restaurant', email: 'restaurant@lbstay.com', color: 'text-blue-400' },
   { label: 'Hôtel', email: 'hotel@lbstay.com', color: 'text-blue-400' },
   { label: 'Beauté', email: 'beauty@lbstay.com', color: 'text-blue-400' },
+  { label: 'Épicerie', email: 'grocery@lbstay.com', color: 'text-blue-400' },
   { label: 'Pharmacie', email: 'pharmacy@lbstay.com', color: 'text-blue-400' },
   { label: 'Fitness', email: 'fitness@lbstay.com', color: 'text-blue-400' },
 ];

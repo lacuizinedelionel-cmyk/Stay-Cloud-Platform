@@ -1,0 +1,43 @@
+ÉTAPE 2 : Gestion des Stocks & Facturation PDF
+Ici, on active la possibilité d'imprimer des preuves d'achat/vente.
+
+Prompt 2 : "Maintenant, implémente la logique de facturation pro.
+
+Crée un bouton 'Générer Facture PDF' dans le module de vente (POS) et dans le module de stock.
+
+La facture doit être propre, inclure le logo de l'enseigne, le détail de la TVA (si applicable), et un code QR de vérification.
+
+Ajoute une fonction 'Alerte Stock Critique' : si un produit (ex: une chambre d'hôtel ou un plat spécifique) est presque épuisé, affiche un badge rouge clignotant sur le dashboard du gérant."
+
+ÉTAPE 3 : Le Module "Ardoise Client" (Le tueur d'Ezee)
+C'est l'option spécifique pour le marché camerounais que les autres n'ont pas.
+
+Prompt 3 : "Implémente le module 'Ardoise & Crédit Client'.
+
+Dans le panier de vente, ajoute une option de paiement : 'Ajouter à l'ardoise'.
+
+Si sélectionné, la vente est validée mais le montant est ajouté à la dette du client dans la table customer_credits.
+
+Crée un petit panneau dans le profil client qui affiche sa dette totale et un bouton 'Envoyer Rappel WhatsApp' qui pré-remplit un message avec le montant dû."
+
+ÉTAPE 4 : Simulation Mobile Money & Abonnements
+On prépare l'application à recevoir du vrai argent (Orange/MTN).
+
+Prompt 4 : "Prépare l'intégration des paiements réels.
+
+Crée un simulateur de Push USSD : quand on choisit 'Mobile Money', affiche une popup stylisée : 'Veuillez confirmer le paiement de [Montant] sur votre téléphone...'.
+
+Crée la page /billing pour le propriétaire de l'enseigne. Il doit pouvoir choisir un abonnement (Starter, Pro, Elite) et 'payer' son accès à LB Stay Cloud via ce simulateur Mobile Money."
+
+ÉTAPE 5 : Polissage UI & Navigation Finale
+On rend le tout "magnifique" et parfaitement cliquable comme tu l'as demandé.
+
+Prompt 5 : "Finalisation du design et de la navigation.
+
+Assure-toi que chaque lien dans la Sidebar (Hôtel, Restaurant, etc.) redirige vers le bon dashboard.
+
+Utilise la police 'Plus Jakarta Sans' partout.
+
+Vérifie que le bouton 'Déconnexion' fonctionne et que les options 'Première connexion' et 'Créer un compte' sur la page login mènent aux bons formulaires.
+
+Ajoute des dégradés subtils sur tous les boutons d'action pour un rendu 'Luxe SaaS'."

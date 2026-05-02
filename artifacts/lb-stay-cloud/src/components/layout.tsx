@@ -63,6 +63,7 @@ const SUB_MENUS: Record<Sector, SubItem[]> = {
     { label: 'Tableau de bord',  href: '/grocery/dashboard',    icon: LayoutDashboard },
     { label: 'Catalogue',         href: '/grocery/products',     icon: ShoppingCart    },
     { label: 'Stock & Inventaire',href: '/grocery/stock',        icon: Package         },
+    { label: 'L\'Ardoise',        href: '/grocery/credits',      icon: CreditCard      },
     { label: 'Analyses',          href: '/analytics',            icon: TrendingUp      },
   ],
   PHARMACY: [

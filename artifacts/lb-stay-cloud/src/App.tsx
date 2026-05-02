@@ -24,6 +24,7 @@ import BeautyDashboard from "@/pages/beauty/dashboard";
 import GroceryDashboard from "@/pages/grocery/dashboard";
 import GroceryStockPage from "@/pages/grocery/stock";
 import GroceryProductsPage from "@/pages/grocery/products";
+import GroceryCreditsPage from "@/pages/grocery/credits";
 import PharmacyDashboard from "@/pages/pharmacy/dashboard";
 import PharmacyMedicationsPage from "@/pages/pharmacy/medications";
 import PharmacyPrescriptionsPage from "@/pages/pharmacy/prescriptions";
@@ -87,6 +88,7 @@ function Router() {
       <Route path="/grocery/dashboard">{() => <ProtectedRoute component={GroceryDashboard} />}</Route>
       <Route path="/grocery/stock">{() => <ProtectedRoute component={GroceryStockPage} />}</Route>
       <Route path="/grocery/products">{() => <ProtectedRoute component={GroceryProductsPage} />}</Route>
+      <Route path="/grocery/credits">{() => <ProtectedRoute component={GroceryCreditsPage} />}</Route>
       <Route path="/pharmacy/dashboard">{() => <ProtectedRoute component={PharmacyDashboard} />}</Route>
       <Route path="/pharmacy/medications">{() => <ProtectedRoute component={PharmacyMedicationsPage} />}</Route>
       <Route path="/pharmacy/prescriptions">{() => <ProtectedRoute component={PharmacyPrescriptionsPage} />}</Route>
