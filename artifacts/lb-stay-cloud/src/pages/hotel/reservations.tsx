@@ -11,16 +11,16 @@ import {
   HotelReservationStatus,
 } from '@workspace/api-client-react';
 import { DashboardHero } from '@/components/dashboard-hero';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
-  Calendar, User, Phone, BedDouble,
+  Calendar, Phone, BedDouble,
   LogIn, LogOut, XCircle, Search,
   ChevronDown, Moon, RefreshCw, X,
-  AlertTriangle,
+  AlertTriangle, Pencil, Trash2, Save,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -107,13 +107,170 @@ function CancelConfirmModal({ res, onConfirm, onClose, isPending }: {
   );
 }
 
+/* ── Modal Modifier réservation ── */
+function EditReservationModal({ res, onSave, onClose, isPending }: {
+  res: HotelReservation;
+  onSave: (data: { guestName: string; guestPhone: string; checkInDate: string; checkOutDate: string; totalAmount: number }) => void;
+  onClose: () => void;
+  isPending: boolean;
+}) {
+  const [form, setForm] = useState({
+    guestName:   res.guestName,
+    guestPhone:  res.guestPhone ?? '',
+    checkInDate: res.checkInDate,
+    checkOutDate: res.checkOutDate,
+    totalAmount: String(res.totalAmount),
+  });
+
+  const field = (key: keyof typeof form, label: string, type = 'text') => (
+    <div className="space-y-1.5">
+      <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</label>
+      <input
+        type={type}
+        value={form[key]}
+        onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+        className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none transition-all"
+        style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+        onFocus={e => (e.target.style.borderColor = 'hsl(38 90% 56% / 0.6)')}
+        onBlur={e => (e.target.style.borderColor = 'hsl(var(--border))')}
+      />
+    </div>
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'hsl(0 0% 0% / 0.65)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 pt-5 pb-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'hsl(38 90% 56% / 0.12)' }}>
+              <Pencil className="w-4 h-4" style={{ color: 'hsl(38 90% 56%)' }} />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-foreground">Modifier la réservation</h3>
+              <p className="text-[11px] text-muted-foreground">#{res.id} · Chambre {res.roomNumber}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {field('guestName',   'Nom du client')}
+          {field('guestPhone',  'Téléphone')}
+          {field('checkInDate', 'Date arrivée', 'date')}
+          {field('checkOutDate','Date départ',  'date')}
+          {field('totalAmount', 'Montant total (FCFA)', 'number')}
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => onSave({
+                guestName:   form.guestName,
+                guestPhone:  form.guestPhone,
+                checkInDate: form.checkInDate,
+                checkOutDate: form.checkOutDate,
+                totalAmount: parseFloat(form.totalAmount),
+              })}
+              disabled={isPending || !form.guestName.trim()}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+              style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
+            >
+              {isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ── Modal confirmation suppression ── */
+function DeleteConfirmModal({ res, onConfirm, onClose, isPending }: {
+  res: HotelReservation;
+  onConfirm: () => void;
+  onClose: () => void;
+  isPending: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'hsl(0 0% 0% / 0.65)' }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.92, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92, y: 20 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+      >
+        <div className="p-6 space-y-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'hsl(0 72% 51% / 0.12)' }}>
+              <Trash2 className="w-5 h-5" style={{ color: '#EF4444' }} strokeWidth={1.5} />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-foreground">Supprimer la réservation ?</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                <strong className="text-foreground">{res.guestName}</strong> · Chambre {res.roomNumber}<br />
+                Cette action est irréversible.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}
+            >
+              Retour
+            </button>
+            <button
+              onClick={onConfirm}
+              disabled={isPending}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+              style={{ background: 'hsl(0 72% 51% / 0.15)', color: '#EF4444', border: '1px solid hsl(0 72% 51% / 0.3)' }}
+            >
+              {isPending ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ── Panneau latéral détail ── */
-function DetailPanel({ res, onClose, onCheckIn, onCheckOut, onCancel, isMutating }: {
+function DetailPanel({ res, onClose, onCheckIn, onCheckOut, onCancel, onEdit, onDelete, isMutating }: {
   res: HotelReservation;
   onClose: () => void;
   onCheckIn: () => void;
   onCheckOut: () => void;
   onCancel: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
   isMutating: boolean;
 }) {
   const s = STATUS_CFG[res.status];
@@ -200,43 +357,63 @@ function DetailPanel({ res, onClose, onCheckIn, onCheckOut, onCancel, isMutating
       </div>
 
       {/* Actions */}
-      {(res.status === 'RESERVED' || res.status === 'CHECKED_IN') && (
-        <div className="p-5 space-y-2" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-          {res.status === 'RESERVED' && (
-            <>
-              <button
-                onClick={onCheckIn}
-                disabled={isMutating}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
-                style={{ background: 'hsl(160 84% 39% / 0.15)', color: '#10B981', border: '1px solid hsl(160 84% 39% / 0.3)' }}
-              >
-                {isMutating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-                Check-In
-              </button>
-              <button
-                onClick={onCancel}
-                disabled={isMutating}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
-                style={{ color: '#EF4444' }}
-              >
-                <XCircle className="w-3.5 h-3.5" />
-                Annuler la réservation
-              </button>
-            </>
-          )}
-          {res.status === 'CHECKED_IN' && (
+      <div className="p-5 space-y-2" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+        {res.status === 'RESERVED' && (
+          <>
             <button
-              onClick={onCheckOut}
+              onClick={onCheckIn}
               disabled={isMutating}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
-              style={{ background: 'hsl(0 72% 51% / 0.1)', color: '#EF4444', border: '1px solid hsl(0 72% 51% / 0.3)' }}
+              style={{ background: 'hsl(160 84% 39% / 0.15)', color: '#10B981', border: '1px solid hsl(160 84% 39% / 0.3)' }}
             >
-              {isMutating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
-              Check-Out
+              {isMutating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              Check-In
             </button>
-          )}
+            <button
+              onClick={onCancel}
+              disabled={isMutating}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+              style={{ color: '#EF4444' }}
+            >
+              <XCircle className="w-3.5 h-3.5" />
+              Annuler la réservation
+            </button>
+          </>
+        )}
+        {res.status === 'CHECKED_IN' && (
+          <button
+            onClick={onCheckOut}
+            disabled={isMutating}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all disabled:opacity-50"
+            style={{ background: 'hsl(0 72% 51% / 0.1)', color: '#EF4444', border: '1px solid hsl(0 72% 51% / 0.3)' }}
+          >
+            {isMutating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <LogOut className="w-4 h-4" />}
+            Check-Out
+          </button>
+        )}
+
+        {/* ── Modifier / Supprimer — toujours visibles ── */}
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={onEdit}
+            disabled={isMutating}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+            style={{ background: 'hsl(38 90% 56% / 0.10)', color: 'hsl(38 90% 56%)', border: '1px solid hsl(38 90% 56% / 0.25)' }}
+          >
+            <Pencil className="w-3.5 h-3.5" />
+            Modifier
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={isMutating}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-all disabled:opacity-50"
+            style={{ background: 'hsl(0 72% 51% / 0.08)', color: '#EF4444', border: '1px solid hsl(0 72% 51% / 0.2)' }}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            Supprimer
+          </button>
         </div>
-      )}
+      </div>
     </motion.div>
   );
 }
@@ -258,6 +435,8 @@ export default function HotelReservationsPage() {
   const [search, setSearch]             = useState('');
   const [selected, setSelected]         = useState<HotelReservation | null>(null);
   const [toCancel, setToCancel]         = useState<HotelReservation | null>(null);
+  const [toEdit, setToEdit]             = useState<HotelReservation | null>(null);
+  const [toDelete, setToDelete]         = useState<HotelReservation | null>(null);
   const [isMutating, setIsMutating]     = useState(false);
 
   const { data: reservations, isLoading } = useListHotelReservations(
@@ -303,6 +482,42 @@ export default function HotelReservationsPage() {
       },
       onError: () => toast({ title: 'Erreur', description: 'Impossible d\'annuler', variant: 'destructive' }),
     },
+  });
+
+  /* ── Modifier réservation ── */
+  const { mutate: editReservation, isPending: isEditing } = useMutation({
+    mutationFn: async (data: { id: number; guestName: string; guestPhone: string; checkInDate: string; checkOutDate: string; totalAmount: number }) => {
+      const r = await fetch(`/api/hotel/reservations/${data.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!r.ok) throw new Error('Update failed');
+      return r.json() as Promise<HotelReservation>;
+    },
+    onSuccess: (updated) => {
+      invalidate();
+      setToEdit(null);
+      setSelected(updated);
+      toast({ title: '✅ Réservation modifiée', description: `${updated.guestName} · Chambre ${updated.roomNumber}` });
+    },
+    onError: () => toast({ title: 'Erreur', description: 'Impossible de modifier', variant: 'destructive' }),
+  });
+
+  /* ── Supprimer réservation ── */
+  const { mutate: deleteReservation, isPending: isDeleting } = useMutation({
+    mutationFn: async (id: number) => {
+      const r = await fetch(`/api/hotel/reservations/${id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error('Delete failed');
+      return r.json();
+    },
+    onSuccess: (_, id) => {
+      invalidate();
+      setToDelete(null);
+      if (selected?.id === id) setSelected(null);
+      toast({ title: '🗑 Réservation supprimée', description: 'La chambre a été libérée' });
+    },
+    onError: () => toast({ title: 'Erreur', description: 'Impossible de supprimer', variant: 'destructive' }),
   });
 
   /* ── Filtrage & tri ── */
@@ -508,6 +723,8 @@ export default function HotelReservationsPage() {
               onCheckIn={() => { setIsMutating(true); checkIn({ id: selected.id }); }}
               onCheckOut={() => { setIsMutating(true); checkOut({ id: selected.id }); }}
               onCancel={() => setToCancel(selected)}
+              onEdit={() => setToEdit(selected)}
+              onDelete={() => setToDelete(selected)}
               isMutating={isMutating}
             />
           </>
@@ -523,6 +740,32 @@ export default function HotelReservationsPage() {
             onConfirm={() => cancel({ id: toCancel.id })}
             onClose={() => setToCancel(null)}
             isPending={isCancelling}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal modifier réservation */}
+      <AnimatePresence>
+        {toEdit && (
+          <EditReservationModal
+            key="edit-modal"
+            res={toEdit}
+            onSave={(data) => editReservation({ id: toEdit.id, ...data })}
+            onClose={() => setToEdit(null)}
+            isPending={isEditing}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Modal supprimer réservation */}
+      <AnimatePresence>
+        {toDelete && (
+          <DeleteConfirmModal
+            key="delete-modal"
+            res={toDelete}
+            onConfirm={() => deleteReservation(toDelete.id)}
+            onClose={() => setToDelete(null)}
+            isPending={isDeleting}
           />
         )}
       </AnimatePresence>

@@ -93,6 +93,58 @@ router.post("/hotel/reservations/:id/cancel", async (req, res): Promise<void> =>
   res.json({ ...updated, totalAmount: parseFloat(updated.totalAmount), createdAt: updated.createdAt.toISOString(), checkedInAt: null, checkedOutAt: null });
 });
 
+/* ── PUT /hotel/reservations/:id  — modifier une réservation ── */
+router.put("/hotel/reservations/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const { guestName, guestPhone, checkInDate, checkOutDate, totalAmount } = req.body;
+  if (!guestName && !checkInDate && !checkOutDate && totalAmount === undefined) {
+    res.status(400).json({ error: "Nothing to update" }); return;
+  }
+  const [existing] = await db.select().from(hotelReservationsTable).where(eq(hotelReservationsTable.id, id));
+  if (!existing) { res.status(404).json({ error: "Not found" }); return; }
+
+  const updates: Partial<typeof existing> = {};
+  if (guestName)    updates.guestName    = guestName;
+  if (guestPhone !== undefined) updates.guestPhone = guestPhone;
+  if (checkInDate)  updates.checkInDate  = checkInDate;
+  if (checkOutDate) updates.checkOutDate = checkOutDate;
+
+  const inDate  = checkInDate  ?? existing.checkInDate;
+  const outDate = checkOutDate ?? existing.checkOutDate;
+  const nights  = Math.ceil((new Date(outDate).getTime() - new Date(inDate).getTime()) / (1000 * 60 * 60 * 24));
+  updates.nights = nights > 0 ? nights : existing.nights;
+
+  if (totalAmount !== undefined) {
+    updates.totalAmount = String(totalAmount);
+  } else if (checkInDate || checkOutDate) {
+    const room = await db.select().from(hotelRoomsTable).where(eq(hotelRoomsTable.id, existing.roomId));
+    if (room[0]) updates.totalAmount = String(updates.nights! * parseFloat(room[0].pricePerNight));
+  }
+
+  const [updated] = await db.update(hotelReservationsTable).set(updates).where(eq(hotelReservationsTable.id, id)).returning();
+  res.json({
+    ...updated,
+    totalAmount: parseFloat(updated.totalAmount),
+    createdAt: updated.createdAt.toISOString(),
+    checkedInAt: updated.checkedInAt?.toISOString() ?? null,
+    checkedOutAt: updated.checkedOutAt?.toISOString() ?? null,
+  });
+});
+
+/* ── DELETE /hotel/reservations/:id  — supprimer une réservation ── */
+router.delete("/hotel/reservations/:id", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const [reservation] = await db.select().from(hotelReservationsTable).where(eq(hotelReservationsTable.id, id));
+  if (!reservation) { res.status(404).json({ error: "Not found" }); return; }
+  // Libérer la chambre si elle était réservée/occupée par cette réservation
+  if (reservation.status === "RESERVED" || reservation.status === "CHECKED_IN") {
+    await db.update(hotelRoomsTable).set({ status: "AVAILABLE", currentGuestName: null, checkoutDate: null })
+      .where(eq(hotelRoomsTable.id, reservation.roomId));
+  }
+  await db.delete(hotelReservationsTable).where(eq(hotelReservationsTable.id, id));
+  res.json({ success: true, id });
+});
+
 router.get("/hotel/stats", async (req, res): Promise<void> => {
   const businessId = parseInt(req.query.businessId as string, 10);
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
