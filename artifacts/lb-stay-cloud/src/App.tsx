@@ -41,6 +41,8 @@ import NotificationsPage from "@/pages/notifications";
 import SettingsPage from "@/pages/settings";
 import BillingPage from "@/pages/billing";
 import AuditPage from "@/pages/audit";
+import MessagesPage from "@/pages/messages";
+import SuperAdminMessagesPage from "@/pages/superadmin/messages";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +110,8 @@ function Router() {
       <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/audit">{() => <ProtectedRoute component={AuditPage} />}</Route>
+      <Route path="/messages">{() => <ProtectedRoute component={MessagesPage} />}</Route>
+      <Route path="/superadmin/messages">{() => <ProtectedRoute component={SuperAdminMessagesPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
 
       <Route path="/dashboard">
         {() => {

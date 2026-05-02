@@ -8,10 +8,27 @@ import {
   Pill, Wrench, Dumbbell, GraduationCap, BarChart2,
   Calendar, Package, ClipboardList, Zap, ChevronDown,
   BedDouble, CreditCard, TrendingUp, Star, ShoppingCart,
-  UserCheck, BookOpen, Activity, Wallet, Shield,
+  UserCheck, BookOpen, Activity, Wallet, Shield, MessageSquare,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useLanguage } from '@/context/LanguageContext';
+import { useQuery } from '@tanstack/react-query';
+
+/* ── Unread messages badge hook ── */
+function useUnreadCount(businessId?: number) {
+  const { data } = useQuery<{ count: number }>({
+    queryKey: ['unread-count', businessId],
+    queryFn: async () => {
+      const r = await fetch(`/api/messages/unread-count?businessId=${businessId}`);
+      if (!r.ok) return { count: 0 };
+      return r.json();
+    },
+    enabled: !!businessId,
+    refetchInterval: 30_000,
+    staleTime: 15_000,
+  });
+  return data?.count ?? 0;
+}
 
 /* ══════════════════════════════════════
    Types
@@ -253,7 +270,7 @@ function SuperAdminSidebar({ user, logout }: { user: any; logout: () => void }) 
         {/* Vue globale */}
         <Link
           href="/superadmin"
-          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-3"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-1"
           style={{
             background: location === '/superadmin' ? 'hsl(38 90% 56% / 0.15)' : 'hsl(var(--muted))',
             color: location === '/superadmin' ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
@@ -264,6 +281,27 @@ function SuperAdminSidebar({ user, logout }: { user: any; logout: () => void }) 
             <LayoutDashboard className="w-3.5 h-3.5 text-white" strokeWidth={2} />
           </div>
           Vue Globale
+        </Link>
+
+        {/* Messagerie Super Admin */}
+        <Link
+          href="/superadmin/messages"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-3"
+          style={{
+            background: location === '/superadmin/messages' ? 'hsl(38 90% 56% / 0.15)' : 'transparent',
+            color: location === '/superadmin/messages' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
+            border: location === '/superadmin/messages' ? '1px solid hsl(38 90% 56% / 0.3)' : '1px solid transparent',
+          }}
+          onMouseEnter={e => { if (location !== '/superadmin/messages') (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))'; }}
+          onMouseLeave={e => { if (location !== '/superadmin/messages') (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+        >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: location === '/superadmin/messages' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted))' }}>
+            <MessageSquare className="w-3.5 h-3.5"
+              style={{ color: location === '/superadmin/messages' ? '#000' : 'hsl(var(--muted-foreground))' }}
+              strokeWidth={2} />
+          </div>
+          <span className="flex-1">Messagerie</span>
         </Link>
 
         {/* Section MES ENSEIGNES */}
@@ -315,14 +353,16 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
 
   const { canViewAudit, canViewBilling } = usePermissions();
   const { t } = useLanguage();
+  const unread = useUnreadCount(business?.id);
 
   const sharedItems = [
-    { href: '/clients',       label: t.nav.clients,       icon: Users,    always: true              },
-    { href: '/analytics',     label: t.nav.analytics,     icon: BarChart2, always: true             },
-    { href: '/audit',         label: t.nav.audit,         icon: Shield,   always: canViewAudit      },
-    { href: '/billing',       label: t.nav.billing,       icon: Wallet,   always: canViewBilling    },
-    { href: '/notifications', label: t.nav.notifications, icon: Bell,     always: true              },
-    { href: '/settings',      label: t.nav.settings,      icon: Settings, always: true              },
+    { href: '/clients',       label: t.nav.clients,       icon: Users,         always: true,           badge: 0     },
+    { href: '/analytics',     label: t.nav.analytics,     icon: BarChart2,     always: true,           badge: 0     },
+    { href: '/messages',      label: 'Messagerie',        icon: MessageSquare, always: true,           badge: unread },
+    { href: '/audit',         label: t.nav.audit,         icon: Shield,        always: canViewAudit,   badge: 0     },
+    { href: '/billing',       label: t.nav.billing,       icon: Wallet,        always: canViewBilling, badge: 0     },
+    { href: '/notifications', label: t.nav.notifications, icon: Bell,          always: true,           badge: 0     },
+    { href: '/settings',      label: t.nav.settings,      icon: Settings,      always: true,           badge: 0     },
   ].filter(i => i.always);
 
   return (
@@ -395,8 +435,14 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
                   onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <ItemIcon className="w-4 h-4 shrink-0" strokeWidth={isActive ? 2 : 1.5} />
-                  {item.label}
-                  {isActive && (
+                  <span className="flex-1">{item.label}</span>
+                  {item.badge > 0 && (
+                    <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shrink-0 min-w-[18px] text-center"
+                      style={{ background: 'hsl(38 90% 56%)', color: '#000' }}>
+                      {item.badge}
+                    </span>
+                  )}
+                  {isActive && item.badge === 0 && (
                     <div className="ml-auto w-1 h-4 rounded-full" style={{ background: 'hsl(38 90% 56%)' }} />
                   )}
                 </Link>

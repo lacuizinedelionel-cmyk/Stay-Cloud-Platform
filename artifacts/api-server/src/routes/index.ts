@@ -21,6 +21,7 @@ import creditsRouter from "./credits";
 import billingRouter from "./billing";
 import auditRouter from "./audit";
 import reviewsRouter from "./reviews";
+import messagesRouter from "./messages";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(creditsRouter);
 router.use(billingRouter);
 router.use(auditRouter);
 router.use(reviewsRouter);
+router.use(messagesRouter);
 
 export default router;
