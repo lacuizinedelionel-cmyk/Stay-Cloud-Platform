@@ -76,6 +76,23 @@ router.post("/hotel/reservations/:id/checkout", async (req, res): Promise<void> 
   res.json({ ...reservation, totalAmount: parseFloat(reservation.totalAmount), createdAt: reservation.createdAt.toISOString(), checkedInAt: reservation.checkedInAt?.toISOString(), checkedOutAt: reservation.checkedOutAt?.toISOString() });
 });
 
+router.post("/hotel/reservations/:id/cancel", async (req, res): Promise<void> => {
+  const id = parseInt(Array.isArray(req.params.id) ? req.params.id[0] : req.params.id, 10);
+  const [reservation] = await db.select().from(hotelReservationsTable).where(eq(hotelReservationsTable.id, id));
+  if (!reservation) { res.status(404).json({ error: "Not found" }); return; }
+  if (reservation.status === "CHECKED_IN" || reservation.status === "CHECKED_OUT") {
+    res.status(400).json({ error: "Cannot cancel a checked-in or checked-out reservation" }); return;
+  }
+  const [updated] = await db.update(hotelReservationsTable)
+    .set({ status: "CANCELLED" })
+    .where(eq(hotelReservationsTable.id, id)).returning();
+  // Free the room back to AVAILABLE if it was RESERVED
+  if (reservation.status === "RESERVED") {
+    await db.update(hotelRoomsTable).set({ status: "AVAILABLE" }).where(eq(hotelRoomsTable.id, reservation.roomId));
+  }
+  res.json({ ...updated, totalAmount: parseFloat(updated.totalAmount), createdAt: updated.createdAt.toISOString(), checkedInAt: null, checkedOutAt: null });
+});
+
 router.get("/hotel/stats", async (req, res): Promise<void> => {
   const businessId = parseInt(req.query.businessId as string, 10);
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }

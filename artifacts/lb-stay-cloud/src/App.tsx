@@ -16,6 +16,7 @@ import POSPage from "@/pages/restaurant/pos";
 
 import HotelDashboard from "@/pages/hotel/dashboard";
 import HotelRoomsPage from "@/pages/hotel/rooms";
+import HotelReservationsPage from "@/pages/hotel/reservations";
 
 import BeautyDashboard from "@/pages/beauty/dashboard";
 import GroceryDashboard from "@/pages/grocery/dashboard";
@@ -70,6 +71,7 @@ function Router() {
       {/* Hôtel */}
       <Route path="/hotel/dashboard">{() => <ProtectedRoute component={HotelDashboard} />}</Route>
       <Route path="/hotel/rooms">{() => <ProtectedRoute component={HotelRoomsPage} />}</Route>
+      <Route path="/hotel/reservations">{() => <ProtectedRoute component={HotelReservationsPage} />}</Route>
 
       {/* Autres secteurs */}
       <Route path="/beauty/dashboard">{() => <ProtectedRoute component={BeautyDashboard} />}</Route>

@@ -3113,6 +3113,90 @@ export const useHotelCheckOut = <
 };
 
 /**
+ * @summary Cancel a reservation
+ */
+export const getCancelHotelReservationUrl = (id: number) => {
+  return `/api/hotel/reservations/${id}/cancel`;
+};
+
+export const cancelHotelReservation = async (
+  id: number,
+  options?: RequestInit,
+): Promise<HotelReservation> => {
+  return customFetch<HotelReservation>(getCancelHotelReservationUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getCancelHotelReservationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelHotelReservation>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof cancelHotelReservation>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["cancelHotelReservation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof cancelHotelReservation>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return cancelHotelReservation(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CancelHotelReservationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof cancelHotelReservation>>
+>;
+
+export type CancelHotelReservationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Cancel a reservation
+ */
+export const useCancelHotelReservation = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof cancelHotelReservation>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof cancelHotelReservation>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getCancelHotelReservationMutationOptions(options));
+};
+
+/**
  * @summary Hotel occupancy stats
  */
 export const getGetHotelStatsUrl = (params: GetHotelStatsParams) => {

@@ -678,6 +678,30 @@ export const HotelCheckOutResponse = zod.object({
 });
 
 /**
+ * @summary Cancel a reservation
+ */
+export const CancelHotelReservationParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CancelHotelReservationResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  roomId: zod.number(),
+  roomNumber: zod.string(),
+  guestName: zod.string(),
+  guestPhone: zod.string().nullish(),
+  checkInDate: zod.string(),
+  checkOutDate: zod.string(),
+  nights: zod.number(),
+  totalAmount: zod.number(),
+  status: zod.enum(["RESERVED", "CHECKED_IN", "CHECKED_OUT", "CANCELLED"]),
+  checkedInAt: zod.string().nullish(),
+  checkedOutAt: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+
+/**
  * @summary Hotel occupancy stats
  */
 export const GetHotelStatsQueryParams = zod.object({

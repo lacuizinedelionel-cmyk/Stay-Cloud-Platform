@@ -1,0 +1,43 @@
+Instruction : "Agis en tant qu'Ingénieur UI/UX Senior. Effectue une refonte complète de la Sidebar (barre latérale) de LB Stay Cloud pour la rendre dynamique, interactive et professionnelle.
+
+1. Structure de la Navigation :
+
+Haut de Sidebar : Conserve le bouton 'Vue Globale' (Dashboard Super Admin) avec une icône de maison élégante.
+
+Section 'Mes Enseignes' : Juste en dessous, crée une section intitulée 'MES ENSEIGNES'.
+
+Boutons Enseignes : Chaque secteur (Hôtel, Restaurant, Supermarché, Pharmacie, etc.) doit apparaître sous forme de bouton large et décoré.
+
+Système de sous-menus : Chaque bouton d'enseigne doit être extensible (Accordion). Lorsqu'on clique sur une enseigne (ex: 'Hôtel Le Prestige'), un sous-menu apparaît avec les modules spécifiques :
+
+📊 Dashboard (Vue d'ensemble)
+
+🛏️ Gestion des Logements (pour l'Hôtel) / 🍽️ Menu (pour le Restaurant)
+
+📦 Stocks & Inventaire
+
+👥 Gestion du Staff
+
+⚙️ Paramètres de l'Entreprise
+
+📈 Rapports & Analytics
+
+2. Design & Esthétique (Luxe SaaS) :
+
+Couleurs & Dégradés : Utilise des dégradés subtils pour les boutons actifs (ex: de #FF5A1F vers #FF8C00 pour l'orange, ou des dégradés de gris profonds pour le Dark Mode).
+
+Typographie : Utilise exclusivement 'Plus Jakarta Sans'. Texte en SemiBold pour les titres et Medium pour les sous-menus.
+
+Icônes : Utilise la bibliothèque Lucide-React. Chaque enseigne doit avoir une icône spécifique (Hôtel = Bed, Restaurant = Utensils, Supermarché = ShoppingBag, etc.).
+
+3. Interactivité et Clarté :
+
+États au survol (Hover) : Ajoute un effet de survol élégant et une bordure dorée très fine sur le bouton sélectionné.
+
+Logique de Navigation : Utilise react-router-dom pour que chaque clic sur un sous-menu redirige instantanément vers la page correspondante (ex: /hotel/rooms, /restaurant/pos).
+
+Transparence : Assure-toi que l'arborescence est 'propre' : on doit comprendre en un coup d'œil que l'on passe de l'administration globale à l'administration d'une unité précise.
+
+4. Données de Démo :
+
+Affiche au moins 4 enseignes actives dans la sidebar pour la démo : 1 Hôtel, 1 Restaurant, 1 Supermarché et 1 Pharmacie.
