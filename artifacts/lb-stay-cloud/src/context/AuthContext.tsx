@@ -3,6 +3,8 @@ import { useLocation } from 'wouter';
 import { useGetMe, useListBusinesses, User, Business, getGetMeQueryKey, getListBusinessesQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 
+const PUBLIC_ROUTES = ['/login', '/activate', '/signup'];
+
 interface AuthContextType {
   user: User | null;
   business: Business | null;
@@ -31,11 +33,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   });
 
+  const [location] = useLocation();
+
   useEffect(() => {
-    if (userError) {
+    if (userError && !PUBLIC_ROUTES.includes(location)) {
       setLocation('/login');
     }
-  }, [userError, setLocation]);
+  }, [userError, location, setLocation]);
 
   useEffect(() => {
     if (user?.businessId && businesses) {

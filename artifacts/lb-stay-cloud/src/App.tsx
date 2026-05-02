@@ -8,6 +8,8 @@ import { Sidebar } from "@/components/layout";
 // Pages
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
+import ActivatePage from "@/pages/activate";
+import SignupPage from "@/pages/signup";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
@@ -58,6 +60,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
+      <Route path="/activate" component={ActivatePage} />
+      <Route path="/signup" component={SignupPage} />
 
       <Route path="/superadmin">
         {() => <ProtectedRoute component={SuperAdminDashboard} allowedRoles={['SUPER_ADMIN']} />}

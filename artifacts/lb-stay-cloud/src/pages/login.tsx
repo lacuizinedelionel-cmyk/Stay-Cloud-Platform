@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { motion } from 'framer-motion';
@@ -176,9 +176,20 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Mot de passe
-                    </FormLabel>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        Mot de passe
+                      </FormLabel>
+                      <Link
+                        href="/activate"
+                        className="text-xs font-medium transition-colors"
+                        style={{ color: 'hsl(38 90% 56%)' }}
+                        onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.75'}
+                        onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
+                      >
+                        Mot de passe oublié ?
+                      </Link>
+                    </div>
                     <FormControl>
                       <Input
                         type="password"
@@ -203,6 +214,32 @@ export default function Login() {
                   <>Se connecter <ArrowRight className="w-4 h-4 ml-2" /></>
                 )}
               </Button>
+
+              {/* Liens inscription / activation */}
+              <div className="flex flex-col gap-2 mt-3">
+                <Link
+                  href="/activate"
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm font-semibold transition-all"
+                  style={{
+                    background: 'hsl(38 90% 56% / 0.08)',
+                    border: '1px solid hsl(38 90% 56% / 0.2)',
+                    color: 'hsl(38 90% 56%)',
+                  }}
+                >
+                  🔑 Première connexion ? Activer votre compte
+                </Link>
+                <Link
+                  href="/signup"
+                  className="flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(38 90% 56%)',
+                  }}
+                >
+                  ✨ Pas encore de compte ? Créer un compte
+                </Link>
+              </div>
             </form>
           </Form>
 
