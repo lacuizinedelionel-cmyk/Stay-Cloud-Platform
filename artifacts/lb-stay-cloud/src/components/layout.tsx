@@ -8,7 +8,7 @@ import {
   Pill, Wrench, Dumbbell, GraduationCap, BarChart2,
   Calendar, Package, ClipboardList, Zap, ChevronDown,
   BedDouble, CreditCard, TrendingUp, Star, ShoppingCart,
-  UserCheck, BookOpen, Activity,
+  UserCheck, BookOpen, Activity, Wallet,
 } from 'lucide-react';
 
 /* ══════════════════════════════════════
@@ -314,6 +314,7 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
   const sharedItems = [
     { href: '/clients',       label: 'Clients',       icon: Users    },
     { href: '/analytics',     label: 'Analyses',      icon: BarChart2 },
+    { href: '/billing',       label: 'Abonnement',    icon: Wallet   },
     { href: '/notifications', label: 'Notifications', icon: Bell     },
     { href: '/settings',      label: 'Paramètres',    icon: Settings },
   ];

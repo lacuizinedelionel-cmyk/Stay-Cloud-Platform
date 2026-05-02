@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { MobileMoneyModal } from '@/components/mobile-money-modal';
 
 type CartItem = {
   productId: number;
@@ -308,6 +309,7 @@ export default function POSPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
+  const [showMobileMoneyModal, setShowMobileMoneyModal] = useState(false);
 
   // Ref to capture values for async callbacks
   const submitRef = useRef<{ cart: CartItem[]; paymentMethod: LocalPaymentMethod; ardoiseClient: CustomerCredit | null; total: number }>({ cart: [], paymentMethod: 'CASH', ardoiseClient: null, total: 0 });
@@ -363,7 +365,21 @@ export default function POSPage() {
 
   const canSubmit = cart.length > 0 && !ardoiseWouldExceed && !ardoiseMissingClient;
 
+  const isMobileMoney = paymentMethod === 'MTN_MOBILE_MONEY' || paymentMethod === 'ORANGE_MONEY';
+
   const handleSubmit = async () => {
+    if (!business?.id || !canSubmit) return;
+
+    // Mobile Money → affiche le simulateur USSD d'abord
+    if (isMobileMoney) {
+      setShowMobileMoneyModal(true);
+      return;
+    }
+
+    await doSubmit();
+  };
+
+  const doSubmit = async () => {
     if (!business?.id || !canSubmit) return;
     const invNum = generateInvoiceNumber();
     setInvoiceNumber(invNum);
@@ -772,6 +788,18 @@ export default function POSPage() {
           </motion.button>
         </div>
       </div>
+
+      {/* ── Simulateur Mobile Money ── */}
+      <MobileMoneyModal
+        open={showMobileMoneyModal}
+        amount={total}
+        label={`Commande restaurant${tableNumber ? ` · Table ${tableNumber}` : ''}`}
+        onSuccess={() => {
+          setShowMobileMoneyModal(false);
+          doSubmit();
+        }}
+        onClose={() => setShowMobileMoneyModal(false)}
+      />
     </div>
   );
 }
