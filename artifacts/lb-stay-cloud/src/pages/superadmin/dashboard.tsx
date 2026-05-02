@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import {
   useGetSuperAdminStats,
   useGetSuperAdminRevenueChart,
@@ -22,8 +23,34 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Building2, CreditCard, Activity, Users, TrendingUp,
   ArrowUpRight, Zap, ShoppingBag, Smartphone, Banknote,
-  Clock, CheckCircle2, BarChart2,
+  Clock, CheckCircle2, BarChart2, AlertTriangle, PackageX,
 } from 'lucide-react';
+
+/* ── Stock Alert type ── */
+type StockAlert = {
+  businessId: number;
+  businessName: string;
+  sector: string;
+  sectorLabel: string;
+  source: string;
+  sourceLabel: string;
+  productName: string;
+  stock: number;
+  minStock: number;
+  severity: 'critical' | 'low';
+};
+
+function useStockAlerts() {
+  return useQuery<StockAlert[]>({
+    queryKey: ['superadmin-stock-alerts'],
+    queryFn: async () => {
+      const r = await fetch('/api/superadmin/stock-alerts');
+      if (!r.ok) throw new Error('Failed to fetch stock alerts');
+      return r.json();
+    },
+    refetchInterval: 30000,
+  });
+}
 
 /* ──────────────────────────────────────────────────────── */
 /*  Constants                                              */
@@ -102,6 +129,144 @@ function KPI({
         <p className="text-xs font-medium text-muted-foreground mt-0.5">{title}</p>
         {sub && <p className="text-[10px] text-muted-foreground mt-0.5 opacity-70">{sub}</p>}
       </div>
+    </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────── */
+/*  Stock Alerts Panel                                     */
+/* ──────────────────────────────────────────────────────── */
+const SECTOR_COLORS_ALERT: Record<string, string> = {
+  GROCERY: '#34D399', PHARMACY: '#F472B6', GARAGE: '#94A3B8',
+};
+
+function StockAlertsPanel() {
+  const { data: alerts, isLoading } = useStockAlerts();
+
+  const critical = (alerts ?? []).filter(a => a.severity === 'critical');
+  const low      = (alerts ?? []).filter(a => a.severity === 'low');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.28 }}
+      className="rounded-xl overflow-hidden"
+      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4"
+        style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ background: 'hsl(0 72% 51% / 0.12)' }}>
+            <AlertTriangle className="w-4 h-4" style={{ color: '#EF4444' }} strokeWidth={2} />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-foreground">Alertes Stock Critique</h2>
+            <p className="text-xs text-muted-foreground">
+              Produits sous le seuil minimum — toutes enseignes
+            </p>
+          </div>
+        </div>
+        {!isLoading && (
+          <div className="flex items-center gap-2">
+            {critical.length > 0 && (
+              <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                style={{ background: 'hsl(0 72% 51% / 0.12)', color: '#EF4444' }}>
+                <PackageX className="w-3 h-3" />
+                {critical.length} rupture{critical.length > 1 ? 's' : ''}
+              </span>
+            )}
+            {low.length > 0 && (
+              <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+                <AlertTriangle className="w-3 h-3" />
+                {low.length} bas
+              </span>
+            )}
+            {(alerts ?? []).length === 0 && (
+              <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
+                style={{ background: 'hsl(160 84% 39% / 0.1)', color: '#10B981' }}>
+                Tous les stocks sont OK
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Body */}
+      {isLoading ? (
+        <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {Array(8).fill(0).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
+        </div>
+      ) : (alerts ?? []).length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
+          <CheckCircle2 className="w-8 h-8 mb-2" style={{ color: '#10B981' }} />
+          <p className="text-sm font-semibold">Aucune alerte stock</p>
+          <p className="text-xs mt-0.5">Tous les produits sont au-dessus du seuil minimum</p>
+        </div>
+      ) : (
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {(alerts ?? []).map((alert, i) => {
+            const isCritical = alert.severity === 'critical';
+            const accentColor = isCritical ? '#EF4444' : 'hsl(38 90% 56%)';
+            const bgColor     = isCritical ? 'hsl(0 72% 51% / 0.08)' : 'hsl(38 90% 56% / 0.07)';
+            const borderColor = isCritical ? 'hsl(0 72% 51% / 0.25)' : 'hsl(38 90% 56% / 0.2)';
+            const sColor      = SECTOR_COLORS_ALERT[alert.sector] ?? '#6B7280';
+            const pct = alert.minStock > 0 ? Math.min(100, (alert.stock / alert.minStock) * 100) : 0;
+            return (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.03 }}
+                className="rounded-xl p-4"
+                style={{ background: bgColor, border: `1px solid ${borderColor}` }}
+              >
+                <div className="flex items-start justify-between gap-2 mb-2.5">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-foreground leading-tight truncate">
+                      {alert.productName}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                      {alert.businessName}
+                    </p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
+                    style={{ background: sColor + '20', color: sColor }}>
+                    {alert.sectorLabel}
+                  </span>
+                </div>
+
+                {/* Stock bar */}
+                <div className="mb-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] text-muted-foreground">Stock actuel</span>
+                    <span className="text-[11px] font-extrabold" style={{ color: accentColor }}>
+                      {alert.stock} / {alert.minStock} min
+                    </span>
+                  </div>
+                  <div className="w-full h-1.5 rounded-full" style={{ background: 'hsl(var(--muted))' }}>
+                    <div className="h-full rounded-full transition-all"
+                      style={{ width: `${pct}%`, background: accentColor }} />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {isCritical
+                    ? <PackageX className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
+                    : <AlertTriangle className="w-3 h-3 shrink-0" style={{ color: accentColor }} />
+                  }
+                  <span className="text-[10px] font-semibold" style={{ color: accentColor }}>
+                    {isCritical ? 'RUPTURE DE STOCK' : 'Stock bas — commander'}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -474,7 +639,10 @@ export default function SuperAdminDashboard() {
         </motion.div>
       </div>
 
-      {/* ── ROW 4 : Businesses table ──────────────────── */}
+      {/* ── ROW 4 : Stock Alerts ──────────────────────── */}
+      <StockAlertsPanel />
+
+      {/* ── ROW 5 : Businesses table ──────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

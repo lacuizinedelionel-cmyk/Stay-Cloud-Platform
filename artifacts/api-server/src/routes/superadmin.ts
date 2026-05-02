@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { db, businessesTable, paymentsTable } from "@workspace/db";
-import { sql, gte, desc } from "drizzle-orm";
+import { sql, gte, desc, lte } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -124,6 +124,72 @@ router.get("/superadmin/recent-activity", async (_req, res): Promise<void> => {
     methodLabel: METHOD_LABELS[p.method] ?? p.method,
     status: p.status,
     createdAt: p.createdAt.toISOString(),
+  }));
+
+  res.json(result);
+});
+
+router.get("/superadmin/stock-alerts", async (_req, res): Promise<void> => {
+  const rows = await db.execute(sql`
+    SELECT
+      b.id   AS business_id,
+      b.name AS business_name,
+      b.sector,
+      'grocery'      AS source,
+      p.name         AS product_name,
+      p.stock::int   AS stock,
+      p.min_stock::int AS min_stock
+    FROM grocery_products p
+    JOIN businesses b ON b.id = p.business_id
+    WHERE p.stock <= p.min_stock AND p.is_active = true
+
+    UNION ALL
+
+    SELECT
+      b.id, b.name, b.sector,
+      'pharmacy',
+      m.name,
+      m.stock::int,
+      m.min_stock::int
+    FROM medications m
+    JOIN businesses b ON b.id = m.business_id
+    WHERE m.stock <= m.min_stock
+
+    UNION ALL
+
+    SELECT
+      b.id, b.name, b.sector,
+      'garage',
+      gp.name,
+      gp.stock::int,
+      gp.min_stock::int
+    FROM garage_parts gp
+    JOIN businesses b ON b.id = gp.business_id
+    WHERE gp.stock <= gp.min_stock
+
+    ORDER BY stock ASC
+    LIMIT 20
+  `);
+
+  const SOURCE_LABELS: Record<string, string> = {
+    grocery: 'Supermarché', pharmacy: 'Pharmacie', garage: 'Garage',
+  };
+  const SECTOR_LABELS: Record<string, string> = {
+    GROCERY: 'Supermarché', PHARMACY: 'Pharmacie', GARAGE: 'Garage',
+    RESTAURANT: 'Restauration', HOTEL: 'Hôtellerie',
+  };
+
+  const result = rows.rows.map((r: Record<string, unknown>) => ({
+    businessId:   r.business_id,
+    businessName: r.business_name,
+    sector:       r.sector,
+    sectorLabel:  SECTOR_LABELS[r.sector as string] ?? String(r.sector),
+    source:       r.source,
+    sourceLabel:  SOURCE_LABELS[r.source as string] ?? String(r.source),
+    productName:  r.product_name,
+    stock:        Number(r.stock),
+    minStock:     Number(r.min_stock),
+    severity:     Number(r.stock) === 0 ? 'critical' : 'low',
   }));
 
   res.json(result);
