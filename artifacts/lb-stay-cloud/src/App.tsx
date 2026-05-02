@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
+import RestaurantPOS from "@/pages/restaurant/pos";
 import HotelDashboard from "@/pages/hotel/dashboard";
 import BeautyDashboard from "@/pages/beauty/dashboard";
 import GroceryDashboard from "@/pages/grocery/dashboard";
@@ -54,6 +55,7 @@ function Router() {
       
       {/* Sector Dashboards */}
       <Route path="/restaurant/dashboard">{() => <ProtectedRoute component={RestaurantDashboard} />}</Route>
+      <Route path="/restaurant/pos">{() => <ProtectedRoute component={RestaurantPOS} />}</Route>
       <Route path="/hotel/dashboard">{() => <ProtectedRoute component={HotelDashboard} />}</Route>
       <Route path="/beauty/dashboard">{() => <ProtectedRoute component={BeautyDashboard} />}</Route>
       <Route path="/grocery/dashboard">{() => <ProtectedRoute component={GroceryDashboard} />}</Route>
