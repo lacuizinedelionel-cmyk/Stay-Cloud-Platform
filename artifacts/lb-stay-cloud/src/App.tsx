@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,12 +9,17 @@ import { Sidebar } from "@/components/layout";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
+
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
 import RestaurantOrdersPage from "@/pages/restaurant/orders";
 import POSPage from "@/pages/restaurant/pos";
+
 import HotelDashboard from "@/pages/hotel/dashboard";
+import HotelRoomsPage from "@/pages/hotel/rooms";
+
 import BeautyDashboard from "@/pages/beauty/dashboard";
 import GroceryDashboard from "@/pages/grocery/dashboard";
+import GroceryStockPage from "@/pages/grocery/stock";
 import PharmacyDashboard from "@/pages/pharmacy/dashboard";
 import GarageDashboard from "@/pages/garage/dashboard";
 import FitnessDashboard from "@/pages/fitness/dashboard";
@@ -27,11 +32,14 @@ import SettingsPage from "@/pages/settings";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
-function ProtectedRoute({ component: Component, allowedRoles }: { component: any, allowedRoles?: string[] }) {
+function ProtectedRoute({ component: Component, allowedRoles }: { component: any; allowedRoles?: string[] }) {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" /></div>;
+  if (isLoading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
   if (!user) return <Redirect to="/login" />;
   if (allowedRoles && !allowedRoles.includes(user.role)) return <Redirect to="/dashboard" />;
 
@@ -49,24 +57,30 @@ function Router() {
   return (
     <Switch>
       <Route path="/login" component={Login} />
-      
+
       <Route path="/superadmin">
         {() => <ProtectedRoute component={SuperAdminDashboard} allowedRoles={['SUPER_ADMIN']} />}
       </Route>
-      
-      {/* Sector Dashboards */}
+
+      {/* Restaurant */}
       <Route path="/restaurant/dashboard">{() => <ProtectedRoute component={RestaurantDashboard} />}</Route>
       <Route path="/restaurant/orders">{() => <ProtectedRoute component={RestaurantOrdersPage} />}</Route>
       <Route path="/restaurant/pos">{() => <ProtectedRoute component={POSPage} />}</Route>
+
+      {/* Hôtel */}
       <Route path="/hotel/dashboard">{() => <ProtectedRoute component={HotelDashboard} />}</Route>
+      <Route path="/hotel/rooms">{() => <ProtectedRoute component={HotelRoomsPage} />}</Route>
+
+      {/* Autres secteurs */}
       <Route path="/beauty/dashboard">{() => <ProtectedRoute component={BeautyDashboard} />}</Route>
       <Route path="/grocery/dashboard">{() => <ProtectedRoute component={GroceryDashboard} />}</Route>
+      <Route path="/grocery/stock">{() => <ProtectedRoute component={GroceryStockPage} />}</Route>
       <Route path="/pharmacy/dashboard">{() => <ProtectedRoute component={PharmacyDashboard} />}</Route>
       <Route path="/garage/dashboard">{() => <ProtectedRoute component={GarageDashboard} />}</Route>
       <Route path="/fitness/dashboard">{() => <ProtectedRoute component={FitnessDashboard} />}</Route>
       <Route path="/education/dashboard">{() => <ProtectedRoute component={EducationDashboard} />}</Route>
-      
-      {/* Shared Pages */}
+
+      {/* Partagées */}
       <Route path="/clients">{() => <ProtectedRoute component={ClientsPage} />}</Route>
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/notifications">{() => <ProtectedRoute component={NotificationsPage} />}</Route>
@@ -74,19 +88,13 @@ function Router() {
 
       <Route path="/dashboard">
         {() => {
-          // Dynamic redirect based on user business sector
           const { business } = useAuth();
-          if (business) {
-            return <Redirect to={`/${business.sector.toLowerCase()}/dashboard`} />;
-          }
+          if (business) return <Redirect to={`/${business.sector.toLowerCase()}/dashboard`} />;
           return <ProtectedRoute component={NotFound} />;
         }}
       </Route>
-      
-      <Route path="/">
-        <Redirect to="/login" />
-      </Route>
-      
+
+      <Route path="/"><Redirect to="/login" /></Route>
       <Route component={NotFound} />
     </Switch>
   );
