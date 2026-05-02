@@ -2,17 +2,25 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useLogin, getGetMeQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { loginSchema, type LoginFormData } from '@/lib/schemas';
+import { Zap, ArrowRight, Loader2 } from 'lucide-react';
+
+const DEMO_ACCOUNTS = [
+  { label: 'Super Admin', email: 'superadmin@lbstay.com', color: 'text-primary' },
+  { label: 'Restaurant', email: 'restaurant@lbstay.com', color: 'text-blue-400' },
+  { label: 'Hôtel', email: 'hotel@lbstay.com', color: 'text-blue-400' },
+  { label: 'Beauté', email: 'beauty@lbstay.com', color: 'text-blue-400' },
+  { label: 'Pharmacie', email: 'pharmacy@lbstay.com', color: 'text-blue-400' },
+  { label: 'Fitness', email: 'fitness@lbstay.com', color: 'text-blue-400' },
+];
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -22,22 +30,13 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'SUPER_ADMIN') {
-        setLocation('/superadmin');
-      } else if (user.businessId) {
-        // We'd ideally route to specific business type based on context, 
-        // for now just go to general dashboard which will redirect
-        setLocation('/dashboard');
-      }
+      setLocation(user.role === 'SUPER_ADMIN' ? '/superadmin' : '/dashboard');
     }
   }, [user, setLocation]);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
 
   const loginMutation = useLogin();
@@ -46,18 +45,14 @@ export default function Login() {
     loginMutation.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
-        toast({
-          title: 'Connexion réussie',
-          description: 'Bienvenue sur LB Stay Cloud',
-        });
       },
       onError: () => {
         toast({
           variant: 'destructive',
-          title: 'Erreur',
-          description: 'Email ou mot de passe incorrect',
+          title: 'Identifiants incorrects',
+          description: 'Vérifiez votre email et mot de passe.',
         });
-      }
+      },
     });
   };
 
@@ -67,89 +62,175 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute inset-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
-      
+    <div
+      className="min-h-screen flex"
+      style={{ background: 'hsl(var(--background))' }}
+    >
+      {/* Left panel — branding */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md z-10"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="hidden lg:flex flex-col justify-between w-2/5 p-12 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(160deg, hsl(222 50% 7%) 0%, hsl(222 50% 4%) 100%)',
+          borderRight: '1px solid hsl(var(--border))',
+        }}
       >
-        <div className="text-center mb-8">
-          <h1 className="font-serif text-4xl font-bold text-foreground mb-2 tracking-tight flex items-center justify-center gap-2">
-            LB Stay Cloud
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          </h1>
-          <p className="text-muted-foreground">Premium Management Platform</p>
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+          }}
+        />
+
+        {/* Glow */}
+        <div
+          className="absolute -top-32 -left-32 w-96 h-96 rounded-full opacity-10"
+          style={{ background: 'radial-gradient(circle, hsl(38 90% 56%), transparent 70%)' }}
+        />
+
+        {/* Logo */}
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-16">
+            <div className="w-9 h-9 rounded-xl gradient-gold flex items-center justify-center">
+              <Zap className="w-5 h-5 text-white" strokeWidth={2.5} />
+            </div>
+            <span className="text-white font-extrabold text-lg tracking-tight" style={{ letterSpacing: '-0.02em' }}>
+              LB Stay Cloud
+            </span>
+          </div>
+
+          <h2 className="text-4xl font-extrabold text-white leading-tight mb-4" style={{ letterSpacing: '-0.03em' }}>
+            Gérez votre business<br />
+            <span className="text-gradient-gold">en toute simplicité.</span>
+          </h2>
+          <p className="text-muted-foreground text-base leading-relaxed">
+            La plateforme SaaS multi-secteur conçue pour les entreprises africaines. Restaurant, Hôtel, Beauté, Pharmacie et plus.
+          </p>
         </div>
 
-        <Card className="border-border/50 bg-card/50 backdrop-blur-xl shadow-2xl">
-          <CardHeader>
-            <CardTitle className="text-xl">Connexion</CardTitle>
-            <CardDescription>Accédez à votre tableau de bord</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email professionnel</FormLabel>
-                      <FormControl>
-                        <Input placeholder="admin@lbstay.com" {...field} className="bg-background/50" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mot de passe</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} className="bg-background/50" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button 
-                  type="submit" 
-                  className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300"
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? 'Connexion...' : 'Se connecter'}
-                </Button>
-              </form>
-            </Form>
-
-            <div className="mt-8 pt-6 border-t border-border/50">
-              <p className="text-sm text-muted-foreground mb-4 text-center font-medium">Comptes de démonstration</p>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <Button variant="outline" size="sm" onClick={() => fillDemo('superadmin@lbstay.com')} className="justify-start">
-                  Super Admin
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => fillDemo('restaurant@lbstay.com')} className="justify-start">
-                  Restaurant
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => fillDemo('hotel@lbstay.com')} className="justify-start">
-                  Hôtel
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => fillDemo('beauty@lbstay.com')} className="justify-start">
-                  Salon de Beauté
-                </Button>
-              </div>
+        {/* Stats */}
+        <div className="relative z-10 grid grid-cols-2 gap-4">
+          {[
+            { label: 'Secteurs couverts', value: '8' },
+            { label: 'Villes au Cameroun', value: '3+' },
+            { label: 'Modules intégrés', value: '25+' },
+            { label: 'Disponibilité', value: '99.9%' },
+          ].map((s) => (
+            <div key={s.label} className="p-4 rounded-xl" style={{ background: 'hsl(var(--muted) / 0.5)' }}>
+              <p className="text-2xl font-extrabold text-primary">{s.value}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       </motion.div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="w-full max-w-md"
+        >
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2 mb-10 lg:hidden">
+            <div className="w-8 h-8 rounded-lg gradient-gold flex items-center justify-center">
+              <Zap className="w-4 h-4 text-white" strokeWidth={2.5} />
+            </div>
+            <span className="font-extrabold text-base text-white" style={{ letterSpacing: '-0.02em' }}>LB Stay Cloud</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-foreground mb-1" style={{ letterSpacing: '-0.03em' }}>
+            Connexion
+          </h1>
+          <p className="text-muted-foreground text-sm mb-8">Accédez à votre tableau de bord.</p>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Email professionnel
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="admin@lbstay.com"
+                        {...field}
+                        className="h-11 bg-card border-border/70 text-foreground placeholder:text-muted-foreground focus:border-primary"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Mot de passe
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                        className="h-11 bg-card border-border/70 text-foreground placeholder:text-muted-foreground focus:border-primary"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full h-11 gradient-gold text-white font-semibold text-sm mt-2 hover:opacity-90 transition-opacity"
+                disabled={loginMutation.isPending}
+              >
+                {loginMutation.isPending ? (
+                  <><Loader2 className="w-4 h-4 animate-spin mr-2" />Connexion en cours…</>
+                ) : (
+                  <>Se connecter <ArrowRight className="w-4 h-4 ml-2" /></>
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          {/* Demo accounts */}
+          <div className="mt-8 pt-6" style={{ borderTop: '1px solid hsl(var(--border))' }}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Comptes de démonstration
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.email}
+                  onClick={() => fillDemo(acc.email)}
+                  className="px-3 py-2 rounded-lg text-xs font-medium text-left transition-colors"
+                  style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--accent))')}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'hsl(var(--muted))')}
+                >
+                  {acc.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              Mot de passe universel : <code className="text-primary font-mono">password</code>
+            </p>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

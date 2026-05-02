@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-bold text-foreground">Analyses et Rapports</h1>
+        <h1 className="text-3xl font-bold text-foreground">Analyses et Rapports</h1>
         <p className="text-muted-foreground mt-1">Vos performances financières en détail</p>
       </div>
 
@@ -87,7 +87,7 @@ export default function AnalyticsPage() {
               <div className="space-y-6">
                 <div className="p-4 bg-primary/10 rounded-xl border border-primary/20">
                   <div className="text-sm text-primary mb-1">Revenu Total</div>
-                  <div className="text-3xl font-serif font-bold text-primary">{formatXAF(stats.totalRevenue)}</div>
+                  <div className="text-3xl font-bold text-primary">{formatXAF(stats.totalRevenue)}</div>
                 </div>
 
                 <div className="space-y-4">

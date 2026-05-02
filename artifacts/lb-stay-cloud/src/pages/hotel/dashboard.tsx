@@ -77,7 +77,7 @@ export default function HotelDashboard() {
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-bold text-foreground">Tableau de bord Hôtel</h1>
+        <h1 className="text-3xl font-bold text-foreground">Tableau de bord Hôtel</h1>
         <p className="text-muted-foreground mt-1">Gérez vos chambres et réservations</p>
       </div>
 
@@ -121,7 +121,7 @@ export default function HotelDashboard() {
             <div className="space-y-6">
               {[3, 2, 1].map(floor => (
                 <div key={floor} className="space-y-3">
-                  <h3 className="font-serif text-lg">Étage {floor}</h3>
+                  <h3 className="text-lg">Étage {floor}</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
                     {Array(10).fill(0).map((_, i) => (
                       <Skeleton key={i} className="h-24 w-full rounded-lg" />
@@ -134,7 +134,7 @@ export default function HotelDashboard() {
             <div className="space-y-8">
               {floors.map(floor => (
                 <div key={floor} className="space-y-3">
-                  <h3 className="font-serif text-lg border-b border-border/50 pb-2">Étage {floor}</h3>
+                  <h3 className="text-lg border-b border-border/50 pb-2">Étage {floor}</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-3">
                     {roomsByFloor[floor].map(room => (
                       <motion.button
@@ -169,7 +169,7 @@ export default function HotelDashboard() {
             <DialogContent className="sm:max-w-md bg-card/80 backdrop-blur-xl border-border/50">
               <DialogHeader>
                 <DialogTitle className="flex items-center justify-between">
-                  <span className="font-serif text-2xl">Chambre {selectedRoom.number}</span>
+                  <span className="text-2xl">Chambre {selectedRoom.number}</span>
                   <Badge variant="outline" className={getStatusColor(selectedRoom.status)}>
                     {getStatusLabel(selectedRoom.status)}
                   </Badge>

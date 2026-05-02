@@ -29,7 +29,7 @@ export default function PharmacyDashboard() {
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-serif font-bold text-foreground">Tableau de bord Pharmacie</h1>
+        <h1 className="text-3xl font-bold text-foreground">Tableau de bord Pharmacie</h1>
         <p className="text-muted-foreground mt-1">Gérez vos médicaments et ordonnances</p>
       </div>
 
