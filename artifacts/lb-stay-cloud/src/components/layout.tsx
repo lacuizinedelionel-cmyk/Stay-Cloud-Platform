@@ -9,6 +9,7 @@ import {
   Calendar, Package, ClipboardList, Zap, ChevronDown,
   BedDouble, CreditCard, TrendingUp, Star, ShoppingCart,
   UserCheck, BookOpen, Activity, Wallet, Shield, MessageSquare,
+  BarChart3,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useLanguage } from '@/context/LanguageContext';
@@ -282,6 +283,27 @@ function SuperAdminSidebar({ user, logout }: { user: any; logout: () => void }) 
             <LayoutDashboard className="w-3.5 h-3.5 text-white" strokeWidth={2} />
           </div>
           Vue Globale
+        </Link>
+
+        {/* Analytics */}
+        <Link
+          href="/superadmin/analytics"
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-1"
+          style={{
+            background: location === '/superadmin/analytics' ? 'hsl(38 90% 56% / 0.15)' : 'transparent',
+            color: location === '/superadmin/analytics' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
+            border: location === '/superadmin/analytics' ? '1px solid hsl(38 90% 56% / 0.3)' : '1px solid transparent',
+          }}
+          onMouseEnter={e => { if (location !== '/superadmin/analytics') (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))'; }}
+          onMouseLeave={e => { if (location !== '/superadmin/analytics') (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+        >
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: location === '/superadmin/analytics' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted))' }}>
+            <BarChart3 className="w-3.5 h-3.5"
+              style={{ color: location === '/superadmin/analytics' ? '#000' : 'hsl(var(--muted-foreground))' }}
+              strokeWidth={2} />
+          </div>
+          <span className="flex-1">Analytique</span>
         </Link>
 
         {/* Messagerie Super Admin */}
