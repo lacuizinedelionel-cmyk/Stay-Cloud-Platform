@@ -21,16 +21,46 @@ import {
   LogIn, LogOut, XCircle, Search,
   ChevronDown, Moon, RefreshCw, X,
   AlertTriangle, Pencil, Trash2, Save,
+  Smartphone, Banknote, Clock,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 /* ── Statuts ── */
 const STATUS_CFG: Record<HotelReservationStatus, { label: string; color: string; bg: string }> = {
   RESERVED:    { label: 'Réservée',    color: '#3B82F6', bg: 'hsl(217 91% 60% / 0.12)' },
-  CHECKED_IN:  { label: 'En séjour',   color: '#10B981', bg: 'hsl(160 84% 39% / 0.12)' },
+  CHECKED_IN:  { label: 'Occupée',     color: '#EF4444', bg: 'hsl(0 72% 51% / 0.12)'  },
   CHECKED_OUT: { label: 'Parti(e)',    color: '#6B7280', bg: 'hsl(220 9% 46% / 0.12)'  },
-  CANCELLED:   { label: 'Annulée',    color: '#EF4444', bg: 'hsl(0 72% 51% / 0.12)'   },
+  CANCELLED:   { label: 'Annulée',     color: '#9CA3AF', bg: 'hsl(220 9% 46% / 0.10)'  },
 };
+
+/* ── Badge paiement selon paymentMethod ── */
+function PaymentBadge({ method }: { method?: string | null }) {
+  if (method === 'MTN_MOMO') return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+      style={{ background: 'hsl(160 84% 39% / 0.12)', color: '#10B981' }}>
+      <Smartphone className="w-2.5 h-2.5" />MoMo ✓
+    </span>
+  );
+  if (method === 'ORANGE_MONEY') return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+      style={{ background: 'hsl(25 95% 53% / 0.12)', color: '#F97316' }}>
+      <Smartphone className="w-2.5 h-2.5" />Orange ✓
+    </span>
+  );
+  if (method === 'CASH') return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+      style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+      <Banknote className="w-2.5 h-2.5" />Cash
+    </span>
+  );
+  if (method === 'PENDING_RECEPTION') return (
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+      style={{ background: 'hsl(38 90% 56% / 0.10)', color: '#F59E0B' }}>
+      <Clock className="w-2.5 h-2.5" />Att. réception
+    </span>
+  );
+  return null;
+}
 
 const STATUS_FILTERS: { value: HotelReservationStatus | 'ALL'; label: string }[] = [
   { value: 'ALL',         label: 'Toutes'     },
@@ -293,12 +323,15 @@ function DetailPanel({ res, onClose, onCheckIn, onCheckOut, onCancel, onEdit, on
       </div>
 
       <div className="flex-1 overflow-y-auto p-5 space-y-5">
-        {/* Statut */}
-        <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: s.bg, color: s.color }}>
-          <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
-          {s.label}
-        </span>
+        {/* Statut + paiement */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
+            style={{ background: s.bg, color: s.color }}>
+            <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.color }} />
+            {s.label}
+          </span>
+          <PaymentBadge method={(res as any).paymentMethod} />
+        </div>
 
         {/* Client */}
         <div className="space-y-3">
@@ -567,9 +600,9 @@ export default function HotelReservationsPage() {
       {/* KPI bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'En attente',   value: counts.reserved,  color: '#3B82F6', icon: Calendar },
-          { label: 'En séjour',    value: counts.checkedIn, color: '#10B981', icon: BedDouble },
-          { label: 'Annulées',     value: counts.cancelled, color: '#EF4444', icon: XCircle  },
+          { label: 'Réservées',    value: counts.reserved,  color: '#3B82F6', icon: Calendar },
+          { label: 'Occupées',     value: counts.checkedIn, color: '#EF4444', icon: BedDouble },
+          { label: 'Annulées',     value: counts.cancelled, color: '#9CA3AF', icon: XCircle  },
           { label: 'CA total',     value: formatXAF(counts.revenue), color: 'hsl(38 90% 56%)', icon: Moon },
         ].map(kpi => (
           <div key={kpi.label} className="flex flex-col gap-1 px-4 py-3 rounded-xl"
@@ -669,12 +702,13 @@ export default function HotelReservationsPage() {
 
                   {/* Info principale */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-sm font-bold text-foreground truncate">{res.guestName}</span>
                       <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0"
                         style={{ background: s.bg, color: s.color }}>
                         {s.label}
                       </span>
+                      <PaymentBadge method={(res as any).paymentMethod} />
                     </div>
                     <div className="flex items-center gap-3 mt-0.5">
                       <span className="text-[11px] text-muted-foreground flex items-center gap-1">

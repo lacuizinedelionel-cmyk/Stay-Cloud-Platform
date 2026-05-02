@@ -30,6 +30,7 @@ export const hotelReservationsTable = pgTable("hotel_reservations", {
   nights: integer("nights").notNull(),
   totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
   status: reservationStatusEnum("status").notNull().default("RESERVED"),
+  paymentMethod: text("payment_method"),
   checkedInAt: timestamp("checked_in_at"),
   checkedOutAt: timestamp("checked_out_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
