@@ -6,16 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CreateSupplierBody {
+export type ListSuppliersParams = {
   businessId: number;
-  name: string;
-  contactName?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-  city?: string;
   sector?: string;
-  paymentTerms?: string;
-  notes?: string;
   isActive?: boolean;
-}
+};

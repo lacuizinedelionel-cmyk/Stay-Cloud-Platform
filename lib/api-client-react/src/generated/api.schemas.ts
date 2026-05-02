@@ -623,26 +623,6 @@ export interface CreateGroceryProductBody {
   supplierId?: number;
 }
 
-export interface Supplier {
-  id: number;
-  businessId: number;
-  name: string;
-  phone?: string | null;
-  email?: string | null;
-  city?: string | null;
-  isActive: boolean;
-  lastOrderDate?: string | null;
-  totalOrders: number;
-}
-
-export interface CreateSupplierBody {
-  businessId: number;
-  name: string;
-  phone?: string;
-  email?: string;
-  city?: string;
-}
-
 export interface StockAdjustBody {
   /** Positive to add stock, negative to remove */
   delta: number;
@@ -1066,6 +1046,234 @@ export interface EducationStats {
   monthlyRevenue: number;
 }
 
+export type InventoryMovementProductSector =
+  (typeof InventoryMovementProductSector)[keyof typeof InventoryMovementProductSector];
+
+export const InventoryMovementProductSector = {
+  GROCERY: "GROCERY",
+  PHARMACY: "PHARMACY",
+  GARAGE_PART: "GARAGE_PART",
+  OTHER: "OTHER",
+} as const;
+
+export type InventoryMovementMovementType =
+  (typeof InventoryMovementMovementType)[keyof typeof InventoryMovementMovementType];
+
+export const InventoryMovementMovementType = {
+  PURCHASE: "PURCHASE",
+  SALE: "SALE",
+  LOSS: "LOSS",
+  EXPIRY: "EXPIRY",
+  ADJUSTMENT: "ADJUSTMENT",
+  RETURN: "RETURN",
+  TRANSFER: "TRANSFER",
+} as const;
+
+export interface InventoryMovement {
+  id: number;
+  businessId: number;
+  productId?: number | null;
+  productName: string;
+  productSector: InventoryMovementProductSector;
+  movementType: InventoryMovementMovementType;
+  quantity: number;
+  unitCost?: number | null;
+  totalValue?: number | null;
+  reason?: string | null;
+  reference?: string | null;
+  operatorName?: string | null;
+  createdAt: string;
+}
+
+export type CreateInventoryMovementBodyProductSector =
+  (typeof CreateInventoryMovementBodyProductSector)[keyof typeof CreateInventoryMovementBodyProductSector];
+
+export const CreateInventoryMovementBodyProductSector = {
+  GROCERY: "GROCERY",
+  PHARMACY: "PHARMACY",
+  GARAGE_PART: "GARAGE_PART",
+  OTHER: "OTHER",
+} as const;
+
+export type CreateInventoryMovementBodyMovementType =
+  (typeof CreateInventoryMovementBodyMovementType)[keyof typeof CreateInventoryMovementBodyMovementType];
+
+export const CreateInventoryMovementBodyMovementType = {
+  PURCHASE: "PURCHASE",
+  SALE: "SALE",
+  LOSS: "LOSS",
+  EXPIRY: "EXPIRY",
+  ADJUSTMENT: "ADJUSTMENT",
+  RETURN: "RETURN",
+  TRANSFER: "TRANSFER",
+} as const;
+
+export interface CreateInventoryMovementBody {
+  businessId: number;
+  productId?: number;
+  productName: string;
+  productSector?: CreateInventoryMovementBodyProductSector;
+  movementType: CreateInventoryMovementBodyMovementType;
+  quantity: number;
+  unitCost?: number;
+  reason?: string;
+  reference?: string;
+  operatorName?: string;
+}
+
+export interface InventoryStats {
+  totalIn: number;
+  totalOut: number;
+  totalLoss: number;
+  todayCount: number;
+  totalMovements: number;
+}
+
+export interface Supplier {
+  id: number;
+  businessId: number;
+  name: string;
+  contactName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
+  sector?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateSupplierBody {
+  businessId: number;
+  name: string;
+  contactName?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  city?: string;
+  sector?: string;
+  paymentTerms?: string;
+  notes?: string;
+  isActive?: boolean;
+}
+
+export type CustomerCreditStatus =
+  (typeof CustomerCreditStatus)[keyof typeof CustomerCreditStatus];
+
+export const CustomerCreditStatus = {
+  ACTIVE: "ACTIVE",
+  WARNED: "WARNED",
+  BLOCKED: "BLOCKED",
+  SETTLED: "SETTLED",
+} as const;
+
+export interface CustomerCredit {
+  id: number;
+  businessId: number;
+  clientName: string;
+  clientPhone?: string | null;
+  totalDebt: number;
+  creditLimit: number;
+  lastPurchaseDate?: string | null;
+  reminderDate?: string | null;
+  status: CustomerCreditStatus;
+  notes?: string | null;
+  autoReminder: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCustomerCreditBody {
+  businessId: number;
+  clientName: string;
+  clientPhone?: string;
+  creditLimit?: number;
+  reminderDate?: string;
+  notes?: string;
+  autoReminder?: boolean;
+}
+
+export type CreditTransactionType =
+  (typeof CreditTransactionType)[keyof typeof CreditTransactionType];
+
+export const CreditTransactionType = {
+  DEBIT: "DEBIT",
+  PAYMENT: "PAYMENT",
+} as const;
+
+export interface CreditTransaction {
+  id: number;
+  creditId: number;
+  businessId: number;
+  type: CreditTransactionType;
+  amount: number;
+  description?: string | null;
+  createdAt: string;
+}
+
+export type CreditTransactionBodyType =
+  (typeof CreditTransactionBodyType)[keyof typeof CreditTransactionBodyType];
+
+export const CreditTransactionBodyType = {
+  DEBIT: "DEBIT",
+  PAYMENT: "PAYMENT",
+} as const;
+
+export interface CreditTransactionBody {
+  type: CreditTransactionBodyType;
+  amount: number;
+  description?: string;
+  businessId: number;
+}
+
+export interface CreditsStats {
+  totalDebt: number;
+  activeCount: number;
+  warnedCount: number;
+  blockedCount: number;
+  settledCount: number;
+  totalClients: number;
+}
+
+export interface BillingSettings {
+  id?: number | null;
+  businessId: number;
+  businessName?: string | null;
+  logoUrl?: string | null;
+  headerLine1?: string | null;
+  headerLine2?: string | null;
+  footerText?: string | null;
+  invoicePrefix: string;
+  nextInvoiceNumber: number;
+  taxRate: number;
+  currency: string;
+  bankDetails?: string | null;
+  showTax: boolean;
+  showLogo: boolean;
+  primaryColor: string;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface UpsertBillingSettingsBody {
+  businessId: number;
+  businessName?: string;
+  logoUrl?: string;
+  headerLine1?: string;
+  headerLine2?: string;
+  footerText?: string;
+  invoicePrefix?: string;
+  taxRate?: number;
+  currency?: string;
+  bankDetails?: string;
+  showTax?: boolean;
+  showLogo?: boolean;
+  primaryColor?: string;
+}
+
 export type NotificationType =
   (typeof NotificationType)[keyof typeof NotificationType];
 
@@ -1238,6 +1446,45 @@ export type ListEnrollmentsParams = {
 
 export type GetEducationStatsParams = {
   businessId: number;
+};
+
+export type ListInventoryMovementsParams = {
+  businessId: number;
+  productSector?: string;
+  movementType?: string;
+  limit?: number;
+};
+
+export type GetInventoryStatsParams = {
+  businessId: number;
+};
+
+export type ListSuppliersParams = {
+  businessId: number;
+  sector?: string;
+  isActive?: boolean;
+};
+
+export type ListCustomerCreditsParams = {
+  businessId: number;
+  status?: string;
+};
+
+export type GetCreditsStatsParams = {
+  businessId: number;
+};
+
+export type GetBillingSettingsParams = {
+  businessId: number;
+};
+
+export type IncrementInvoiceNumberBody = {
+  businessId: number;
+};
+
+export type IncrementInvoiceNumber200 = {
+  invoiceNumber: string;
+  nextInvoiceNumber: number;
 };
 
 export type ListNotificationsParams = {

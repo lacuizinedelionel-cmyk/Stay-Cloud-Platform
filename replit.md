@@ -25,3 +25,29 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+
+## LB Stay Cloud — Architecture SaaS
+
+**Secteurs** : Restaurant, Hôtel, Beauté, Épicerie, Pharmacie, Garage, Fitness, Éducation
+
+**Auth démo** : `superadmin@lbstay.com` / `pharmacy@lbstay.com` (businessId=3) / garage (businessId=6) — mot de passe : `password`
+
+**Design** : dark navy exclusivement, or `hsl(38 90% 56%)` / `#F5A623`, Police : Plus Jakarta Sans, currency : `formatXAF()` dans `artifacts/lb-stay-cloud/src/lib/utils.ts`
+
+**Schémas DB** (Drizzle ORM, `lib/db/src/schema/`) :
+- Secteurs : `restaurant`, `hotel`, `beauty`, `grocery`, `pharmacy`, `garage`, `fitness`, `education`
+- Transversal : `inventory_movements` (mouvements stock multi-secteur), `suppliers` (fournisseurs), `customer_credits` + `credit_transactions` (L'Ardoise), `billing_settings` (paramètres facture)
+
+**Routes API** (`artifacts/api-server/src/routes/`) :
+- `inventory.ts` — GET/POST `/inventory/movements`, DELETE `/inventory/movements/:id`, GET `/inventory/stats`
+- `suppliers.ts` — CRUD `/suppliers`, `/suppliers/:id`
+- `credits.ts` — CRUD `/credits`, `/credits/stats`, POST/GET `/credits/:id/transactions`
+- `billing.ts` — GET/PUT `/billing/settings`, POST `/billing/settings/increment-invoice`
+
+**Hooks Orval générés** (`lib/api-client-react/src/generated/api.ts`) :
+- `useListInventoryMovements`, `useCreateInventoryMovement`, `useGetInventoryStats`
+- `useListSuppliers`, `useCreateSupplier`, `useUpdateSupplier`, `useDeleteSupplier`
+- `useListCustomerCredits`, `useCreateCustomerCredit`, `useGetCreditsStats`, `useAddCreditTransaction`, `useListCreditTransactions`
+- `useGetBillingSettings`, `useUpsertBillingSettings`, `useIncrementInvoiceNumber`
+
+**Note TypeScript** : Les erreurs TS2308 dans `lib/api-zod/src/index.ts` sont pré-existantes (doublon `generated/api` + `generated/types`) et ignorées — les fichiers sont générés correctement.

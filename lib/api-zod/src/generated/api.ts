@@ -1037,12 +1037,17 @@ export const ListGrocerySuppliersResponseItem = zod.object({
   id: zod.number(),
   businessId: zod.number(),
   name: zod.string(),
+  contactName: zod.string().nullish(),
   phone: zod.string().nullish(),
   email: zod.string().nullish(),
+  address: zod.string().nullish(),
   city: zod.string().nullish(),
+  sector: zod.string().nullish(),
+  paymentTerms: zod.string().nullish(),
+  notes: zod.string().nullish(),
   isActive: zod.boolean(),
-  lastOrderDate: zod.string().nullish(),
-  totalOrders: zod.number(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
 });
 export const ListGrocerySuppliersResponse = zod.array(
   ListGrocerySuppliersResponseItem,
@@ -1054,9 +1059,15 @@ export const ListGrocerySuppliersResponse = zod.array(
 export const CreateGrocerySupplierBody = zod.object({
   businessId: zod.number(),
   name: zod.string(),
+  contactName: zod.string().optional(),
   phone: zod.string().optional(),
   email: zod.string().optional(),
+  address: zod.string().optional(),
   city: zod.string().optional(),
+  sector: zod.string().optional(),
+  paymentTerms: zod.string().optional(),
+  notes: zod.string().optional(),
+  isActive: zod.boolean().optional(),
 });
 
 /**
@@ -1751,6 +1762,388 @@ export const GetEducationStatsResponse = zod.object({
   pendingPayments: zod.number(),
   attendanceRate: zod.number(),
   monthlyRevenue: zod.number(),
+});
+
+/**
+ * @summary List stock movements
+ */
+export const ListInventoryMovementsQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+  productSector: zod.coerce.string().optional(),
+  movementType: zod.coerce.string().optional(),
+  limit: zod.coerce.number().optional(),
+});
+
+export const ListInventoryMovementsResponseItem = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  productId: zod.number().nullish(),
+  productName: zod.string(),
+  productSector: zod.enum(["GROCERY", "PHARMACY", "GARAGE_PART", "OTHER"]),
+  movementType: zod.enum([
+    "PURCHASE",
+    "SALE",
+    "LOSS",
+    "EXPIRY",
+    "ADJUSTMENT",
+    "RETURN",
+    "TRANSFER",
+  ]),
+  quantity: zod.number(),
+  unitCost: zod.number().nullish(),
+  totalValue: zod.number().nullish(),
+  reason: zod.string().nullish(),
+  reference: zod.string().nullish(),
+  operatorName: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListInventoryMovementsResponse = zod.array(
+  ListInventoryMovementsResponseItem,
+);
+
+/**
+ * @summary Record a stock movement
+ */
+export const CreateInventoryMovementBody = zod.object({
+  businessId: zod.number(),
+  productId: zod.number().optional(),
+  productName: zod.string(),
+  productSector: zod
+    .enum(["GROCERY", "PHARMACY", "GARAGE_PART", "OTHER"])
+    .optional(),
+  movementType: zod.enum([
+    "PURCHASE",
+    "SALE",
+    "LOSS",
+    "EXPIRY",
+    "ADJUSTMENT",
+    "RETURN",
+    "TRANSFER",
+  ]),
+  quantity: zod.number(),
+  unitCost: zod.number().optional(),
+  reason: zod.string().optional(),
+  reference: zod.string().optional(),
+  operatorName: zod.string().optional(),
+});
+
+/**
+ * @summary Delete a movement record
+ */
+export const DeleteInventoryMovementParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Global inventory statistics
+ */
+export const GetInventoryStatsQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+});
+
+export const GetInventoryStatsResponse = zod.object({
+  totalIn: zod.number(),
+  totalOut: zod.number(),
+  totalLoss: zod.number(),
+  todayCount: zod.number(),
+  totalMovements: zod.number(),
+});
+
+/**
+ * @summary List suppliers for a business
+ */
+export const ListSuppliersQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+  sector: zod.coerce.string().optional(),
+  isActive: zod.coerce.boolean().optional(),
+});
+
+export const ListSuppliersResponseItem = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  city: zod.string().nullish(),
+  sector: zod.string().nullish(),
+  paymentTerms: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListSuppliersResponse = zod.array(ListSuppliersResponseItem);
+
+/**
+ * @summary Create a supplier
+ */
+export const CreateSupplierBody = zod.object({
+  businessId: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().optional(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  city: zod.string().optional(),
+  sector: zod.string().optional(),
+  paymentTerms: zod.string().optional(),
+  notes: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update a supplier
+ */
+export const UpdateSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSupplierBody = zod.object({
+  businessId: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().optional(),
+  phone: zod.string().optional(),
+  email: zod.string().optional(),
+  address: zod.string().optional(),
+  city: zod.string().optional(),
+  sector: zod.string().optional(),
+  paymentTerms: zod.string().optional(),
+  notes: zod.string().optional(),
+  isActive: zod.boolean().optional(),
+});
+
+export const UpdateSupplierResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  name: zod.string(),
+  contactName: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  email: zod.string().nullish(),
+  address: zod.string().nullish(),
+  city: zod.string().nullish(),
+  sector: zod.string().nullish(),
+  paymentTerms: zod.string().nullish(),
+  notes: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete a supplier
+ */
+export const DeleteSupplierParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List customer credit accounts
+ */
+export const ListCustomerCreditsQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+  status: zod.coerce.string().optional(),
+});
+
+export const ListCustomerCreditsResponseItem = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().nullish(),
+  totalDebt: zod.number(),
+  creditLimit: zod.number(),
+  lastPurchaseDate: zod.string().nullish(),
+  reminderDate: zod.string().nullish(),
+  status: zod.enum(["ACTIVE", "WARNED", "BLOCKED", "SETTLED"]),
+  notes: zod.string().nullish(),
+  autoReminder: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListCustomerCreditsResponse = zod.array(
+  ListCustomerCreditsResponseItem,
+);
+
+/**
+ * @summary Open a credit account for a client
+ */
+export const CreateCustomerCreditBody = zod.object({
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().optional(),
+  creditLimit: zod.number().optional(),
+  reminderDate: zod.string().optional(),
+  notes: zod.string().optional(),
+  autoReminder: zod.boolean().optional(),
+});
+
+/**
+ * @summary Customer credit statistics
+ */
+export const GetCreditsStatsQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+});
+
+export const GetCreditsStatsResponse = zod.object({
+  totalDebt: zod.number(),
+  activeCount: zod.number(),
+  warnedCount: zod.number(),
+  blockedCount: zod.number(),
+  settledCount: zod.number(),
+  totalClients: zod.number(),
+});
+
+/**
+ * @summary Update a credit account
+ */
+export const UpdateCustomerCreditParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateCustomerCreditBody = zod.object({
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().optional(),
+  creditLimit: zod.number().optional(),
+  reminderDate: zod.string().optional(),
+  notes: zod.string().optional(),
+  autoReminder: zod.boolean().optional(),
+});
+
+export const UpdateCustomerCreditResponse = zod.object({
+  id: zod.number(),
+  businessId: zod.number(),
+  clientName: zod.string(),
+  clientPhone: zod.string().nullish(),
+  totalDebt: zod.number(),
+  creditLimit: zod.number(),
+  lastPurchaseDate: zod.string().nullish(),
+  reminderDate: zod.string().nullish(),
+  status: zod.enum(["ACTIVE", "WARNED", "BLOCKED", "SETTLED"]),
+  notes: zod.string().nullish(),
+  autoReminder: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Delete a credit account and its transactions
+ */
+export const DeleteCustomerCreditParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary List transactions for a credit account
+ */
+export const ListCreditTransactionsParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListCreditTransactionsResponseItem = zod.object({
+  id: zod.number(),
+  creditId: zod.number(),
+  businessId: zod.number(),
+  type: zod.enum(["DEBIT", "PAYMENT"]),
+  amount: zod.number(),
+  description: zod.string().nullish(),
+  createdAt: zod.string(),
+});
+export const ListCreditTransactionsResponse = zod.array(
+  ListCreditTransactionsResponseItem,
+);
+
+/**
+ * @summary Record a debit or payment on an ardoise
+ */
+export const AddCreditTransactionParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const AddCreditTransactionBody = zod.object({
+  type: zod.enum(["DEBIT", "PAYMENT"]),
+  amount: zod.number(),
+  description: zod.string().optional(),
+  businessId: zod.number(),
+});
+
+/**
+ * @summary Get billing/invoice settings for a business
+ */
+export const GetBillingSettingsQueryParams = zod.object({
+  businessId: zod.coerce.number(),
+});
+
+export const GetBillingSettingsResponse = zod.object({
+  id: zod.number().nullish(),
+  businessId: zod.number(),
+  businessName: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  headerLine1: zod.string().nullish(),
+  headerLine2: zod.string().nullish(),
+  footerText: zod.string().nullish(),
+  invoicePrefix: zod.string(),
+  nextInvoiceNumber: zod.number(),
+  taxRate: zod.number(),
+  currency: zod.string(),
+  bankDetails: zod.string().nullish(),
+  showTax: zod.boolean(),
+  showLogo: zod.boolean(),
+  primaryColor: zod.string(),
+  createdAt: zod.string().nullish(),
+  updatedAt: zod.string().nullish(),
+});
+
+/**
+ * @summary Create or update billing settings
+ */
+export const UpsertBillingSettingsBody = zod.object({
+  businessId: zod.number(),
+  businessName: zod.string().optional(),
+  logoUrl: zod.string().optional(),
+  headerLine1: zod.string().optional(),
+  headerLine2: zod.string().optional(),
+  footerText: zod.string().optional(),
+  invoicePrefix: zod.string().optional(),
+  taxRate: zod.number().optional(),
+  currency: zod.string().optional(),
+  bankDetails: zod.string().optional(),
+  showTax: zod.boolean().optional(),
+  showLogo: zod.boolean().optional(),
+  primaryColor: zod.string().optional(),
+});
+
+export const UpsertBillingSettingsResponse = zod.object({
+  id: zod.number().nullish(),
+  businessId: zod.number(),
+  businessName: zod.string().nullish(),
+  logoUrl: zod.string().nullish(),
+  headerLine1: zod.string().nullish(),
+  headerLine2: zod.string().nullish(),
+  footerText: zod.string().nullish(),
+  invoicePrefix: zod.string(),
+  nextInvoiceNumber: zod.number(),
+  taxRate: zod.number(),
+  currency: zod.string(),
+  bankDetails: zod.string().nullish(),
+  showTax: zod.boolean(),
+  showLogo: zod.boolean(),
+  primaryColor: zod.string(),
+  createdAt: zod.string().nullish(),
+  updatedAt: zod.string().nullish(),
+});
+
+/**
+ * @summary Generate and increment the invoice number
+ */
+export const IncrementInvoiceNumberBody = zod.object({
+  businessId: zod.number(),
+});
+
+export const IncrementInvoiceNumberResponse = zod.object({
+  invoiceNumber: zod.string(),
+  nextInvoiceNumber: zod.number(),
 });
 
 /**

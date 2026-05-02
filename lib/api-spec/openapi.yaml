@@ -23,6 +23,10 @@ tags:
   - name: education
   - name: payments
   - name: notifications
+  - name: inventory
+  - name: suppliers
+  - name: credits
+  - name: billing
 
 paths:
   /healthz:
@@ -1763,7 +1767,392 @@ paths:
               schema:
                 $ref: "#/components/schemas/EducationStats"
 
-  # ─── NOTIFICATIONS ───────────────────────────────────────
+  # ─── INVENTORY MOVEMENTS ────────────────────────────────
+  /inventory/movements:
+    get:
+      operationId: listInventoryMovements
+      tags: [inventory]
+      summary: List stock movements
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: productSector
+          in: query
+          schema:
+            type: string
+        - name: movementType
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of movements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/InventoryMovement"
+    post:
+      operationId: createInventoryMovement
+      tags: [inventory]
+      summary: Record a stock movement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateInventoryMovementBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryMovement"
+
+  /inventory/movements/{id}:
+    delete:
+      operationId: deleteInventoryMovement
+      tags: [inventory]
+      summary: Delete a movement record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /inventory/stats:
+    get:
+      operationId: getInventoryStats
+      tags: [inventory]
+      summary: Global inventory statistics
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InventoryStats"
+
+  # ─── SUPPLIERS ──────────────────────────────────────────
+  /suppliers:
+    get:
+      operationId: listSuppliers
+      tags: [suppliers]
+      summary: List suppliers for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: sector
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of suppliers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Supplier"
+    post:
+      operationId: createSupplier
+      tags: [suppliers]
+      summary: Create a supplier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+
+  /suppliers/{id}:
+    put:
+      operationId: updateSupplier
+      tags: [suppliers]
+      summary: Update a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSupplierBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Supplier"
+    delete:
+      operationId: deleteSupplier
+      tags: [suppliers]
+      summary: Delete a supplier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── CUSTOMER CREDITS (L'ARDOISE) ───────────────────────
+  /credits:
+    get:
+      operationId: listCustomerCredits
+      tags: [credits]
+      summary: List customer credit accounts
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of credit accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerCredit"
+    post:
+      operationId: createCustomerCredit
+      tags: [credits]
+      summary: Open a credit account for a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerCreditBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCredit"
+
+  /credits/stats:
+    get:
+      operationId: getCreditsStats
+      tags: [credits]
+      summary: Customer credit statistics
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditsStats"
+
+  /credits/{id}:
+    put:
+      operationId: updateCustomerCredit
+      tags: [credits]
+      summary: Update a credit account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomerCreditBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerCredit"
+    delete:
+      operationId: deleteCustomerCredit
+      tags: [credits]
+      summary: Delete a credit account and its transactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /credits/{id}/transactions:
+    get:
+      operationId: listCreditTransactions
+      tags: [credits]
+      summary: List transactions for a credit account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CreditTransaction"
+    post:
+      operationId: addCreditTransaction
+      tags: [credits]
+      summary: Record a debit or payment on an ardoise
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreditTransactionBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditTransaction"
+
+  # ─── BILLING SETTINGS ───────────────────────────────────
+  /billing/settings:
+    get:
+      operationId: getBillingSettings
+      tags: [billing]
+      summary: Get billing/invoice settings for a business
+      parameters:
+        - name: businessId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Billing settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSettings"
+    put:
+      operationId: upsertBillingSettings
+      tags: [billing]
+      summary: Create or update billing settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertBillingSettingsBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSettings"
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSettings"
+
+  /billing/settings/increment-invoice:
+    post:
+      operationId: incrementInvoiceNumber
+      tags: [billing]
+      summary: Generate and increment the invoice number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                businessId:
+                  type: integer
+              required: [businessId]
+      responses:
+        "200":
+          description: Generated invoice number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoiceNumber:
+                    type: string
+                  nextInvoiceNumber:
+                    type: integer
+                required: [invoiceNumber, nextInvoiceNumber]
+
   /notifications:
     get:
       operationId: listNotifications
@@ -2645,48 +3034,6 @@ components:
           type: integer
       required: [businessId, name, category, price, costPrice, stock, minStock]
 
-    Supplier:
-      type: object
-      properties:
-        id:
-          type: integer
-        businessId:
-          type: integer
-        name:
-          type: string
-        phone:
-          type: string
-          nullable: true
-        email:
-          type: string
-          nullable: true
-        city:
-          type: string
-          nullable: true
-        isActive:
-          type: boolean
-        lastOrderDate:
-          type: string
-          nullable: true
-        totalOrders:
-          type: integer
-      required: [id, businessId, name, isActive, totalOrders]
-
-    CreateSupplierBody:
-      type: object
-      properties:
-        businessId:
-          type: integer
-        name:
-          type: string
-        phone:
-          type: string
-        email:
-          type: string
-        city:
-          type: string
-      required: [businessId, name]
-
     StockAdjustBody:
       type: object
       properties:
@@ -3331,6 +3678,345 @@ components:
         monthlyRevenue:
           type: number
       required: [totalStudents, activeCourses, pendingPayments, attendanceRate, monthlyRevenue]
+
+    # ─── INVENTORY MOVEMENTS ──────────────────────────────
+    InventoryMovement:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        productId:
+          type: integer
+          nullable: true
+        productName:
+          type: string
+        productSector:
+          type: string
+          enum: [GROCERY, PHARMACY, GARAGE_PART, OTHER]
+        movementType:
+          type: string
+          enum: [PURCHASE, SALE, LOSS, EXPIRY, ADJUSTMENT, RETURN, TRANSFER]
+        quantity:
+          type: integer
+        unitCost:
+          type: number
+          nullable: true
+        totalValue:
+          type: number
+          nullable: true
+        reason:
+          type: string
+          nullable: true
+        reference:
+          type: string
+          nullable: true
+        operatorName:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, businessId, productName, productSector, movementType, quantity, createdAt]
+
+    CreateInventoryMovementBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        productId:
+          type: integer
+        productName:
+          type: string
+        productSector:
+          type: string
+          enum: [GROCERY, PHARMACY, GARAGE_PART, OTHER]
+        movementType:
+          type: string
+          enum: [PURCHASE, SALE, LOSS, EXPIRY, ADJUSTMENT, RETURN, TRANSFER]
+        quantity:
+          type: integer
+        unitCost:
+          type: number
+        reason:
+          type: string
+        reference:
+          type: string
+        operatorName:
+          type: string
+      required: [businessId, productName, movementType, quantity]
+
+    InventoryStats:
+      type: object
+      properties:
+        totalIn:
+          type: integer
+        totalOut:
+          type: integer
+        totalLoss:
+          type: number
+        todayCount:
+          type: integer
+        totalMovements:
+          type: integer
+      required: [totalIn, totalOut, totalLoss, todayCount, totalMovements]
+
+    # ─── SUPPLIERS ────────────────────────────────────────
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        name:
+          type: string
+        contactName:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        address:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        sector:
+          type: string
+          nullable: true
+        paymentTerms:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, businessId, name, isActive, createdAt, updatedAt]
+
+    CreateSupplierBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        name:
+          type: string
+        contactName:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        sector:
+          type: string
+        paymentTerms:
+          type: string
+        notes:
+          type: string
+        isActive:
+          type: boolean
+      required: [businessId, name]
+
+    # ─── CUSTOMER CREDITS ─────────────────────────────────
+    CustomerCredit:
+      type: object
+      properties:
+        id:
+          type: integer
+        businessId:
+          type: integer
+        clientName:
+          type: string
+        clientPhone:
+          type: string
+          nullable: true
+        totalDebt:
+          type: number
+        creditLimit:
+          type: number
+        lastPurchaseDate:
+          type: string
+          nullable: true
+        reminderDate:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [ACTIVE, WARNED, BLOCKED, SETTLED]
+        notes:
+          type: string
+          nullable: true
+        autoReminder:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, businessId, clientName, totalDebt, creditLimit, status, autoReminder, createdAt, updatedAt]
+
+    CreateCustomerCreditBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        clientName:
+          type: string
+        clientPhone:
+          type: string
+        creditLimit:
+          type: number
+        reminderDate:
+          type: string
+        notes:
+          type: string
+        autoReminder:
+          type: boolean
+      required: [businessId, clientName]
+
+    CreditTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        creditId:
+          type: integer
+        businessId:
+          type: integer
+        type:
+          type: string
+          enum: [DEBIT, PAYMENT]
+        amount:
+          type: number
+        description:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required: [id, creditId, businessId, type, amount, createdAt]
+
+    CreditTransactionBody:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [DEBIT, PAYMENT]
+        amount:
+          type: number
+        description:
+          type: string
+        businessId:
+          type: integer
+      required: [type, amount, businessId]
+
+    CreditsStats:
+      type: object
+      properties:
+        totalDebt:
+          type: number
+        activeCount:
+          type: integer
+        warnedCount:
+          type: integer
+        blockedCount:
+          type: integer
+        settledCount:
+          type: integer
+        totalClients:
+          type: integer
+      required: [totalDebt, activeCount, warnedCount, blockedCount, settledCount, totalClients]
+
+    # ─── BILLING SETTINGS ─────────────────────────────────
+    BillingSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+        businessId:
+          type: integer
+        businessName:
+          type: string
+          nullable: true
+        logoUrl:
+          type: string
+          nullable: true
+        headerLine1:
+          type: string
+          nullable: true
+        headerLine2:
+          type: string
+          nullable: true
+        footerText:
+          type: string
+          nullable: true
+        invoicePrefix:
+          type: string
+        nextInvoiceNumber:
+          type: integer
+        taxRate:
+          type: number
+        currency:
+          type: string
+        bankDetails:
+          type: string
+          nullable: true
+        showTax:
+          type: boolean
+        showLogo:
+          type: boolean
+        primaryColor:
+          type: string
+        createdAt:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          nullable: true
+      required: [businessId, invoicePrefix, nextInvoiceNumber, taxRate, currency, showTax, showLogo, primaryColor]
+
+    UpsertBillingSettingsBody:
+      type: object
+      properties:
+        businessId:
+          type: integer
+        businessName:
+          type: string
+        logoUrl:
+          type: string
+        headerLine1:
+          type: string
+        headerLine2:
+          type: string
+        footerText:
+          type: string
+        invoicePrefix:
+          type: string
+        taxRate:
+          type: number
+        currency:
+          type: string
+        bankDetails:
+          type: string
+        showTax:
+          type: boolean
+        showLogo:
+          type: boolean
+        primaryColor:
+          type: string
+      required: [businessId]
 
     # ─── NOTIFICATIONS ────────────────────────────────────
     Notification:

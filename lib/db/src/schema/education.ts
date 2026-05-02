@@ -2,7 +2,7 @@ import { pgTable, serial, text, timestamp, integer, boolean, numeric, pgEnum } f
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-export const paymentStatusEnum = pgEnum("payment_status", ["PAID", "PARTIAL", "PENDING", "OVERDUE"]);
+export const educationPaymentStatusEnum = pgEnum("education_payment_status", ["PAID", "PARTIAL", "PENDING", "OVERDUE"]);
 
 export const coursesTable = pgTable("courses", {
   id: serial("id").primaryKey(),
@@ -29,7 +29,7 @@ export const studentsTable = pgTable("students", {
   courseName: text("course_name"),
   enrollmentDate: text("enrollment_date"),
   attendanceRate: numeric("attendance_rate", { precision: 5, scale: 2 }).notNull().default("0"),
-  paymentStatus: paymentStatusEnum("payment_status").notNull().default("PENDING"),
+  paymentStatus: educationPaymentStatusEnum("payment_status").notNull().default("PENDING"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -44,7 +44,7 @@ export const enrollmentsTable = pgTable("enrollments", {
   totalAmount: numeric("total_amount", { precision: 12, scale: 2 }).notNull(),
   amountPaid: numeric("amount_paid", { precision: 12, scale: 2 }).notNull().default("0"),
   installments: integer("installments").notNull().default(1),
-  paymentStatus: paymentStatusEnum("payment_status").notNull().default("PENDING"),
+  paymentStatus: educationPaymentStatusEnum("payment_status").notNull().default("PENDING"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

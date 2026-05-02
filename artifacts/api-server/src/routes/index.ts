@@ -15,6 +15,10 @@ import pharmacyRouter from "./pharmacy";
 import garageRouter from "./garage";
 import fitnessRouter from "./fitness";
 import educationRouter from "./education";
+import inventoryRouter from "./inventory";
+import suppliersRouter from "./suppliers";
+import creditsRouter from "./credits";
+import billingRouter from "./billing";
 
 const router: IRouter = Router();
 
@@ -34,5 +38,9 @@ router.use(pharmacyRouter);
 router.use(garageRouter);
 router.use(fitnessRouter);
 router.use(educationRouter);
+router.use(inventoryRouter);
+router.use(suppliersRouter);
+router.use(creditsRouter);
+router.use(billingRouter);
 
 export default router;

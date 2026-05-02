@@ -10,10 +10,15 @@ export interface Supplier {
   id: number;
   businessId: number;
   name: string;
+  contactName?: string | null;
   phone?: string | null;
   email?: string | null;
+  address?: string | null;
   city?: string | null;
+  sector?: string | null;
+  paymentTerms?: string | null;
+  notes?: string | null;
   isActive: boolean;
-  lastOrderDate?: string | null;
-  totalOrders: number;
+  createdAt: string;
+  updatedAt: string;
 }

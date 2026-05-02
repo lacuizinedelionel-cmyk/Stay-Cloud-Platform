@@ -19,23 +19,6 @@ export const groceryProductsTable = pgTable("grocery_products", {
   isActive: boolean("is_active").notNull().default(true),
 });
 
-export const suppliersTable = pgTable("suppliers", {
-  id: serial("id").primaryKey(),
-  businessId: integer("business_id").notNull(),
-  name: text("name").notNull(),
-  phone: text("phone"),
-  email: text("email"),
-  city: text("city"),
-  isActive: boolean("is_active").notNull().default(true),
-  lastOrderDate: text("last_order_date"),
-  totalOrders: integer("total_orders").notNull().default(0),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
 export const insertGroceryProductSchema = createInsertSchema(groceryProductsTable).omit({ id: true });
 export type InsertGroceryProduct = z.infer<typeof insertGroceryProductSchema>;
 export type GroceryProduct = typeof groceryProductsTable.$inferSelect;
-
-export const insertSupplierSchema = createInsertSchema(suppliersTable).omit({ id: true, createdAt: true });
-export type InsertSupplier = z.infer<typeof insertSupplierSchema>;
-export type Supplier = typeof suppliersTable.$inferSelect;
