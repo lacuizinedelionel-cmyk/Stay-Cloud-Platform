@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { loginSchema, type LoginFormData } from '@/lib/schemas';
-import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone } from 'lucide-react';
+import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone, LockKeyhole } from 'lucide-react';
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -262,20 +262,20 @@ export default function Login() {
           )}
 
           {step === 'otp' && (
-            <div className="space-y-5">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="space-y-5 font-sans">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                  <LockKeyhole className="w-4.5 h-4.5 text-white" />
                 </div>
-                <div>
+                <div className="pt-0.5">
                   <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.03em' }}>
                     Sécurité renforcée
                   </h1>
-                  <p className="text-sm text-muted-foreground">Entrez le code reçu par SMS au {pendingPhone}.</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Entrez le code reçu par SMS au {pendingPhone}.</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl border border-border bg-card flex items-center gap-3">
+              <div className="p-4 rounded-2xl border border-border bg-card/80 flex items-center gap-3">
                 <Smartphone className="w-5 h-5 text-muted-foreground shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-foreground">{pendingEmail}</p>
@@ -313,6 +313,10 @@ export default function Login() {
               >
                 Modifier mes identifiants
               </button>
+
+              <p className="pt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
+                LB Stay utilise un cryptage de bout en bout pour protéger vos données bancaires
+              </p>
             </div>
           )}
 
