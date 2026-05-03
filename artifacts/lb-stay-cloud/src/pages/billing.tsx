@@ -327,7 +327,7 @@ export default function BillingPage() {
         <div className="p-5 border-b" style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--muted) / 0.4)' }}>
           <h2 className="text-base font-bold text-foreground">Comparatif des plans</h2>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-w-full">
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>

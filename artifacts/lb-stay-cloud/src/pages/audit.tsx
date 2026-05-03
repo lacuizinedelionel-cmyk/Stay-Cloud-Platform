@@ -516,7 +516,7 @@ function PermissionsTab({ businessId }: { businessId: number | null }) {
           <Lock className="w-4 h-4" style={{ color: 'hsl(38 90% 56%)' }} strokeWidth={1.5} />
           <p className="text-xs font-bold text-foreground">Matrice des permissions par rôle</p>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto max-w-full">
           <table className="w-full text-xs">
             <thead>
               <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>

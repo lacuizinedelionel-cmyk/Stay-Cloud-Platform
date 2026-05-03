@@ -65,7 +65,7 @@ export default function EducationDashboard() {
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
             ) : courses && courses.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-w-full">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/50 hover:bg-transparent">
@@ -103,7 +103,7 @@ export default function EducationDashboard() {
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
             ) : students && students.length > 0 ? (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto max-w-full">
                 <Table>
                   <TableHeader>
                     <TableRow className="border-border/50 hover:bg-transparent">

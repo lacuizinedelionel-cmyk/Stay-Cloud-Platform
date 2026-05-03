@@ -80,7 +80,7 @@ export default function BeautyDashboard() {
                {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
              </div>
           ) : appointments && appointments.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-w-full">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border/50 hover:bg-transparent">
