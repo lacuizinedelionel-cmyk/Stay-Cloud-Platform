@@ -12,6 +12,39 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const DEMO_CAISSE_ORDERS: CaisseOrder[] = [
+  { id: 1, clientName: 'Paul', tableNumber: 'T01', paymentMethod: 'CASH', total: 18500, status: 'COMPLETED', createdAt: '2026-05-03T18:42:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 8500, subtotal: 8500 }, { productName: 'Soya', quantity: 2, unitPrice: 5000, subtotal: 10000 }] },
+  { id: 2, clientName: 'Syntia', tableNumber: 'T03', paymentMethod: 'MTN_MOMO', total: 24500, status: 'COMPLETED', createdAt: '2026-05-03T18:35:00.000Z', items: [{ productName: 'Poisson braisé', quantity: 1, unitPrice: 16000, subtotal: 16000 }, { productName: 'Bissap', quantity: 3, unitPrice: 2833, subtotal: 8500 }] },
+  { id: 3, clientName: 'David', tableNumber: 'T02', paymentMethod: 'ORANGE_MONEY', total: 12000, status: 'COMPLETED', createdAt: '2026-05-03T18:28:00.000Z', items: [{ productName: 'Soya', quantity: 2, unitPrice: 4000, subtotal: 8000 }, { productName: 'Jus de gingembre', quantity: 2, unitPrice: 2000, subtotal: 4000 }] },
+  { id: 4, clientName: 'Mado', tableNumber: 'T05', paymentMethod: 'CASH', total: 32000, status: 'COMPLETED', createdAt: '2026-05-03T18:22:00.000Z', items: [{ productName: 'Ndolé', quantity: 2, unitPrice: 8500, subtotal: 17000 }, { productName: 'Poulet DG', quantity: 1, unitPrice: 15000, subtotal: 15000 }] },
+  { id: 5, clientName: 'Patrice', tableNumber: 'T06', paymentMethod: 'MTN_MOMO', total: 14500, status: 'COMPLETED', createdAt: '2026-05-03T18:16:00.000Z', items: [{ productName: 'Poisson', quantity: 1, unitPrice: 12000, subtotal: 12000 }, { productName: 'Eau minérale', quantity: 1, unitPrice: 2500, subtotal: 2500 }] },
+  { id: 6, clientName: 'Aïcha', tableNumber: 'T08', paymentMethod: 'ORANGE_MONEY', total: 22500, status: 'COMPLETED', createdAt: '2026-05-03T18:10:00.000Z', items: [{ productName: 'Poulet DG', quantity: 1, unitPrice: 16500, subtotal: 16500 }, { productName: 'Bissap', quantity: 3, unitPrice: 2000, subtotal: 6000 }] },
+  { id: 7, clientName: 'Blaise', tableNumber: 'T04', paymentMethod: 'CASH', total: 17500, status: 'COMPLETED', createdAt: '2026-05-03T18:04:00.000Z', items: [{ productName: 'Soya', quantity: 3, unitPrice: 4500, subtotal: 13500 }, { productName: 'Frites', quantity: 1, unitPrice: 4000, subtotal: 4000 }] },
+  { id: 8, clientName: 'Nadine', tableNumber: 'T10', paymentMethod: 'MTN_MOMO', total: 28000, status: 'COMPLETED', createdAt: '2026-05-03T17:58:00.000Z', items: [{ productName: 'Poisson braisé', quantity: 1, unitPrice: 18000, subtotal: 18000 }, { productName: 'Plantain', quantity: 2, unitPrice: 5000, subtotal: 10000 }] },
+  { id: 9, clientName: 'Junior', tableNumber: 'T11', paymentMethod: 'ORANGE_MONEY', total: 19500, status: 'COMPLETED', createdAt: '2026-05-03T17:52:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 9000, subtotal: 9000 }, { productName: 'Soya', quantity: 2, unitPrice: 5250, subtotal: 10500 }] },
+  { id: 10, clientName: 'Paul', tableNumber: 'T12', paymentMethod: 'CASH', total: 26500, status: 'COMPLETED', createdAt: '2026-05-03T17:45:00.000Z', items: [{ productName: 'Poulet DG', quantity: 1, unitPrice: 16000, subtotal: 16000 }, { productName: 'Jus de gingembre', quantity: 3, unitPrice: 3500, subtotal: 10500 }] },
+  { id: 11, clientName: 'Syntia', tableNumber: 'T13', paymentMethod: 'MTN_MOMO', total: 13250, status: 'COMPLETED', createdAt: '2026-05-03T17:39:00.000Z', items: [{ productName: 'Poisson', quantity: 1, unitPrice: 12000, subtotal: 12000 }, { productName: 'Eau minérale', quantity: 1, unitPrice: 1250, subtotal: 1250 }] },
+  { id: 12, clientName: 'Dieudonné', tableNumber: 'T14', paymentMethod: 'ORANGE_MONEY', total: 31000, status: 'COMPLETED', createdAt: '2026-05-03T17:33:00.000Z', items: [{ productName: 'Ndolé', quantity: 2, unitPrice: 8500, subtotal: 17000 }, { productName: 'Poulet DG', quantity: 1, unitPrice: 14000, subtotal: 14000 }] },
+  { id: 13, clientName: 'Aminata', tableNumber: 'T15', paymentMethod: 'CASH', total: 14800, status: 'COMPLETED', createdAt: '2026-05-03T17:27:00.000Z', items: [{ productName: 'Soya', quantity: 2, unitPrice: 5000, subtotal: 10000 }, { productName: 'Bissap', quantity: 2, unitPrice: 2400, subtotal: 4800 }] },
+  { id: 14, clientName: 'Hugo', tableNumber: 'T16', paymentMethod: 'MTN_MOMO', total: 22700, status: 'COMPLETED', createdAt: '2026-05-03T17:21:00.000Z', items: [{ productName: 'Poisson braisé', quantity: 1, unitPrice: 17500, subtotal: 17500 }, { productName: 'Plantain', quantity: 1, unitPrice: 5200, subtotal: 5200 }] },
+  { id: 15, clientName: 'Fanny', tableNumber: 'T17', paymentMethod: 'ORANGE_MONEY', total: 19000, status: 'COMPLETED', createdAt: '2026-05-03T17:15:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 9500, subtotal: 9500 }, { productName: 'Jus de gingembre', quantity: 1, unitPrice: 3000, subtotal: 3000 }, { productName: 'Soya', quantity: 1, unitPrice: 6500, subtotal: 6500 }] },
+  { id: 16, clientName: 'Koffi', tableNumber: 'T18', paymentMethod: 'CASH', total: 35500, status: 'COMPLETED', createdAt: '2026-05-03T17:09:00.000Z', items: [{ productName: 'Poulet DG', quantity: 2, unitPrice: 15000, subtotal: 30000 }, { productName: 'Bissap', quantity: 2, unitPrice: 2750, subtotal: 5500 }] },
+  { id: 17, clientName: 'Mireille', tableNumber: 'T19', paymentMethod: 'MTN_MOMO', total: 16200, status: 'COMPLETED', createdAt: '2026-05-03T17:03:00.000Z', items: [{ productName: 'Poisson', quantity: 1, unitPrice: 13000, subtotal: 13000 }, { productName: 'Eau minérale', quantity: 1, unitPrice: 3200, subtotal: 3200 }] },
+  { id: 18, clientName: 'Jonas', tableNumber: 'T20', paymentMethod: 'ORANGE_MONEY', total: 27100, status: 'COMPLETED', createdAt: '2026-05-03T16:57:00.000Z', items: [{ productName: 'Ndolé', quantity: 2, unitPrice: 8200, subtotal: 16400 }, { productName: 'Soya', quantity: 2, unitPrice: 5350, subtotal: 10700 }] },
+  { id: 19, clientName: 'Paul', tableNumber: 'T21', paymentMethod: 'CASH', total: 21600, status: 'COMPLETED', createdAt: '2026-05-03T16:52:00.000Z', items: [{ productName: 'Poisson braisé', quantity: 1, unitPrice: 18000, subtotal: 18000 }, { productName: 'Bissap', quantity: 2, unitPrice: 1800, subtotal: 3600 }] },
+  { id: 20, clientName: 'Syntia', tableNumber: 'T22', paymentMethod: 'MTN_MOMO', total: 18400, status: 'COMPLETED', createdAt: '2026-05-03T16:47:00.000Z', items: [{ productName: 'Poulet DG', quantity: 1, unitPrice: 15000, subtotal: 15000 }, { productName: 'Jus de gingembre', quantity: 1, unitPrice: 3400, subtotal: 3400 }] },
+  { id: 21, clientName: 'Serge', tableNumber: 'T23', paymentMethod: 'ORANGE_MONEY', total: 29400, status: 'COMPLETED', createdAt: '2026-05-03T16:41:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 9200, subtotal: 9200 }, { productName: 'Poisson braisé', quantity: 1, unitPrice: 20200, subtotal: 20200 }] },
+  { id: 22, clientName: 'Hortense', tableNumber: 'T24', paymentMethod: 'CASH', total: 15800, status: 'COMPLETED', createdAt: '2026-05-03T16:36:00.000Z', items: [{ productName: 'Soya', quantity: 2, unitPrice: 5000, subtotal: 10000 }, { productName: 'Eau minérale', quantity: 2, unitPrice: 2900, subtotal: 5800 }] },
+  { id: 23, clientName: 'Germain', tableNumber: 'T25', paymentMethod: 'MTN_MOMO', total: 20100, status: 'COMPLETED', createdAt: '2026-05-03T16:30:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 9000, subtotal: 9000 }, { productName: 'Poulet DG', quantity: 1, unitPrice: 11100, subtotal: 11100 }] },
+  { id: 24, clientName: 'Monique', tableNumber: 'T26', paymentMethod: 'ORANGE_MONEY', total: 14500, status: 'COMPLETED', createdAt: '2026-05-03T16:24:00.000Z', items: [{ productName: 'Poisson', quantity: 1, unitPrice: 12000, subtotal: 12000 }, { productName: 'Bissap', quantity: 1, unitPrice: 2500, subtotal: 2500 }] },
+  { id: 25, clientName: 'Ablam', tableNumber: 'T27', paymentMethod: 'CASH', total: 33200, status: 'COMPLETED', createdAt: '2026-05-03T16:18:00.000Z', items: [{ productName: 'Poulet DG', quantity: 2, unitPrice: 14500, subtotal: 29000 }, { productName: 'Jus de gingembre', quantity: 1, unitPrice: 4200, subtotal: 4200 }] },
+  { id: 26, clientName: 'Célestine', tableNumber: 'T28', paymentMethod: 'MTN_MOMO', total: 9700, status: 'CANCELLED', createdAt: '2026-05-03T16:12:00.000Z', items: [{ productName: 'Soya', quantity: 1, unitPrice: 4700, subtotal: 4700 }, { productName: 'Eau minérale', quantity: 2, unitPrice: 2500, subtotal: 5000 }] },
+  { id: 27, clientName: 'Bruno', tableNumber: 'T29', paymentMethod: 'ORANGE_MONEY', total: 21800, status: 'CANCELLED', createdAt: '2026-05-03T16:07:00.000Z', items: [{ productName: 'Ndolé', quantity: 1, unitPrice: 9800, subtotal: 9800 }, { productName: 'Poisson braisé', quantity: 1, unitPrice: 12000, subtotal: 12000 }] },
+  { id: 28, clientName: 'Sylvie', tableNumber: 'T30', paymentMethod: 'CASH', total: 17600, status: 'CANCELLED', createdAt: '2026-05-03T16:02:00.000Z', items: [{ productName: 'Poulet DG', quantity: 1, unitPrice: 9800, subtotal: 9800 }, { productName: 'Bissap', quantity: 4, unitPrice: 1950, subtotal: 7800 }] },
+  { id: 29, clientName: 'Grace', tableNumber: 'T31', paymentMethod: 'MTN_MOMO', total: 0, status: 'FREE', createdAt: '2026-05-03T15:58:00.000Z', items: [] },
+  { id: 30, clientName: 'Atangana', tableNumber: 'T32', paymentMethod: 'ORANGE_MONEY', total: 0, status: 'FREE', createdAt: '2026-05-03T15:54:00.000Z', items: [] },
+];
+
 /* ── Types ── */
 interface CaisseOrder {
   id: number; clientName: string | null; tableNumber: string | null;
@@ -350,13 +383,13 @@ export default function CaissePage() {
                     <div>
                       <p className="text-sm font-bold text-foreground">Caisse clôturée</p>
                       <p className="text-xs text-muted-foreground">
-                        Le {fmtDate(selectedDate)} à {fmtTime(caisse.closedEntry!.closedAt)}
-                        {caisse.closedEntry?.note && ` · ${caisse.closedEntry.note}`}
+                        Le {fmtDate(selectedDate)} à {fmtTime(caisse?.closedEntry?.closedAt ?? new Date().toISOString())}
+                        {caisse?.closedEntry?.note && ` · ${caisse.closedEntry.note}`}
                       </p>
                     </div>
                   </div>
                   <button
-                    onClick={() => reopen(caisse.closedEntry!.id)}
+                    onClick={() => caisse?.closedEntry && reopen(caisse.closedEntry.id)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
                     style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}
                   >
