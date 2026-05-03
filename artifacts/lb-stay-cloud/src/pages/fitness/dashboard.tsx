@@ -16,6 +16,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+const DEMO_FITNESS_STATS = {
+  activeMembers: 128,
+  subscriptionsThisMonth: 34,
+  monthlyRevenue: 1245000,
+  presentNow: 22,
+};
+
+const DEMO_FITNESS_MEMBERS = [
+  { id: 1, name: 'M. Mbida', subscriptionType: 'Premium Mensuel', subscriptionEndDate: '2026-05-12', isPresentNow: true },
+  { id: 2, name: 'Mme Ndam', subscriptionType: 'Standard Mensuel', subscriptionEndDate: '2026-05-08', isPresentNow: false },
+  { id: 3, name: 'M. Essono', subscriptionType: 'VIP Annuel', subscriptionEndDate: '2026-12-31', isPresentNow: true },
+  { id: 4, name: 'Mme Talla', subscriptionType: 'Premium Mensuel', subscriptionEndDate: '2026-05-06', isPresentNow: false },
+  { id: 5, name: 'M. Foe', subscriptionType: 'Carte 10 séances', subscriptionEndDate: '2026-05-20', isPresentNow: true },
+];
+
+const DEMO_FITNESS_CLASSES = [
+  { id: 1, name: 'Yoga Matinal', coachName: 'Coach Mireille', dayOfWeek: 'Lundi', startTime: '06:30', enrolledCount: 18, capacity: 20 },
+  { id: 2, name: 'HIIT Express', coachName: 'Coach Steve', dayOfWeek: 'Mardi', startTime: '18:00', enrolledCount: 20, capacity: 20 },
+  { id: 3, name: 'Zumba Gold', coachName: 'Coach Nadia', dayOfWeek: 'Mercredi', startTime: '19:00', enrolledCount: 16, capacity: 24 },
+  { id: 4, name: 'Musculation Débutants', coachName: 'Coach Yann', dayOfWeek: 'Jeudi', startTime: '17:30', enrolledCount: 12, capacity: 15 },
+  { id: 5, name: 'Stretch & Recover', coachName: 'Coach Mireille', dayOfWeek: 'Samedi', startTime: '08:00', enrolledCount: 10, capacity: 12 },
+];
+
 export default function FitnessDashboard() {
   const { business } = useAuth();
   
@@ -34,6 +57,10 @@ export default function FitnessDashboard() {
     { query: { enabled: !!business?.id, queryKey: getListFitnessClassesQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
+  const displayStats = stats ?? DEMO_FITNESS_STATS;
+  const displayMembers = members && members.length > 0 ? members : DEMO_FITNESS_MEMBERS;
+  const displayClasses = classes && classes.length > 0 ? classes : DEMO_FITNESS_CLASSES;
+
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
@@ -44,14 +71,14 @@ export default function FitnessDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
-        ) : stats ? (
+        ) : (
           <>
-            <KPICard title="Membres Actifs" value={stats.activeMembers} icon={Users} />
-            <KPICard title="Abonnements ce mois" value={stats.subscriptionsThisMonth} icon={Activity} />
-            <KPICard title="CA Mensuel" value={stats.monthlyRevenue} icon={Receipt} isCurrency />
-            <KPICard title="Présents Maintenant" value={stats.presentNow} icon={UserCheck} />
+            <KPICard title="Membres Actifs" value={displayStats.activeMembers} icon={Users} />
+            <KPICard title="Abonnements ce mois" value={displayStats.subscriptionsThisMonth} icon={Activity} />
+            <KPICard title="CA Mensuel" value={displayStats.monthlyRevenue} icon={Receipt} isCurrency />
+            <KPICard title="Présents Maintenant" value={displayStats.presentNow} icon={UserCheck} />
           </>
-        ) : null}
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -64,7 +91,7 @@ export default function FitnessDashboard() {
                <div className="space-y-4">
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
-            ) : members && members.length > 0 ? (
+            ) : displayMembers.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -75,7 +102,7 @@ export default function FitnessDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {members.slice(0, 5).map((member) => {
+                    {displayMembers.slice(0, 5).map((member) => {
                       const isExpiringSoon = new Date(member.subscriptionEndDate).getTime() - new Date().getTime() < 7 * 24 * 3600 * 1000;
                       return (
                         <TableRow key={member.id} className="border-border/50">
@@ -115,7 +142,7 @@ export default function FitnessDashboard() {
                <div className="space-y-4">
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
-            ) : classes && classes.length > 0 ? (
+            ) : displayClasses.length > 0 ? (
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -127,7 +154,7 @@ export default function FitnessDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {classes.map((cls) => (
+                    {displayClasses.map((cls) => (
                       <TableRow key={cls.id} className="border-border/50">
                         <TableCell className="font-medium">{cls.name}</TableCell>
                         <TableCell>{cls.coachName}</TableCell>
