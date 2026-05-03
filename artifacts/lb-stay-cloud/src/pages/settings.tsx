@@ -1,348 +1,220 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useLanguage } from '@/context/LanguageContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { usePermissions } from '@/hooks/usePermissions';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Building2, MessageSquare, CreditCard, ImagePlus, X,
-  CheckCircle2, Upload, Globe, Loader2, BadgeDollarSign, UserCircle2,
-} from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
 
-/* ── helpers ── */
-function SectionHeading({ icon: Icon, title, subtitle, color = '#F5A623' }: {
-  icon: React.ElementType; title: string; subtitle: string; color?: string;
-}) {
+type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
+
+type SiteConfig = {
+  id: string;
+  city: string;
+  name: string;
+  commercialName: string;
+  modules: Record<ModuleKey, boolean>;
+};
+
+const moduleMeta: Record<ModuleKey, { label: string; icon: React.ElementType }> = {
+  hotel: { label: 'Hôtel', icon: Hotel },
+  resto: { label: 'Resto', icon: Soup },
+  pharmacie: { label: 'Pharmacie', icon: Pill },
+  beauty: { label: 'Beauté', icon: Sparkles },
+  grocery: { label: 'Épicerie', icon: Store },
+  garage: { label: 'Garage', icon: BriefcaseBusiness },
+};
+
+const initialSites: SiteConfig[] = [
+  {
+    id: 'site-douala',
+    city: 'Douala',
+    name: 'LB Stay - Akwa',
+    commercialName: 'LB Stay Akwa Premium',
+    modules: { hotel: true, resto: true, pharmacie: false, beauty: false, grocery: true, garage: false },
+  },
+  {
+    id: 'site-yaounde',
+    city: 'Yaoundé',
+    name: 'LB Stay - Bastos',
+    commercialName: 'LB Stay Bastos Business',
+    modules: { hotel: true, resto: false, pharmacie: true, beauty: true, grocery: false, garage: false },
+  },
+  {
+    id: 'site-bafoussam',
+    city: 'Bafoussam',
+    name: 'LB Stay - Marché C',
+    commercialName: 'LB Stay Marché C Select',
+    modules: { hotel: false, resto: true, pharmacie: true, beauty: false, grocery: true, garage: true },
+  },
+];
+
+function StatCard({ title, value }: { title: string; value: string }) {
   return (
-    <div className="space-y-1">
-      <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-        <Icon className="w-4 h-4 shrink-0" style={{ color }} />
-        {title}
-      </h3>
-      <p className="text-[11px] text-muted-foreground leading-relaxed">{subtitle}</p>
+    <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+      <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-semibold">{title}</p>
+      <p className="text-2xl font-extrabold mt-2" style={{ color: 'hsl(38 90% 56%)' }}>{value}</p>
     </div>
   );
 }
 
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="rounded-xl p-5 space-y-4"
-      style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
-      {children}
-    </div>
-  );
-}
-
-function LabelPill({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
-      style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
-      {children}
-    </div>
-  );
-}
-
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</label>
-      {children}
-    </div>
-  );
-}
-
-function TextInput({ value, onChange, placeholder, disabled }: {
-  value?: string; onChange?: (v: string) => void; placeholder?: string; disabled?: boolean;
-}) {
-  return (
-    <input
-      value={value ?? ''}
-      onChange={e => onChange?.(e.target.value)}
-      placeholder={placeholder}
-      disabled={disabled}
-      className="w-full px-3 py-2 rounded-lg text-sm text-foreground outline-none transition-all disabled:opacity-50"
-      style={{
-        background: 'hsl(var(--muted))',
-        border: '1px solid hsl(var(--border))',
-      }}
-      onFocus={e  => { (e.target as HTMLInputElement).style.borderColor = 'hsl(38 90% 56% / 0.6)'; }}
-      onBlur={e   => { (e.target as HTMLInputElement).style.borderColor = 'hsl(var(--border))'; }}
-    />
-  );
-}
-
-/* ══════════════════════════════════════
-   Section Logo Upload
-══════════════════════════════════════ */
-function LogoUploadSection({ businessId }: { businessId: number }) {
-  const { t } = useLanguage();
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview]   = useState<string | null>(null);
-  const [isDragging, setDrag]   = useState(false);
-
-  /* Charger le logo actuel */
-  const { data: billingSettings } = useQuery({
-    queryKey: ['billing-settings', businessId],
-    queryFn: async () => {
-      const res = await fetch(`/api/billing/settings?businessId=${businessId}`);
-      if (!res.ok) return null;
-      return res.json() as Promise<{ logoUrl?: string | null }>;
-    },
-    enabled: !!businessId,
-  });
-
-  const currentLogo = preview ?? billingSettings?.logoUrl ?? null;
-
-  /* Sauvegarder le logo */
-  const { mutate: saveLogo, isPending: saving } = useMutation({
-    mutationFn: async (logoUrl: string | null) => {
-      const res = await fetch('/api/billing/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId, logoUrl }),
-      });
-      if (!res.ok) throw new Error('Erreur serveur');
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['billing-settings', businessId] });
-      toast({ title: '✅ ' + t.settings.savedOk });
-    },
-    onError: () => toast({ title: t.common.error, variant: 'destructive' }),
-  });
-
-  const processFile = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Fichier invalide', description: 'PNG, JPG ou SVG uniquement', variant: 'destructive' });
-      return;
-    }
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: 'Fichier trop lourd', description: 'Maximum 2 Mo', variant: 'destructive' });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      const dataUrl = e.target?.result as string;
-      setPreview(dataUrl);
-    };
-    reader.readAsDataURL(file);
-  }, [toast]);
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDrag(false);
-    const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
-  };
-
-  const removeLogo = () => {
-    setPreview(null);
-    saveLogo(null);
-    if (fileRef.current) fileRef.current.value = '';
-  };
-
-  return (
-    <Card>
-      <FormField label={t.settings.logo}>
-        <p className="text-[11px] text-muted-foreground -mt-1">{t.settings.logoSubtitle}</p>
-      </FormField>
-
-      <div className="flex flex-col gap-5 items-start sm:flex-row">
-        {/* Preview */}
-        <div className="relative shrink-0">
-          <div
-            className="w-24 h-24 rounded-2xl flex items-center justify-center overflow-hidden transition-all"
-            style={{
-              background: currentLogo ? 'white' : 'hsl(var(--muted))',
-              border: `2px dashed ${currentLogo ? 'hsl(38 90% 56% / 0.4)' : 'hsl(var(--border))'}`,
-            }}
-          >
-            {currentLogo ? (
-              <img src={currentLogo} alt="Logo" className="w-full h-full object-contain p-1.5" />
-            ) : (
-              <ImagePlus className="w-8 h-8 text-muted-foreground/40" strokeWidth={1} />
-            )}
-          </div>
-          {currentLogo && (
-            <button
-              onClick={removeLogo}
-              className="absolute -top-2 -right-2 w-5 h-5 rounded-full flex items-center justify-center transition-all"
-              style={{ background: '#EF4444', border: '2px solid hsl(var(--background))' }}
-              title={t.settings.removeLogo}
-            >
-              <X className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-            </button>
-          )}
-        </div>
-
-        {/* Drop zone + boutons */}
-        <div className="flex-1 space-y-3">
-          <div
-            onDrop={handleDrop}
-            onDragOver={e => { e.preventDefault(); setDrag(true); }}
-            onDragLeave={() => setDrag(false)}
-            onClick={() => fileRef.current?.click()}
-            className="rounded-xl flex flex-col items-center justify-center gap-2 p-5 cursor-pointer transition-all"
-            style={{
-              border: `2px dashed ${isDragging ? 'hsl(38 90% 56%)' : 'hsl(var(--border))'}`,
-              background: isDragging ? 'hsl(38 90% 56% / 0.06)' : 'hsl(var(--muted) / 0.4)',
-            }}
-          >
-            <Upload className="w-5 h-5 text-muted-foreground" strokeWidth={1.5} />
-            <p className="text-xs font-semibold text-foreground">
-              {t.settings.uploadLogo}
-            </p>
-            <p className="text-[10px] text-muted-foreground text-center">{t.settings.logoTip}</p>
-          </div>
-
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-          />
-
-          {preview && (
-            <motion.button
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              disabled={saving}
-              onClick={() => saveLogo(preview)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
-              style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
-            >
-              {saving
-                ? <><Loader2 className="w-4 h-4 animate-spin" /> {t.actions.saving}</>
-                : <><CheckCircle2 className="w-4 h-4" /> {t.actions.save}</>
-              }
-            </motion.button>
-          )}
-        </div>
-      </div>
-    </Card>
-  );
-}
-
-/* ══════════════════════════════════════
-   PAGE PARAMÈTRES
-══════════════════════════════════════ */
 export default function SettingsPage() {
-  const { user, business } = useAuth();
-  const { isSuperAdmin, hasMinRole } = usePermissions();
-  const { t, lang, setLang } = useLanguage();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const canViewBusinessSettings = isSuperAdmin || (business && hasMinRole('OWNER'));
+  const [sites, setSites] = useState(initialSites);
+  const [selectedSite, setSelectedSite] = useState(initialSites[0].id);
 
-  const [name, setName]     = useState(business?.name ?? '');
-  const [logoUrl, setLogoUrl] = useState((business as any)?.logoUrl ?? '');
-  const [currency, setCurrency] = useState('XAF');
+  const current = useMemo(() => sites.find(s => s.id === selectedSite) ?? sites[0], [selectedSite, sites]);
+  const activeModules = useMemo(() => Object.values(current.modules).filter(Boolean).length, [current.modules]);
 
-  useEffect(() => {
-    setName(business?.name ?? '');
-    setLogoUrl((business as any)?.logoUrl ?? '');
-  }, [business]);
+  const updateSite = (siteId: string, patch: Partial<SiteConfig>) => {
+    setSites(prev => prev.map(site => site.id === siteId ? { ...site, ...patch } : site));
+  };
 
-  if (!isSuperAdmin && !business) return <Redirect to="/login" />;
-  if (!canViewBusinessSettings && !isSuperAdmin) return <Redirect to="/dashboard" />;
+  const toggleModule = (siteId: string, module: ModuleKey) => {
+    setSites(prev => prev.map(site => {
+      if (site.id !== siteId) return site;
+      return { ...site, modules: { ...site.modules, [module]: !site.modules[module] } };
+    }));
+  };
+
+  const save = () => toast({ title: 'Configuration enregistrée', description: 'La configuration multi-site a été mise à jour.' });
 
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-6 page-enter">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
-            {t.settings.title}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">{t.settings.subtitle}</p>
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em]" style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+            <Globe className="w-3.5 h-3.5" />
+            Dashboard de configuration multi-site
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold" style={{ letterSpacing: '-0.03em' }}>Gestion Multi-Enseignes</h1>
+          <p className="text-muted-foreground max-w-2xl">Activez les modules par établissement et personnalisez le nom commercial de chaque site.</p>
         </div>
-        <LabelPill>XAF</LabelPill>
+        <button onClick={save} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm" style={{ background: 'linear-gradient(135deg, #D97706, #F5A623)', color: '#000' }}>
+          <Save className="w-4 h-4" /> Enregistrer la configuration
+        </button>
       </div>
 
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <SectionHeading
-              icon={UserCircle2}
-              title={lang === 'fr' ? 'Profil' : 'Profile'}
-              subtitle={lang === 'fr' ? 'Modifiez votre nom et vos infos principales.' : 'Update your name and main info.'}
-            />
-            <div className="space-y-4 mt-4">
-              <FormField label={lang === 'fr' ? 'Nom d’utilisateur' : 'Username'}>
-                <TextInput value={user?.name ?? name} onChange={setName} />
-              </FormField>
-              <FormField label={lang === 'fr' ? 'Devise par défaut' : 'Default currency'}>
-                <div className="rounded-lg px-3 py-2 text-sm"
-                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <BadgeDollarSign className="inline w-4 h-4 mr-2 align-[-2px]" />
-                  <span>{currency}</span>
-                </div>
-              </FormField>
-              <button onClick={() => toast({ title: '✅ ' + t.settings.savedOk })}
-                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
-                style={{ background: 'linear-gradient(135deg, #D97706, #F5A623)', color: '#000' }}>
-                {t.actions.save}
-              </button>
-            </div>
-          </Card>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard title="Établissements" value={`${sites.length}`} />
+        <StatCard title="Modules actifs" value={`${sites.reduce((sum, s) => sum + Object.values(s.modules).filter(Boolean).length, 0)}`} />
+        <StatCard title="Site sélectionné" value={current.city} />
+      </div>
 
-          <Card>
-            <SectionHeading
-              icon={ImagePlus}
-              title={t.settings.logo}
-              subtitle={t.settings.logoSubtitle}
-            />
-            <div className="mt-4">
-              {business?.id
-                ? <LogoUploadSection businessId={business.id} />
-                : <div className="h-20 rounded-xl flex items-center justify-center text-xs text-muted-foreground"
-                    style={{ background: 'hsl(var(--muted))', border: '1px dashed hsl(var(--border))' }}>
-                    {lang === 'fr' ? 'Enseigne non associée' : 'No business linked'}
+      <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
+        <div className="space-y-4">
+          <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center gap-2 mb-4"><Building2 className="w-4 h-4" /><span className="font-bold">Sites</span></div>
+            <div className="space-y-3">
+              {sites.map(site => (
+                <button key={site.id} onClick={() => setSelectedSite(site.id)} className="w-full text-left rounded-xl p-4 border transition-all" style={{
+                  background: selectedSite === site.id ? 'hsl(38 90% 56% / 0.10)' : 'transparent',
+                  borderColor: selectedSite === site.id ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
+                }}>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="font-semibold">{site.name}</p>
+                      <p className="text-xs text-muted-foreground">{site.city}</p>
+                    </div>
+                    <BadgeDollarSign className="w-4 h-4 text-muted-foreground" />
                   </div>
-              }
+                </button>
+              ))}
             </div>
-          </Card>
+          </div>
         </div>
 
-        <Card>
-          <SectionHeading
-            icon={Globe}
-            title={t.settings.language}
-            subtitle={lang === 'fr' ? 'Choisissez la langue de l\'interface utilisateur.' : 'Choose the interface language.'}
-            color="#60A5FA"
-          />
-          <div className="flex gap-3 mt-4">
-            {(['fr', 'en'] as const).map(l => (
-              <button
-                key={l}
-                onClick={() => setLang(l)}
-                className="flex items-center gap-2.5 flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all"
-                style={{
-                  background: lang === l ? 'hsl(38 90% 56% / 0.15)' : 'hsl(var(--muted))',
-                  color: lang === l ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
-                  border: lang === l ? '1px solid hsl(38 90% 56% / 0.35)' : '1px solid transparent',
-                }}
-              >
-                <span className="text-lg">{l === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-                <div className="text-left">
-                  <p className="text-sm font-bold">{l === 'fr' ? 'Français' : 'English'}</p>
-                  <p className="text-[10px] opacity-70">{l === 'fr' ? 'Interface en français' : 'English interface'}</p>
-                </div>
-                {lang === l && <CheckCircle2 className="w-4 h-4 ml-auto" />}
-              </button>
-            ))}
+        <div className="space-y-6">
+          <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Layers3 className="w-4 h-4" />
+              <span className="font-bold">Nom commercial</span>
+            </div>
+            <input
+              value={current.commercialName}
+              onChange={(e) => updateSite(current.id, { commercialName: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+              style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+              placeholder="Nom commercial du site"
+            />
           </div>
-        </Card>
+
+          <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center gap-2 mb-4">
+              <ToggleRight className="w-4 h-4" />
+              <span className="font-bold">Modules par établissement</span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[900px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                    <th className="py-3 pr-4">Établissement</th>
+                    <th className="py-3 px-4">Nom commercial</th>
+                    <th className="py-3 px-4">Modules activés / désactivés</th>
+                    <th className="py-3 px-4">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sites.map(site => (
+                    <tr key={site.id} className="border-t" style={{ borderColor: 'hsl(var(--border))' }}>
+                      <td className="py-4 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'hsl(38 90% 56% / 0.12)' }}>
+                            <Building2 className="w-4 h-4" style={{ color: 'hsl(38 90% 56%)' }} />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{site.name}</p>
+                            <p className="text-xs text-muted-foreground">{site.city}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <input
+                          value={site.commercialName}
+                          onChange={(e) => updateSite(site.id, { commercialName: e.target.value })}
+                          className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                          style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+                        />
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex flex-wrap gap-2">
+                          {(Object.keys(moduleMeta) as ModuleKey[]).map(module => {
+                            const meta = moduleMeta[module];
+                            const enabled = site.modules[module];
+                            const Icon = meta.icon;
+                            return (
+                              <button key={module} type="button" onClick={() => toggleModule(site.id, module)} className="inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold border" style={{
+                                background: enabled ? 'hsl(38 90% 56% / 0.12)' : 'transparent',
+                                borderColor: enabled ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
+                                color: enabled ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
+                              }}>
+                                <Icon className="w-3.5 h-3.5" />
+                                {meta.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        {Object.values(site.modules).filter(Boolean).length > 0 ? (
+                          <div className="inline-flex items-center gap-2 text-sm">
+                            <CheckCircle2 className="w-4 h-4" style={{ color: 'hsl(38 90% 56%)' }} />
+                            {Object.values(site.modules).filter(Boolean).length} modules actifs
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+                            <ToggleLeft className="w-4 h-4" /> Aucun module actif
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <p className="text-sm text-muted-foreground">LB Stay Cloud garde une base commune, mais chaque enseigne peut activer ses modules et son nom commercial indépendamment.</p>
+          </div>
+        </div>
       </div>
     </div>
   );
