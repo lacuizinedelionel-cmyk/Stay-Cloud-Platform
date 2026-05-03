@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles } from 'lucide-react';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
@@ -58,6 +58,11 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [sites, setSites] = useState(initialSites);
   const [selectedSite, setSelectedSite] = useState(initialSites[0].id);
+  const [vat, setVat] = useState('19.25');
+  const [currency, setCurrency] = useState('XAF');
+  const [exchangeRates, setExchangeRates] = useState({ XAF: '1', EUR: '656.00', USD: '610.00' });
+  const [invoicePrefix, setInvoicePrefix] = useState('INV-CM-');
+  const [legalFooter, setLegalFooter] = useState('RCCM: RC/DLA/2024/B/1234 • NIU: M0721XXXXXXXXX');
 
   const current = useMemo(() => sites.find(s => s.id === selectedSite) ?? sites[0], [selectedSite, sites]);
   const activeModules = useMemo(() => Object.values(current.modules).filter(Boolean).length, [current.modules]);
@@ -213,6 +218,69 @@ export default function SettingsPage() {
 
           <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
             <p className="text-sm text-muted-foreground">LB Stay Cloud garde une base commune, mais chaque enseigne peut activer ses modules et son nom commercial indépendamment.</p>
+          </div>
+
+          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center gap-2">
+              <Landmark className="w-4 h-4" />
+              <span className="font-bold">Finances & Fiscalité</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">TVA Cameroun</label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <Percent className="w-4 h-4 text-muted-foreground" />
+                  <input value={vat} onChange={e => setVat(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
+                  <span className="text-xs text-muted-foreground">%</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Devise principale</label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
+                  <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-transparent outline-none text-sm">
+                    <option value="XAF">XAF</option>
+                    <option value="EUR">EUR</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Préfixe factures</label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <ReceiptText className="w-4 h-4 text-muted-foreground" />
+                  <input value={invoicePrefix} onChange={e => setInvoicePrefix(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(['XAF', 'EUR', 'USD'] as const).map(code => (
+                <div key={code} className="space-y-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taux {code}</label>
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                    <span className="text-sm font-bold w-8">{code}</span>
+                    <input
+                      value={exchangeRates[code]}
+                      onChange={e => setExchangeRates(prev => ({ ...prev, [code]: e.target.value }))}
+                      className="w-full bg-transparent outline-none text-sm text-right"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pied de page légal</label>
+              <textarea
+                value={legalFooter}
+                onChange={e => setLegalFooter(e.target.value)}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+                style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+              />
+            </div>
           </div>
         </div>
       </div>
