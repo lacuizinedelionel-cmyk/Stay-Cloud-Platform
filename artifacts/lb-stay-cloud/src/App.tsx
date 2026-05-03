@@ -119,16 +119,10 @@ function Router() {
       <Route path="/superadmin/analytics">{() => <ProtectedRoute component={SuperAdminAnalyticsPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
       <Route path="/superadmin/billing">{() => <ProtectedRoute component={SuperAdminBillingPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
 
-      <Route path="/dashboard">
-        {() => {
-          const { business } = useAuth();
-          if (business) return <Redirect to={`/${business.sector.toLowerCase()}/dashboard`} />;
-          return <ProtectedRoute component={NotFound} />;
-        }}
-      </Route>
+      <Route path="/dashboard">{() => <ProtectedRoute component={NotFound} />}</Route>
 
       <Route path="/"><Redirect to="/login" /></Route>
-      <Route component={NotFound} />
+      <Route component={() => <ProtectedRoute component={NotFound} />} />
     </Switch>
   );
 }
