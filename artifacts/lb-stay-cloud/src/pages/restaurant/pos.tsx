@@ -24,7 +24,6 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MobileMoneyModal } from '@/components/mobile-money-modal';
-import { apiClient } from '@workspace/api-client-react';
 
 type CartItem = {
   productId: number;
@@ -43,6 +42,39 @@ const PAYMENT_OPTIONS: { value: LocalPaymentMethod; label: string; icon: React.E
   { value: 'ORANGE_MONEY',     label: 'Orange Money',  icon: Smartphone,   color: '#F97316' },
   { value: 'CARD',             label: 'Carte',          icon: CreditCard,   color: '#3B82F6' },
   { value: 'ARDOISE',          label: 'Ardoise',        icon: BookMarked,   color: '#8B5CF6' },
+];
+
+type QuickProduct = {
+  id: number;
+  name: string;
+  price: number;
+  emoji: string;
+  category: string;
+};
+
+const RESTO_QUICK_PRODUCTS: QuickProduct[] = [
+  { id: 1, name: 'Eau minérale', price: 1000, emoji: '💧', category: 'Boissons' },
+  { id: 2, name: 'Bissap', price: 1500, emoji: '🧃', category: 'Boissons' },
+  { id: 3, name: 'Jus de gingembre', price: 2000, emoji: '🍹', category: 'Boissons' },
+  { id: 4, name: 'Entrée Ndolè', price: 3500, emoji: '🥗', category: 'Entrées' },
+  { id: 5, name: 'Accra', price: 2500, emoji: '🍤', category: 'Entrées' },
+  { id: 6, name: 'Soupe de poisson', price: 4000, emoji: '🍲', category: 'Entrées' },
+  { id: 7, name: 'Ndolé', price: 8500, emoji: '🍛', category: 'Plats' },
+  { id: 8, name: 'Poisson braisé', price: 12000, emoji: '🐟', category: 'Plats' },
+  { id: 9, name: 'Poulet DG', price: 15000, emoji: '🍗', category: 'Plats' },
+];
+
+const SUPER_QUICK_PRODUCTS: QuickProduct[] = [
+  { id: 101, name: 'Sucre 1kg', price: 1200, emoji: '🍚', category: 'Articles populaires' },
+  { id: 102, name: 'Café moulu', price: 2500, emoji: '☕', category: 'Articles populaires' },
+  { id: 103, name: 'Lait concentré', price: 1800, emoji: '🥛', category: 'Articles populaires' },
+  { id: 104, name: 'Huile de palme', price: 3500, emoji: '🫒', category: 'Articles populaires' },
+];
+
+const PHARMA_QUICK_PRODUCTS: QuickProduct[] = [
+  { id: 201, name: 'Doliprane', price: 1800, emoji: '💊', category: 'Médicaments courants' },
+  { id: 202, name: 'Vitamines', price: 3000, emoji: '🌿', category: 'Médicaments courants' },
+  { id: 203, name: 'Gants', price: 2500, emoji: '🧤', category: 'Médicaments courants' },
 ];
 
 /* ──────────────────────────────────────────────────────────────
@@ -312,6 +344,11 @@ export default function POSPage() {
   const [invoiceNumber, setInvoiceNumber] = useState('');
   const [isPrinting, setIsPrinting] = useState(false);
   const [showMobileMoneyModal, setShowMobileMoneyModal] = useState(false);
+  const quickProducts = useMemo(() => {
+    if (business?.sector === 'GROCERY') return SUPER_QUICK_PRODUCTS;
+    if (business?.sector === 'PHARMACY') return PHARMA_QUICK_PRODUCTS;
+    return RESTO_QUICK_PRODUCTS;
+  }, [business?.sector]);
 
   // Ref to capture values for async callbacks
   const submitRef = useRef<{ cart: CartItem[]; paymentMethod: LocalPaymentMethod; ardoiseClient: CustomerCredit | null; total: number }>({ cart: [], paymentMethod: 'CASH', ardoiseClient: null, total: 0 });
@@ -352,6 +389,14 @@ export default function POSPage() {
       return matchesCat && matchesSearch && p.isAvailable;
     });
   }, [products, activeCategory, search]);
+
+  const quickCategories = useMemo(() => {
+    return Array.from(new Set(quickProducts.map(p => p.category)));
+  }, [quickProducts]);
+
+  const addQuickProduct = (product: QuickProduct) => {
+    addToCart({ id: product.id, name: product.name, price: product.price, emoji: product.emoji });
+  };
 
   const addToCart = (product: { id: number; name: string; price: number; emoji?: string | null }) => {
     setCart(prev => {
@@ -532,7 +577,38 @@ export default function POSPage() {
         </div>
 
         {/* Product grid */}
-        <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-5">
+            <div className="space-y-3">
+              {quickCategories.map(category => (
+                <div key={category} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-foreground">{category}</p>
+                    <span className="text-[10px] text-muted-foreground">{quickProducts.filter(p => p.category === category).length} rapides</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {quickProducts.filter(p => p.category === category).map(product => (
+                      <button
+                        key={product.id}
+                        onClick={() => addQuickProduct(product)}
+                        className="flex flex-col items-start gap-1.5 p-3 rounded-xl text-left transition-all"
+                        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+                      >
+                        <span className="text-xl leading-none">{product.emoji}</span>
+                        <div className="w-full">
+                          <p className="text-[11px] font-semibold text-foreground leading-tight">{product.name}</p>
+                          <p className="text-[10px] font-bold mt-0.5" style={{ color: 'hsl(38 90% 56%)' }}>
+                            {formatXAF(product.price)}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <p className="text-xs font-bold text-foreground mb-3">Catalogue complet</p>
           {isLoading ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {Array(12).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)}
@@ -577,6 +653,7 @@ export default function POSPage() {
               })}
             </div>
           )}
+            </div>
         </div>
       </div>
 
