@@ -13,16 +13,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { loginSchema, type LoginFormData } from '@/lib/schemas';
 import { Zap, ArrowRight, Loader2 } from 'lucide-react';
 
-const DEMO_ACCOUNTS = [
-  { label: 'Super Admin', email: 'superadmin@lbstay.com', color: 'text-primary' },
-  { label: 'Restaurant', email: 'restaurant@lbstay.com', color: 'text-blue-400' },
-  { label: 'Hôtel', email: 'hotel@lbstay.com', color: 'text-blue-400' },
-  { label: 'Beauté', email: 'beauty@lbstay.com', color: 'text-blue-400' },
-  { label: 'Épicerie', email: 'grocery@lbstay.com', color: 'text-blue-400' },
-  { label: 'Pharmacie', email: 'pharmacy@lbstay.com', color: 'text-blue-400' },
-  { label: 'Fitness', email: 'fitness@lbstay.com', color: 'text-blue-400' },
-];
-
 export default function Login() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
@@ -55,11 +45,6 @@ export default function Login() {
         });
       },
     });
-  };
-
-  const fillDemo = (email: string) => {
-    form.setValue('email', email);
-    form.setValue('password', 'password');
   };
 
   return (
@@ -244,29 +229,6 @@ export default function Login() {
             </form>
           </Form>
 
-          {/* Demo accounts */}
-          <div className="mt-8 pt-6" style={{ borderTop: '1px solid hsl(var(--border))' }}>
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Comptes de démonstration
-            </p>
-            <div className="grid grid-cols-3 gap-2">
-              {DEMO_ACCOUNTS.map((acc) => (
-                <button
-                  key={acc.email}
-                  onClick={() => fillDemo(acc.email)}
-                  className="px-3 py-2 rounded-lg text-xs font-medium text-left transition-colors"
-                  style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = 'hsl(var(--accent))')}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = 'hsl(var(--muted))')}
-                >
-                  {acc.label}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-3">
-              Mot de passe universel : <code className="text-primary font-mono">password</code>
-            </p>
-          </div>
         </motion.div>
       </div>
     </div>
