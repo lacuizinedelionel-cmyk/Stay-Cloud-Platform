@@ -105,6 +105,7 @@ export default function SignupPage() {
       businessSector: form.sector,
       city: form.city,
       plan: selectedPlan,
+      active: true,
     });
 
     try {

@@ -31,6 +31,7 @@ export type LocalAccount = {
   businessSector: string;
   city: string;
   plan: string;
+  active: boolean;
   createdAt: string;
 };
 
@@ -221,7 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const saveLocalAccount = useCallback((account: Omit<LocalAccount, 'createdAt'>) => {
     const accounts = readLocalAccounts();
     const existing = accounts.findIndex(a => a.email.toLowerCase() === account.email.toLowerCase());
-    const entry: LocalAccount = { ...account, createdAt: new Date().toISOString() };
+    const entry: LocalAccount = { ...account, active: true, createdAt: new Date().toISOString() };
     if (existing >= 0) {
       accounts[existing] = entry;
     } else {
