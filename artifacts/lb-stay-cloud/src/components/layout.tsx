@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
@@ -9,7 +9,7 @@ import {
   Calendar, Package, ClipboardList, Zap, ChevronDown,
   BedDouble, CreditCard, TrendingUp, Star, ShoppingCart,
   UserCheck, BookOpen, Activity, Wallet, Shield, MessageSquare,
-  BarChart3, Receipt,
+  BarChart3, Receipt, Menu, X,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useLanguage } from '@/context/LanguageContext';
@@ -576,6 +576,66 @@ function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; 
   );
 }
 
+function MobileSidebarShell({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [location] = useLocation();
+
+  useEffect(() => {
+    setOpen(false);
+  }, [location]);
+
+  return (
+    <>
+      <div className="md:hidden fixed top-3 left-3 z-[60]">
+        <button
+          onClick={() => setOpen(true)}
+          className="w-11 h-11 rounded-xl flex items-center justify-center"
+          style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+          aria-label="Ouvrir le menu"
+        >
+          <Menu className="w-5 h-5 text-foreground" />
+        </button>
+      </div>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.button
+              aria-label="Fermer le menu"
+              className="md:hidden fixed inset-0 z-40"
+              style={{ background: 'hsl(0 0% 0% / 0.55)' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setOpen(false)}
+            />
+            <motion.div
+              className="md:hidden fixed inset-y-0 left-0 z-50 w-[86vw] max-w-sm"
+              initial={{ x: -360 }}
+              animate={{ x: 0 }}
+              exit={{ x: -360 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 30 }}
+            >
+              <div className="h-full shadow-2xl">
+                <button
+                  onClick={() => setOpen(false)}
+                  className="absolute top-3 right-3 w-9 h-9 rounded-lg flex items-center justify-center z-10"
+                  style={{ background: 'hsl(var(--muted))' }}
+                  aria-label="Fermer le menu"
+                >
+                  <X className="w-4 h-4 text-foreground" />
+                </button>
+                {children}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+      <div className="hidden md:block">{children}</div>
+    </>
+  );
+}
+
 /* ══════════════════════════════════════
    Export principal
 ══════════════════════════════════════ */
@@ -585,8 +645,8 @@ export function Sidebar() {
   if (!user) return null;
 
   if (user.role === 'SUPER_ADMIN') {
-    return <SuperAdminSidebar user={user} logout={logout} />;
+    return <MobileSidebarShell><SuperAdminSidebar user={user} logout={logout} /></MobileSidebarShell>;
   }
 
-  return <BusinessSidebar user={user} business={business} logout={logout} />;
+  return <MobileSidebarShell><BusinessSidebar user={user} business={business} logout={logout} /></MobileSidebarShell>;
 }
