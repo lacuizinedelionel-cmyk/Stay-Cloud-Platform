@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -16,7 +17,7 @@ import {
 } from '@workspace/api-client-react';
 import {
   ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip,
-  CartesianGrid, BarChart, Bar, Cell, PieChart, Pie,
+  CartesianGrid, BarChart, Bar, Cell, PieChart, Pie, Legend,
 } from 'recharts';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -24,13 +25,33 @@ import {
   Building2, CreditCard, Activity, Users, TrendingUp,
   ArrowUpRight, Zap, ShoppingBag, Smartphone, Banknote,
   Clock, CheckCircle2, BarChart2, AlertTriangle, PackageX,
+  Eye, Pencil, X,
 } from 'lucide-react';
 
-const DEMO_REVENUE_CHART = Array.from({ length: 12 }, (_, i) => ({
-  month: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][i],
-  revenue: [820000, 940000, 880000, 1050000, 1120000, 1380000, 1290000, 1450000, 1560000, 1680000, 1820000, 1950000][i],
-  transactions: 1500 + (i * 40),
-}));
+/* ── 7 derniers jours ── */
+const DAYS_7 = Array.from({ length: 7 }, (_, i) => {
+  const d = new Date(Date.now() - (6 - i) * 86400000);
+  const label = d.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric' });
+  const revenues = [1420000, 1680000, 1350000, 1890000, 2100000, 1750000, 2340000];
+  const sales    = [48, 62, 44, 71, 83, 65, 92];
+  const reservas = [12, 18, 14, 22, 25, 20, 28];
+  return { label, revenue: revenues[i], ventes: sales[i], reservations: reservas[i] };
+});
+
+const DEMO_REVENUE_CHART = DAYS_7;
+
+const DEMO_RECENT_ACTIVITY = [
+  { id: 1, businessName: 'Hôtel Palace Douala',    sector: 'HOTEL',      method: 'MTN_MOBILE_MONEY', methodLabel: 'MTN MoMo',     amount: 185000, status: 'COMPLETED', createdAt: new Date(Date.now() - 4  * 60000).toISOString() },
+  { id: 2, businessName: 'Restaurant La Saveur',   sector: 'RESTAURANT', method: 'CASH',             methodLabel: 'Espèces',      amount: 32500,  status: 'COMPLETED', createdAt: new Date(Date.now() - 11 * 60000).toISOString() },
+  { id: 3, businessName: 'Pharmacie Centrale',     sector: 'PHARMACY',   method: 'ORANGE_MONEY',     methodLabel: 'Orange Money', amount: 14800,  status: 'COMPLETED', createdAt: new Date(Date.now() - 18 * 60000).toISOString() },
+  { id: 4, businessName: 'Marché Royal Yaoundé',   sector: 'GROCERY',    method: 'CASH',             methodLabel: 'Espèces',      amount: 9200,   status: 'COMPLETED', createdAt: new Date(Date.now() - 27 * 60000).toISOString() },
+  { id: 5, businessName: 'Hôtel Akwa Palace',      sector: 'HOTEL',      method: 'CARD',             methodLabel: 'Carte',        amount: 320000, status: 'COMPLETED', createdAt: new Date(Date.now() - 35 * 60000).toISOString() },
+  { id: 6, businessName: 'Grill & Braise Mvog-Mbi',sector: 'RESTAURANT', method: 'MTN_MOBILE_MONEY', methodLabel: 'MTN MoMo',     amount: 28700,  status: 'COMPLETED', createdAt: new Date(Date.now() - 48 * 60000).toISOString() },
+  { id: 7, businessName: 'Pharma Soleil Bonanjo',  sector: 'PHARMACY',   method: 'ORANGE_MONEY',     methodLabel: 'Orange Money', amount: 7600,   status: 'COMPLETED', createdAt: new Date(Date.now() - 62 * 60000).toISOString() },
+  { id: 8, businessName: 'Supermarché Pro Bali',   sector: 'GROCERY',    method: 'CASH',             methodLabel: 'Espèces',      amount: 45300,  status: 'COMPLETED', createdAt: new Date(Date.now() - 74 * 60000).toISOString() },
+  { id: 9, businessName: 'Restaurant Ndolé Club',  sector: 'RESTAURANT', method: 'MTN_MOBILE_MONEY', methodLabel: 'MTN MoMo',     amount: 19500,  status: 'COMPLETED', createdAt: new Date(Date.now() - 91 * 60000).toISOString() },
+  { id: 10,businessName: 'Hôtel Sawa Beach',       sector: 'HOTEL',      method: 'ORANGE_MONEY',     methodLabel: 'Orange Money', amount: 125000, status: 'COMPLETED', createdAt: new Date(Date.now() - 108* 60000).toISOString() },
+];
 
 const DEMO_SECTOR_REVENUE = [
   { sector: 'RESTAURANT', label: 'Restauration', revenue: 4200000, transactions: 180 },
@@ -364,9 +385,96 @@ function ChartTooltip({ active, payload, label, formatter }: any) {
 }
 
 /* ──────────────────────────────────────────────────────── */
-/*  Main Dashboard                                         */
+/*  Business Detail / Edit Modals                          */
 /* ──────────────────────────────────────────────────────── */
+type AnyBiz = { id: number; name: string; sector: string; city: string; plan: string; monthlyRevenue: number; isActive: boolean; [k: string]: unknown };
+
+function BizDetailModal({ biz, onClose }: { biz: AnyBiz; onClose: () => void }) {
+  const LABELS: Record<string, string> = {
+    RESTAURANT: 'Restauration', HOTEL: 'Hôtellerie', BEAUTY: 'Beauté',
+    GROCERY: 'Supermarché', PHARMACY: 'Pharmacie', GARAGE: 'Garage',
+    FITNESS: 'Fitness', EDUCATION: 'Formation',
+  };
+  const color = SECTOR_COLORS[biz.sector] ?? '#6B7280';
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+        <div className="h-1 w-full" style={{ background: color }} />
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold text-white" style={{ background: color }}>
+              {biz.name.charAt(0)}
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">{biz.name}</p>
+              <p className="text-[11px] text-muted-foreground">{LABELS[biz.sector] ?? biz.sector} · {biz.city}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+        </div>
+        <div className="p-5 space-y-3">
+          {[
+            { label: 'Plan', value: biz.plan },
+            { label: 'CA mensuel', value: formatXAF(biz.monthlyRevenue) },
+            { label: 'Ville', value: biz.city },
+            { label: 'Statut', value: biz.isActive ? 'Actif ✓' : 'Inactif' },
+          ].map(row => (
+            <div key={row.label} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+              <span className="text-xs text-muted-foreground">{row.label}</span>
+              <span className="text-xs font-bold text-foreground">{String(row.value)}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function BizEditModal({ biz, onClose }: { biz: AnyBiz; onClose: () => void }) {
+  const [name, setName] = useState(biz.name);
+  const [city, setCity] = useState(biz.city);
+  const [plan, setPlan] = useState(biz.plan);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-sm rounded-2xl overflow-hidden"
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <p className="text-sm font-bold text-foreground">Modifier l'enseigne</p>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors"><X className="w-4 h-4 text-muted-foreground" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          {[
+            { label: 'Nom', value: name, set: setName },
+            { label: 'Ville', value: city, set: setCity },
+            { label: 'Plan', value: plan, set: setPlan },
+          ].map(f => (
+            <div key={f.label} className="space-y-1.5">
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{f.label}</label>
+              <input value={f.value} onChange={e => f.set(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl text-sm text-foreground outline-none transition-all"
+                style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} />
+            </div>
+          ))}
+          <div className="flex gap-2 pt-1">
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))' }}>Annuler</button>
+            <button onClick={onClose} className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all" style={{ background: 'hsl(38 90% 56%)', color: '#000' }}>
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function SuperAdminDashboard() {
+  const [detailBiz, setDetailBiz] = useState<AnyBiz | null>(null);
+  const [editBiz, setEditBiz]     = useState<AnyBiz | null>(null);
   const { data: stockAlerts, isLoading: stockLoading } = useStockAlerts();
   const { data: stats, isLoading: statsLoading } = useGetSuperAdminStats({
     query: { queryKey: getGetSuperAdminStatsQueryKey() },
@@ -461,8 +569,8 @@ export default function SuperAdminDashboard() {
         >
           <div className="flex items-center justify-between mb-5">
             <div>
-              <h2 className="text-sm font-bold text-foreground">Évolution des revenus</h2>
-              <p className="text-xs text-muted-foreground mt-0.5">CA mensuel de la plateforme · 12 mois</p>
+              <h2 className="text-sm font-bold text-foreground">Évolution des revenus — 7 derniers jours</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">CA journalier de la plateforme · semaine courante</p>
             </div>
             <div className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1.5 rounded-full"
               style={{ background: 'hsl(160 84% 39% / 0.1)', color: '#10B981' }}>
@@ -476,22 +584,26 @@ export default function SuperAdminDashboard() {
             : (
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <AreaChart data={DAYS_7} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="gold-grad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%"  stopColor="hsl(38 90% 56%)" stopOpacity={0.3} />
                         <stop offset="95%" stopColor="hsl(38 90% 56%)" stopOpacity={0} />
                       </linearGradient>
+                      <linearGradient id="blue-grad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#818CF8" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="#818CF8" stopOpacity={0} />
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={11}
+                    <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={11}
                       tickLine={false} axisLine={false} fontFamily="Plus Jakarta Sans" />
                     <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11}
                       tickLine={false} axisLine={false}
                       tickFormatter={v => `${(v / 1000000).toFixed(1)}M`}
                       fontFamily="Plus Jakarta Sans" />
                     <Tooltip content={<ChartTooltip formatter={(v: number) => formatXAF(v)} />} />
-                    <Area type="monotone" dataKey="revenue"
+                    <Area type="monotone" dataKey="revenue" name="Revenus"
                       stroke="hsl(38 90% 56%)" strokeWidth={2.5}
                       fill="url(#gold-grad)" dot={false}
                       activeDot={{ r: 5, fill: 'hsl(38 90% 56%)', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
@@ -660,7 +772,7 @@ export default function SuperAdminDashboard() {
                   <Skeleton className="h-3 w-16" />
                 </div>
               ))
-              : (recentActivity ?? []).map(activity => {
+              : (recentActivity && recentActivity.length > 0 ? recentActivity : DEMO_RECENT_ACTIVITY).map(activity => {
                 const color = SECTOR_COLORS[activity.sector] ?? '#6B7280';
                 const Icon = METHOD_ICONS[activity.method] ?? CreditCard;
                 return (
@@ -690,6 +802,10 @@ export default function SuperAdminDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* ── Modales Détails / Modifier ─────────────────── */}
+      {detailBiz && <BizDetailModal biz={detailBiz as AnyBiz} onClose={() => setDetailBiz(null)} />}
+      {editBiz   && <BizEditModal   biz={editBiz   as AnyBiz} onClose={() => setEditBiz(null)}   />}
 
       {/* ── ROW 4 : Stock Alerts ──────────────────────── */}
       <StockAlertsPanel />
@@ -723,7 +839,7 @@ export default function SuperAdminDashboard() {
               <table className="w-full">
                 <thead>
                   <tr style={{ borderBottom: '1px solid hsl(var(--border))' }}>
-                    {['Enseigne', 'Secteur', 'Ville', 'Plan', 'CA ce mois', 'Statut'].map(h => (
+                    {['Enseigne', 'Secteur', 'Ville', 'Plan', 'CA ce mois', 'Statut', 'Actions'].map(h => (
                       <th key={h} className="px-6 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                         {h}
                       </th>
@@ -785,6 +901,24 @@ export default function SuperAdminDashboard() {
                             <span className="text-xs text-muted-foreground">
                               {biz.isActive ? 'Actif' : 'Inactif'}
                             </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setDetailBiz(biz)}
+                              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
+                              style={{ background: 'hsl(217 91% 60% / 0.12)', color: '#3B82F6' }}
+                            >
+                              <Eye className="w-3 h-3" /> Détails
+                            </button>
+                            <button
+                              onClick={() => setEditBiz(biz)}
+                              className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
+                              style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}
+                            >
+                              <Pencil className="w-3 h-3" /> Modifier
+                            </button>
                           </div>
                         </td>
                       </tr>
