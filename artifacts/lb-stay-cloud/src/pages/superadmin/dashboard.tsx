@@ -46,21 +46,28 @@ const DEMO_PAYMENT_METHODS = [
   { method: 'CARD', label: 'Carte bancaire', amount: 1800000, percentage: 15 },
 ];
 
-const DEMO_STOCK_ALERTS = Array.from({ length: 100 }, (_, i) => {
-  const critical = i < 5;
-  return {
-    businessId: 800 + i,
-    businessName: `Supermarché Démo ${Math.floor(i / 10) + 1}`,
-    sector: 'GROCERY',
-    sectorLabel: 'Supermarché',
-    source: 'grocery',
-    sourceLabel: 'Supermarché',
-    productName: critical ? `Produit critique ${i + 1}` : `Article ${i + 1}`,
-    stock: critical ? 0 : 8 + (i % 12),
-    minStock: 10,
-    severity: critical ? 'critical' : 'low',
-  };
-});
+const DEMO_STOCK_ALERTS = [
+  { businessId: 801, businessName: 'Marché Royal', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Riz parfumé 5kg', stock: 2, minStock: 20, severity: 'critical' },
+  { businessId: 801, businessName: 'Marché Royal', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Huile végétale 1L', stock: 4, minStock: 18, severity: 'critical' },
+  { businessId: 802, businessName: 'Pharmacie Centrale', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Paracétamol 500mg', stock: 6, minStock: 24, severity: 'critical' },
+  { businessId: 802, businessName: 'Pharmacie Centrale', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Vitamine C 1000mg', stock: 5, minStock: 20, severity: 'critical' },
+  { businessId: 803, businessName: 'Saveurs & Santé', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Savon de lessive', stock: 8, minStock: 30, severity: 'low' },
+  { businessId: 803, businessName: 'Saveurs & Santé', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Pansements stériles', stock: 9, minStock: 25, severity: 'low' },
+  { businessId: 804, businessName: 'Nourriture Express', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Farine de maïs 1kg', stock: 3, minStock: 15, severity: 'critical' },
+  { businessId: 804, businessName: 'Nourriture Express', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Tomates en boîte', stock: 7, minStock: 18, severity: 'low' },
+  { businessId: 805, businessName: 'Clinique Pharma+ Market', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Sirop antitussif', stock: 4, minStock: 12, severity: 'critical' },
+  { businessId: 805, businessName: 'Clinique Pharma+ Market', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Gants médicaux', stock: 10, minStock: 40, severity: 'low' },
+  { businessId: 806, businessName: 'Douala Market Pro', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Sucre en sachet', stock: 11, minStock: 35, severity: 'low' },
+  { businessId: 806, businessName: 'Douala Market Pro', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Huile de palme', stock: 2, minStock: 16, severity: 'critical' },
+  { businessId: 807, businessName: 'Pharma Soleil', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Seringues 5ml', stock: 5, minStock: 22, severity: 'critical' },
+  { businessId: 807, businessName: 'Pharma Soleil', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Gel hydroalcoolique', stock: 8, minStock: 28, severity: 'low' },
+  { businessId: 808, businessName: 'Le Panier Urbain', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Riz long grain', stock: 6, minStock: 20, severity: 'critical' },
+  { businessId: 808, businessName: 'Le Panier Urbain', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Savon liquide', stock: 9, minStock: 24, severity: 'low' },
+  { businessId: 809, businessName: 'Pharma Elite', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Crème antiseptique', stock: 3, minStock: 14, severity: 'critical' },
+  { businessId: 809, businessName: 'Pharma Elite', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Vitamine C 500mg', stock: 7, minStock: 18, severity: 'low' },
+  { businessId: 810, businessName: 'Grand Marché Santé', sector: 'GROCERY', sectorLabel: 'Supermarché', source: 'grocery', sourceLabel: 'Supermarché', productName: 'Lentilles', stock: 4, minStock: 16, severity: 'critical' },
+  { businessId: 810, businessName: 'Grand Marché Santé', sector: 'PHARMACY', sectorLabel: 'Pharmacie', source: 'pharmacy', sourceLabel: 'Pharmacie', productName: 'Pansements adhésifs', stock: 6, minStock: 20, severity: 'low' },
+];
 
 /* ── Stock Alert type ── */
 type StockAlert = {
