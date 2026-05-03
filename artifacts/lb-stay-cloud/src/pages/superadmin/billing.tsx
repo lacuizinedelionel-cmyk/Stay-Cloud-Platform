@@ -6,7 +6,7 @@ import {
   ArrowUpRight, CreditCard, Calendar, Building2, Pencil, FileText,
   Ban, X, Check, ChevronDown, Printer, Download, RefreshCw,
   UtensilsCrossed, BedDouble, Scissors, ShoppingCart, Pill,
-  Car, Dumbbell, GraduationCap, Clock,
+  Car, Dumbbell, GraduationCap, Clock, Wallet,
 } from 'lucide-react';
 
 /* ──────────────────────────────────────────────────────────
@@ -28,6 +28,14 @@ interface Subscription {
   lastPaidAmount: number;
   contact: string;
   email: string;
+}
+
+interface PaymentRecord {
+  date: string;
+  method: 'MTN MoMo' | 'Orange Money';
+  reference: string;
+  amount: number;
+  status: 'Succès' | 'En attente' | 'Échoué';
 }
 
 const PLAN_CFG: Record<PlanId, { label: string; price: number; color: string; bg: string; icon: React.ElementType; gradient: string }> = {
@@ -58,6 +66,41 @@ const INITIAL_SUBS: Subscription[] = [
   { id: 7, businessName: 'FitZone Cameroun',            sector: 'FITNESS',    city: 'Douala',  icon: Dumbbell,        plan: 'PRO',     status: 'ACTIF',     renewalDate: '5 Juin 2026',   lastPaid: '5 Mai 2026',   lastPaidAmount: 35_000, contact: 'Mme Belinga Estelle',email: 'fitness@lbstay.com'     },
   { id: 8, businessName: 'Institut de Formation',       sector: 'EDUCATION',  city: 'Yaoundé', icon: GraduationCap,   plan: 'ELITE',   status: 'ACTIF',     renewalDate: '20 Juin 2026',  lastPaid: '20 Mai 2026',  lastPaidAmount: 75_000, contact: 'Dr Njoya Emmanuel',  email: 'education@lbstay.com'   },
 ];
+
+const PAYMENT_HISTORY: Record<number, PaymentRecord[]> = {
+  1: [
+    { date: '15 Mai 2026', method: 'MTN MoMo', reference: 'MM-481922', amount: 35_000, status: 'Succès' },
+    { date: '15 Avr 2026', method: 'Orange Money', reference: 'OM-221873', amount: 35_000, status: 'Succès' },
+  ],
+  2: [
+    { date: '1 Mai 2026', method: 'MTN MoMo', reference: 'MM-774120', amount: 75_000, status: 'Succès' },
+    { date: '1 Avr 2026', method: 'MTN MoMo', reference: 'MM-668013', amount: 75_000, status: 'Succès' },
+  ],
+  3: [
+    { date: '22 Mai 2026', method: 'Orange Money', reference: 'OM-552104', amount: 15_000, status: 'Succès' },
+    { date: '22 Avr 2026', method: 'MTN MoMo', reference: 'MM-885401', amount: 15_000, status: 'Succès' },
+  ],
+  4: [
+    { date: '10 Mai 2026', method: 'MTN MoMo', reference: 'MM-119402', amount: 35_000, status: 'Succès' },
+    { date: '10 Avr 2026', method: 'Orange Money', reference: 'OM-902114', amount: 35_000, status: 'Succès' },
+  ],
+  5: [
+    { date: '28 Mar 2026', method: 'MTN MoMo', reference: 'MM-445908', amount: 35_000, status: 'Succès' },
+    { date: '28 Avr 2026', method: 'Orange Money', reference: 'OM-110229', amount: 35_000, status: 'Échoué' },
+  ],
+  6: [
+    { date: '1 Avr 2026', method: 'Orange Money', reference: 'OM-339871', amount: 15_000, status: 'Succès' },
+    { date: '1 Mai 2026', method: 'MTN MoMo', reference: 'MM-339872', amount: 15_000, status: 'En attente' },
+  ],
+  7: [
+    { date: '5 Mai 2026', method: 'MTN MoMo', reference: 'MM-771203', amount: 35_000, status: 'Succès' },
+    { date: '5 Avr 2026', method: 'Orange Money', reference: 'OM-771204', amount: 35_000, status: 'Succès' },
+  ],
+  8: [
+    { date: '20 Mai 2026', method: 'MTN MoMo', reference: 'MM-991120', amount: 75_000, status: 'Succès' },
+    { date: '20 Avr 2026', method: 'Orange Money', reference: 'OM-991121', amount: 75_000, status: 'Succès' },
+  ],
+};
 
 /* ──────────────────────────────────────────────────────────
    MODAL — CHANGER DE PLAN
@@ -319,6 +362,56 @@ function InvoiceModal({ sub, onClose }: { sub: Subscription; onClose: () => void
   );
 }
 
+function BillingDetailsModal({ sub, onClose }: { sub: Subscription; onClose: () => void }) {
+  const plan = PLAN_CFG[sub.plan];
+  const history = PAYMENT_HISTORY[sub.id] ?? [];
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      style={{ background: 'hsl(0 0% 0% / 0.72)' }} onClick={onClose}>
+      <motion.div initial={{ scale: 0.92, y: 24 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.92 }}
+        transition={{ type: 'spring', stiffness: 280, damping: 28 }}
+        onClick={e => e.stopPropagation()}
+        className="w-full max-w-2xl rounded-2xl overflow-hidden my-4"
+        style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: '1px solid hsl(var(--border))' }}>
+          <div>
+            <h3 className="text-base font-extrabold text-foreground">Détails de facturation</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{sub.businessName} · Historique Mobile Money</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted"><X className="w-4 h-4 text-muted-foreground" /></button>
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl p-3" style={{ background: 'hsl(var(--muted))' }}>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Plan</p>
+              <p className="font-bold text-foreground mt-1">{plan.label}</p>
+            </div>
+            <div className="rounded-xl p-3" style={{ background: 'hsl(var(--muted))' }}>
+              <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Prochaine échéance</p>
+              <p className="font-bold text-foreground mt-1">{sub.renewalDate}</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {history.map(item => (
+              <div key={item.reference} className="flex items-center justify-between rounded-xl px-4 py-3 text-sm" style={{ background: 'hsl(var(--muted) / 0.45)' }}>
+                <div>
+                  <p className="font-semibold text-foreground">{item.method} · {item.date}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.reference}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-foreground">{formatXAF(item.amount)}</p>
+                  <p className="text-[11px]" style={{ color: item.status === 'Succès' ? '#10B981' : item.status === 'En attente' ? '#F59E0B' : '#EF4444' }}>{item.status}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ──────────────────────────────────────────────────────────
    PAGE PRINCIPALE
 ────────────────────────────────────────────────────────── */
@@ -326,6 +419,7 @@ export default function SuperAdminBillingPage() {
   const [subs, setSubs]       = useState<Subscription[]>(INITIAL_SUBS);
   const [planModal, setPlanModal] = useState<Subscription | null>(null);
   const [invoiceModal, setInvoiceModal] = useState<Subscription | null>(null);
+  const [billingModal, setBillingModal] = useState<Subscription | null>(null);
 
   function changePlan(sub: Subscription, newPlan: PlanId) {
     setSubs(prev => prev.map(s => s.id === sub.id ? { ...s, plan: newPlan, lastPaidAmount: PLAN_CFG[newPlan].price } : s));
@@ -529,6 +623,14 @@ export default function SuperAdminBillingPage() {
                     <FileText className="w-3.5 h-3.5" />
                   </button>
 
+                  <button
+                    onClick={() => setBillingModal(sub)}
+                    title="Détails de facturation"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-all hover:scale-105"
+                    style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+                    <Wallet className="w-3.5 h-3.5" />
+                  </button>
+
                   {/* Relancer paiement si en retard */}
                   {isOverdue && (
                     <button
@@ -625,6 +727,12 @@ export default function SuperAdminBillingPage() {
           <InvoiceModal
             sub={invoiceModal}
             onClose={() => setInvoiceModal(null)}
+          />
+        )}
+        {billingModal && (
+          <BillingDetailsModal
+            sub={billingModal}
+            onClose={() => setBillingModal(null)}
           />
         )}
       </AnimatePresence>
