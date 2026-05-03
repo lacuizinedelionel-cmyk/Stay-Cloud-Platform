@@ -16,6 +16,21 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEMO_PHARMACY_STATS = {
+  prescriptionsToday: 41,
+  medicationsSold: 128,
+  dailyRevenue: 965000,
+  criticalStockCount: 6,
+};
+
+const DEMO_PHARMACY_MEDICATIONS = [
+  { id: 1, name: 'Paracétamol 500mg', dci: 'Paracétamol', stock: 0, expirationDate: '2026-12-31', price: 1800 },
+  { id: 5, name: 'Amoxicilline 500mg', dci: 'Amoxicilline', stock: 0, expirationDate: '2026-08-20', price: 4500 },
+  { id: 14, name: 'Seringues 5ml ×10', dci: null, stock: 0, expirationDate: '2028-06-01', price: 3200 },
+  { id: 15, name: 'Pédiatric Fever Sirop', dci: 'Paracétamol', stock: 22, expirationDate: '2026-07-31', price: 3500 },
+  { id: 20, name: 'Pansements adhésifs ×20', dci: null, stock: 60, expirationDate: '2028-12-31', price: 1500 },
+];
+
 function PulseDot({ color = '#EF4444' }: { color?: string }) {
   return (
     <span className="relative flex h-2.5 w-2.5">
@@ -44,8 +59,10 @@ export default function PharmacyDashboard() {
     { query: { enabled: !!business?.id, queryKey: getListMedicationsQueryKey({ businessId: business?.id ?? 0, expiringSoon: true }) } }
   );
 
-  const expiredCount = (medications ?? []).filter(med => new Date(med.expirationDate) < new Date()).length;
-  const hasCritical = (stats?.criticalStockCount ?? 0) > 0 || expiredCount > 0;
+  const displayStats = stats ?? DEMO_PHARMACY_STATS;
+  const displayMedications = medications && medications.length > 0 ? medications : DEMO_PHARMACY_MEDICATIONS;
+  const expiredCount = displayMedications.filter(med => new Date(med.expirationDate) < new Date()).length;
+  const hasCritical = displayStats.criticalStockCount > 0 || expiredCount > 0;
 
   return (
     <div className="p-6 md:p-8 space-y-6 page-enter">
@@ -57,12 +74,12 @@ export default function PharmacyDashboard() {
         bg="rgba(244,114,182,0.08)"
         icon={Pill}
         badge="PRO"
-        stats={stats ? [
-          { label: 'ordonnances', value: String(stats.prescriptionsToday) },
-          { label: 'médicaments vendus', value: String(stats.medicationsSold) },
-          { label: 'CA du jour', value: new Intl.NumberFormat('fr-FR').format(stats.dailyRevenue) + ' FCFA' },
-          ...(stats.criticalStockCount > 0 ? [{ label: 'ruptures critiques', value: String(stats.criticalStockCount), color: '#EF4444' }] : []),
-        ] : undefined}
+        stats={[
+          { label: 'ordonnances', value: String(displayStats.prescriptionsToday) },
+          { label: 'médicaments vendus', value: String(displayStats.medicationsSold) },
+          { label: 'CA du jour', value: new Intl.NumberFormat('fr-FR').format(displayStats.dailyRevenue) + ' FCFA' },
+          ...(displayStats.criticalStockCount > 0 ? [{ label: 'ruptures critiques', value: String(displayStats.criticalStockCount), color: '#EF4444' }] : []),
+        ]}
       />
 
       {/* Critical alert banner */}
@@ -80,9 +97,9 @@ export default function PharmacyDashboard() {
           >
             <PulseDot />
             <div className="flex flex-col gap-0.5">
-              {(stats?.criticalStockCount ?? 0) > 0 && (
+              {displayStats.criticalStockCount > 0 && (
                 <p className="text-sm font-semibold" style={{ color: '#EF4444' }}>
-                  {stats!.criticalStockCount} médicament{stats!.criticalStockCount > 1 ? 's' : ''} en rupture de stock critique
+                  {displayStats.criticalStockCount} médicament{displayStats.criticalStockCount > 1 ? 's' : ''} en rupture de stock critique
                 </p>
               )}
               {expiredCount > 0 && (
@@ -99,21 +116,21 @@ export default function PharmacyDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
-        ) : stats ? (
+        ) : (
           <>
-            <KPICard title="Ordonnances du Jour" value={stats.prescriptionsToday} icon={FileText} color="#60A5FA" staggerIndex={0} />
-            <KPICard title="Médicaments Vendus" value={stats.medicationsSold} icon={Pill} color="#F472B6" staggerIndex={1} />
-            <KPICard title="CA du Jour" value={stats.dailyRevenue} icon={Receipt} isCurrency accent staggerIndex={2} />
+            <KPICard title="Ordonnances du Jour" value={displayStats.prescriptionsToday} icon={FileText} color="#60A5FA" staggerIndex={0} />
+            <KPICard title="Médicaments Vendus" value={displayStats.medicationsSold} icon={Pill} color="#F472B6" staggerIndex={1} />
+            <KPICard title="CA du Jour" value={displayStats.dailyRevenue} icon={Receipt} isCurrency accent staggerIndex={2} />
             <div className="relative">
-              {(stats.criticalStockCount > 0) && (
+              {displayStats.criticalStockCount > 0 && (
                 <span className="absolute top-3 right-3 z-10">
                   <PulseDot />
                 </span>
               )}
-              <KPICard title="Ruptures Critiques" value={stats.criticalStockCount} icon={AlertOctagon} color={stats.criticalStockCount > 0 ? '#EF4444' : '#94A3B8'} staggerIndex={3} />
+              <KPICard title="Ruptures Critiques" value={displayStats.criticalStockCount} icon={AlertOctagon} color={displayStats.criticalStockCount > 0 ? '#EF4444' : '#94A3B8'} staggerIndex={3} />
             </div>
           </>
-        ) : null}
+        )}
       </div>
 
       <Card className="border-border/50 bg-card">
@@ -129,7 +146,7 @@ export default function PharmacyDashboard() {
              <div className="space-y-4">
                {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
              </div>
-          ) : medications && medications.length > 0 ? (
+          ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -142,7 +159,7 @@ export default function PharmacyDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {medications.map((med) => {
+                  {displayMedications.map((med) => {
                     const expiryDate = new Date(med.expirationDate);
                     const daysUntilExpiry = Math.ceil((expiryDate.getTime() - new Date().getTime()) / (1000 * 3600 * 24));
                     const isExpired = daysUntilExpiry < 0;
@@ -175,8 +192,6 @@ export default function PharmacyDashboard() {
                 </TableBody>
               </Table>
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">Aucun médicament n&apos;expire prochainement</div>
           )}
         </CardContent>
       </Card>

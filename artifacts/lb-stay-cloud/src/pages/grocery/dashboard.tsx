@@ -16,6 +16,21 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEMO_GROCERY_STATS = {
+  dailySales: 1845000,
+  itemsSoldToday: 286,
+  lowStockCount: 9,
+  activeSuppliers: 14,
+};
+
+const DEMO_GROCERY_CRITICAL_PRODUCTS = [
+  { id: 4, name: 'Huile de palme 1L', category: 'ALIMENTAIRE', stock: 0, minStock: 12, price: 1800, supplierName: 'Palmor' },
+  { id: 7, name: 'Haricots blancs 1kg', category: 'ALIMENTAIRE', stock: 0, minStock: 10, price: 1500, supplierName: 'SahelFood' },
+  { id: 16, name: 'Bière Castel 65cl', category: 'BOISSONS', stock: 0, minStock: 24, price: 1000, supplierName: 'SABC' },
+  { id: 22, name: 'Lessive en poudre 1kg', category: 'HYGIENE', stock: 0, minStock: 10, price: 1500, supplierName: 'Unilever' },
+  { id: 30, name: 'Huile moteur 1L', category: 'AUTRES', stock: 6, minStock: 4, price: 3800, supplierName: 'Total CM' },
+];
+
 function PulseDot({ color = '#EF4444' }: { color?: string }) {
   return (
     <span className="relative flex h-2.5 w-2.5">
@@ -44,7 +59,9 @@ export default function GroceryDashboard() {
     { query: { enabled: !!business?.id, queryKey: getListGroceryProductsQueryKey({ businessId: business?.id ?? 0, lowStock: true }) } }
   );
 
-  const criticalCount = (products ?? []).filter(p => p.stock === 0).length;
+  const displayStats = stats ?? DEMO_GROCERY_STATS;
+  const displayProducts = products && products.length > 0 ? products : DEMO_GROCERY_CRITICAL_PRODUCTS;
+  const criticalCount = displayProducts.filter(p => p.stock === 0).length;
   const hasCritical = criticalCount > 0;
 
   return (
@@ -57,11 +74,11 @@ export default function GroceryDashboard() {
         bg="rgba(52,211,153,0.08)"
         icon={ShoppingCart}
         badge="PRO"
-        stats={stats ? [
-          { label: 'ventes du jour', value: new Intl.NumberFormat('fr-FR').format(stats.dailySales) + ' FCFA' },
-          { label: 'articles vendus', value: String(stats.itemsSoldToday) },
+        stats={[
+          { label: 'ventes du jour', value: new Intl.NumberFormat('fr-FR').format(displayStats.dailySales) + ' FCFA' },
+          { label: 'articles vendus', value: String(displayStats.itemsSoldToday) },
           ...(criticalCount > 0 ? [{ label: 'ruptures', value: String(criticalCount), color: '#EF4444' }] : []),
-        ] : undefined}
+        ]}
       />
 
       {/* Critical stock banner */}
@@ -89,21 +106,21 @@ export default function GroceryDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
-        ) : stats ? (
+        ) : (
           <>
-            <KPICard title="Ventes du Jour" value={stats.dailySales} icon={ShoppingCart} isCurrency accent staggerIndex={0} />
-            <KPICard title="Articles Vendus" value={stats.itemsSoldToday} icon={Package} color="#34D399" staggerIndex={1} />
+            <KPICard title="Ventes du Jour" value={displayStats.dailySales} icon={ShoppingCart} isCurrency accent staggerIndex={0} />
+            <KPICard title="Articles Vendus" value={displayStats.itemsSoldToday} icon={Package} color="#34D399" staggerIndex={1} />
             <div className="relative">
               {hasCritical && (
                 <span className="absolute top-3 right-3 z-10">
                   <PulseDot />
                 </span>
               )}
-              <KPICard title="Ruptures de Stock" value={stats.lowStockCount} icon={AlertTriangle} color={hasCritical ? '#EF4444' : '#F59E0B'} staggerIndex={2} />
+              <KPICard title="Ruptures de Stock" value={displayStats.lowStockCount} icon={AlertTriangle} color={hasCritical ? '#EF4444' : '#F59E0B'} staggerIndex={2} />
             </div>
-            <KPICard title="Fournisseurs Actifs" value={stats.activeSuppliers} icon={Truck} color="#60A5FA" staggerIndex={3} />
+            <KPICard title="Fournisseurs Actifs" value={displayStats.activeSuppliers} icon={Truck} color="#60A5FA" staggerIndex={3} />
           </>
-        ) : null}
+        )}
       </div>
 
       <Card className="border-border/50 bg-card">
@@ -119,7 +136,7 @@ export default function GroceryDashboard() {
              <div className="space-y-4">
                {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
              </div>
-          ) : products && products.length > 0 ? (
+          ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -133,7 +150,7 @@ export default function GroceryDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.map((product) => (
+                  {displayProducts.map((product) => (
                     <TableRow key={product.id} className="border-border/50">
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.category}</TableCell>
@@ -158,8 +175,6 @@ export default function GroceryDashboard() {
                 </TableBody>
               </Table>
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">Aucun produit en rupture de stock</div>
           )}
         </CardContent>
       </Card>
