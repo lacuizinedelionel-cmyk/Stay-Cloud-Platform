@@ -10,6 +10,7 @@ import NotFound from "@/pages/not-found";
 import Login from "@/pages/login";
 import ActivatePage from "@/pages/activate";
 import SignupPage from "@/pages/signup";
+import ResetPasswordPage from "@/pages/reset-password";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import SuperAdminAnalyticsPage from "@/pages/superadmin/analytics";
 import SuperAdminSubscriptionsPage from "@/pages/superadmin/subscriptions";
@@ -98,6 +99,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/activate" component={ActivatePage} />
       <Route path="/signup" component={SignupPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
 
       <Route path="/superadmin">
         {() => <SuperAdminGuard component={SuperAdminDashboard} />}

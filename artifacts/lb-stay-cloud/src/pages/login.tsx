@@ -86,7 +86,7 @@ export default function Login() {
         description: `Un lien/code sécurisé vous a été envoyé via ${recoveryMode}`,
       });
       setRecoveryLoading(false);
-      setStep('credentials');
+      setLocation('/reset-password');
     }, 700);
   };
 
@@ -396,10 +396,10 @@ export default function Login() {
 
               <button
                 type="button"
-                onClick={() => setStep('credentials')}
+                onClick={() => setLocation('/reset-password')}
                 className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
-                Retour à la connexion
+                Aller à la réinitialisation
               </button>
             </div>
           )}
