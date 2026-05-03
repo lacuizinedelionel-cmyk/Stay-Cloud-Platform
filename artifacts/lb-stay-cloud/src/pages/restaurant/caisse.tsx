@@ -12,71 +12,97 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const DEMO_CAISSE_ORDERS: CaisseOrder[] = Array.from({ length: 40 }, (_, index) => {
-  const caissiers = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha', 'Serge', 'Monique', 'Hugo'];
-  const moyens = ['CASH', 'MTN_MOMO', 'ORANGE_MONEY'] as const;
-  const amounts = [12500, 9800, 15400, 22100, 18600, 29500, 13200, 17600, 24800, 19800];
-  const items = [
-    ['Ndolé', 'Soya'],
-    ['Poisson braisé', 'Bissap'],
-    ['Poulet DG', 'Jus de gingembre'],
-    ['Plantain', 'Eau minérale'],
-    ['Riz', 'Sauce arachide'],
-    ['Brochettes', 'Frites'],
-    ['Poisson', 'Safou'],
-    ['Ndolé', 'Plantain'],
-  ];
-  const hour = String(8 + Math.floor(index / 5)).padStart(2, '0');
-  const minute = String((index * 7) % 60).padStart(2, '0');
-  const amount = amounts[index % amounts.length] + (index % 4) * 700;
-  return {
-    id: index + 1,
-    clientName: caissiers[index % caissiers.length],
-    tableNumber: `T${String((index % 18) + 1).padStart(2, '0')}`,
-    paymentMethod: moyens[index % moyens.length],
-    total: amount,
-    status: 'COMPLETED',
-    createdAt: new Date().toISOString().split('T')[0] + `T${hour}:${minute}:00.000Z`,
-    items: [
-      { productName: items[index % items.length][0], quantity: 1, unitPrice: Math.round(amount * 0.6), subtotal: Math.round(amount * 0.6) },
-      { productName: items[index % items.length][1], quantity: 1, unitPrice: amount - Math.round(amount * 0.6), subtotal: amount - Math.round(amount * 0.6) },
-    ],
-  };
-});
+const dayBase = new Date();
+dayBase.setHours(0, 0, 0, 0);
 
-const DEMO_SUPERMARKET_SALES: CaisseOrder[] = Array.from({ length: 50 }, (_, index) => {
-  const ticket = 9001 + index;
-  const servers = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha'];
-  const tables = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08'];
-  const products = [
-    { name: 'Riz 5kg', base: 8500 },
-    { name: 'Huile 1L', base: 2200 },
-    { name: 'Savon', base: 750 },
-    { name: 'Paracétamol', base: 1200 },
-    { name: 'Vitamine C', base: 2800 },
-    { name: 'Pansements', base: 1600 },
-  ];
-  const methodCycle = ['CASH', 'CASH', 'CASH', 'CASH', 'MTN_MOMO', 'MTN_MOMO', 'MTN_MOMO', 'ORANGE_MONEY', 'ORANGE_MONEY', 'ORANGE_MONEY'];
-  const status = index < 46 ? 'COMPLETED' : index < 49 ? 'CANCELLED' : 'FREE';
-  const main = products[index % products.length];
-  const extra = products[(index + 2) % products.length];
-  const qty1 = (index % 3) + 1;
-  const qty2 = index % 2 === 0 ? 1 : 2;
-  const total = main.base * qty1 + extra.base * qty2 + 300 * ((index % 4) + 1);
-  return {
-    id: ticket,
-    clientName: `Client ${ticket}`,
-    tableNumber: tables[index % tables.length],
-    paymentMethod: methodCycle[index % methodCycle.length],
-    total: status === 'FREE' ? 0 : total,
-    status,
-    createdAt: new Date(Date.now() - index * 11 * 60000).toISOString(),
-    items: status === 'FREE' ? [] : [
-      { productName: main.name, quantity: qty1, unitPrice: main.base, subtotal: main.base * qty1 },
-      { productName: extra.name, quantity: qty2, unitPrice: extra.base, subtotal: extra.base * qty2 },
-    ],
-  };
-});
+const restauNames = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha', 'Serge', 'Monique', 'Hugo', 'Nadine', 'Junior'];
+const restauItems = [
+  ['Ndolé', 'Soya'],
+  ['Poisson braisé', 'Bissap'],
+  ['Poulet DG', 'Jus de gingembre'],
+  ['Plantain', 'Eau minérale'],
+  ['Brochettes', 'Frites'],
+];
+
+function buildDemoOrders(prefix: string, count: number, amountSet: number[], itemsSet: string[][], modeCycle: Array<'CASH' | 'MTN_MOMO' | 'ORANGE_MONEY'>, baseHour: number) {
+  return Array.from({ length: count }, (_, index) => {
+    const amount = amountSet[index % amountSet.length] + (index % 5) * 850;
+    const hour = String(baseHour + Math.floor(index / 3)).padStart(2, '0');
+    const minute = String((index * 9) % 60).padStart(2, '0');
+    const items = itemsSet[index % itemsSet.length];
+    return {
+      id: index + 1,
+      clientName: restauNames[index % restauNames.length],
+      tableNumber: `${prefix}${String((index % 18) + 1).padStart(2, '0')}`,
+      paymentMethod: modeCycle[index % modeCycle.length],
+      total: amount,
+      status: 'COMPLETED',
+      createdAt: dayBase.toISOString().split('T')[0] + `T${hour}:${minute}:00.000Z`,
+      items: [
+        { productName: items[0], quantity: 1, unitPrice: Math.round(amount * 0.58), subtotal: Math.round(amount * 0.58) },
+        { productName: items[1], quantity: 1, unitPrice: amount - Math.round(amount * 0.58), subtotal: amount - Math.round(amount * 0.58) },
+      ],
+    };
+  });
+}
+
+const DEMO_RESTAURANT_ORDERS = buildDemoOrders('R', 30, [12500, 9800, 15400, 22100, 18600, 29500, 13200, 17600, 24800, 19800], restauItems, ['CASH', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY'], 8);
+const DEMO_SUPERMARKET_ORDERS = buildDemoOrders('S', 30, [8500, 4200, 7600, 15900, 12800, 9800, 11200, 14400, 20500, 18900], [['Riz 5kg', 'Sucre 1kg'], ['Huile de palme', 'Café moulu'], ['Lait', 'Savon'], ['Pâtes', 'Eau minérale'], ['Farine', 'Coca-Cola']], ['CASH', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY'], 9);
+const DEMO_PHARMACY_ORDERS = buildDemoOrders('P', 30, [1800, 2500, 3200, 4500, 6200, 7800, 5200, 9600, 1400, 2100], [['Doliprane', 'Vitamines'], ['Gants', 'Paracétamol'], ['Antibiotique', 'Sérum physiologique'], ['Sirop', 'Pansements'], ['Zinc', 'Masques']], ['CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH', 'MTN_MOMO', 'ORANGE_MONEY', 'CASH'], 10);
+
+const DEMO_CAISSE_BY_SECTOR: Record<string, CaisseDay> = {
+  RESTAURANT: {
+    date: dayBase.toISOString().split('T')[0],
+    orders: DEMO_RESTAURANT_ORDERS,
+    summary: DEMO_RESTAURANT_ORDERS.reduce((acc, o) => {
+      const pm = o.paymentMethod ?? 'OTHER';
+      return {
+        totalCash: acc.totalCash + (pm === 'CASH' ? o.total : 0),
+        totalMoMo: acc.totalMoMo + (pm === 'MTN_MOMO' ? o.total : 0),
+        totalOrangeMoney: acc.totalOrangeMoney + (pm === 'ORANGE_MONEY' ? o.total : 0),
+        totalOther: acc.totalOther,
+        totalAmount: acc.totalAmount + o.total,
+        orderCount: acc.orderCount + 1,
+      };
+    }, { totalCash: 0, totalMoMo: 0, totalOrangeMoney: 0, totalOther: 0, totalAmount: 0, orderCount: 0 }),
+    isClosed: false,
+    closedEntry: null,
+  },
+  SUPERMARKET: {
+    date: dayBase.toISOString().split('T')[0],
+    orders: DEMO_SUPERMARKET_ORDERS,
+    summary: DEMO_SUPERMARKET_ORDERS.reduce((acc, o) => {
+      const pm = o.paymentMethod ?? 'OTHER';
+      return {
+        totalCash: acc.totalCash + (pm === 'CASH' ? o.total : 0),
+        totalMoMo: acc.totalMoMo + (pm === 'MTN_MOMO' ? o.total : 0),
+        totalOrangeMoney: acc.totalOrangeMoney + (pm === 'ORANGE_MONEY' ? o.total : 0),
+        totalOther: acc.totalOther,
+        totalAmount: acc.totalAmount + o.total,
+        orderCount: acc.orderCount + 1,
+      };
+    }, { totalCash: 0, totalMoMo: 0, totalOrangeMoney: 0, totalOther: 0, totalAmount: 0, orderCount: 0 }),
+    isClosed: false,
+    closedEntry: null,
+  },
+  PHARMACY: {
+    date: dayBase.toISOString().split('T')[0],
+    orders: DEMO_PHARMACY_ORDERS,
+    summary: DEMO_PHARMACY_ORDERS.reduce((acc, o) => {
+      const pm = o.paymentMethod ?? 'OTHER';
+      return {
+        totalCash: acc.totalCash + (pm === 'CASH' ? o.total : 0),
+        totalMoMo: acc.totalMoMo + (pm === 'MTN_MOMO' ? o.total : 0),
+        totalOrangeMoney: acc.totalOrangeMoney + (pm === 'ORANGE_MONEY' ? o.total : 0),
+        totalOther: acc.totalOther,
+        totalAmount: acc.totalAmount + o.total,
+        orderCount: acc.orderCount + 1,
+      };
+    }, { totalCash: 0, totalMoMo: 0, totalOrangeMoney: 0, totalOther: 0, totalAmount: 0, orderCount: 0 }),
+    isClosed: false,
+    closedEntry: null,
+  },
+};
 
 /* ── Types ── */
 interface CaisseOrder {
