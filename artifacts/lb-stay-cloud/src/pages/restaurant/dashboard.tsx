@@ -82,7 +82,7 @@ export default function RestaurantDashboard() {
         ) : null}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 border-border/50 bg-card">
           <CardHeader>
             <CardTitle>Ventes par heure</CardTitle>
@@ -162,7 +162,7 @@ export default function RestaurantDashboard() {
               {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
             </div>
           ) : orders && orders.length > 0 ? (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto md:overflow-visible">
               <Table>
                 <TableHeader>
                   <TableRow className="border-border/50 hover:bg-transparent">

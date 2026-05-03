@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
         {/* CA chart */}
         <Card delay={0.1} className="lg:col-span-2">
           <SectionTitle>Chiffre d'affaires (14 derniers jours)</SectionTitle>
@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6">
         {/* Top 10 plats (restaurant only) */}
         {sector === 'RESTAURANT' && topDishes.length > 0 && (
           <Card delay={0.2}>

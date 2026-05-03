@@ -460,7 +460,7 @@ export default function SuperAdminBillingPage() {
       </motion.div>
 
       {/* ── KPI CARDS ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'MRR plateforme',       value: formatXAF(mrr),     sub: `${subs.filter(s => s.status !== 'SUSPENDU').length} abonnements actifs`, color: 'hsl(38 90% 56%)', bg: 'hsl(38 90% 56% / 0.12)', icon: CreditCard,   trend: '+13.9%', pos: true  },
           { label: 'Comptes actifs',        value: String(actifs),     sub: 'Sur 8 enseignes inscrites',        color: '#10B981', bg: 'hsl(160 84% 39% / 0.12)', icon: CheckCircle2, trend: '100%',   pos: true  },
@@ -675,7 +675,7 @@ export default function SuperAdminBillingPage() {
       </motion.div>
 
       {/* ── PLAN DISTRIBUTION ── */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-4">
         {(['STARTER', 'PRO', 'ELITE'] as PlanId[]).map(pid => {
           const p     = PLAN_CFG[pid];
           const PIcon = p.icon;

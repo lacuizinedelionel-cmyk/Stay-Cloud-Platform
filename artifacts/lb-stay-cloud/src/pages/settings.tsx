@@ -155,7 +155,7 @@ function LogoUploadSection({ businessId }: { businessId: number }) {
         <p className="text-[11px] text-muted-foreground -mt-1">{t.settings.logoSubtitle}</p>
       </FormField>
 
-      <div className="flex flex-col sm:flex-row gap-5 items-start">
+      <div className="flex flex-col gap-5 items-start sm:flex-row">
         {/* Preview */}
         <div className="relative shrink-0">
           <div
