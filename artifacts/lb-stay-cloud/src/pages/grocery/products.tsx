@@ -21,6 +21,45 @@ import {
   Tag, Barcode, ShoppingBag, Filter,
 } from 'lucide-react';
 
+/* ───── Demo Data ─────────────────────────────────────────────── */
+const DEMO_GROCERY_PRODUCTS: GroceryProduct[] = [
+  // ALIMENTAIRE (12 articles)
+  { id: 1,  businessId: 0, name: 'Riz importé 5kg',        barcode: '6009001000011', category: 'ALIMENTAIRE',    price: 4500,  costPrice: 3200,  stock: 48,  minStock: 10, supplierId: null, supplierName: 'SahelFood', isActive: true },
+  { id: 2,  businessId: 0, name: 'Sucre cristallisé 1kg',  barcode: '6009001000022', category: 'ALIMENTAIRE',    price: 1200,  costPrice: 850,   stock: 120, minStock: 20, supplierId: null, supplierName: 'ProSugar',  isActive: true },
+  { id: 3,  businessId: 0, name: 'Farine de blé 1kg',      barcode: '6009001000033', category: 'ALIMENTAIRE',    price: 950,   costPrice: 650,   stock: 85,  minStock: 15, supplierId: null, supplierName: 'SahelFood', isActive: true },
+  { id: 4,  businessId: 0, name: 'Huile de palme 1L',      barcode: '6009001000044', category: 'ALIMENTAIRE',    price: 1800,  costPrice: 1200,  stock: 60,  minStock: 12, supplierId: null, supplierName: 'Palmor',    isActive: true },
+  { id: 5,  businessId: 0, name: 'Pâtes alimentaires 500g',barcode: '6009001000055', category: 'ALIMENTAIRE',    price: 750,   costPrice: 500,   stock: 95,  minStock: 15, supplierId: null, supplierName: 'SahelFood', isActive: true },
+  { id: 6,  businessId: 0, name: 'Sel iodé 1kg',           barcode: '6009001000066', category: 'ALIMENTAIRE',    price: 400,   costPrice: 220,   stock: 200, minStock: 20, supplierId: null, supplierName: null,        isActive: true },
+  { id: 7,  businessId: 0, name: 'Haricots blancs 1kg',    barcode: '6009001000077', category: 'ALIMENTAIRE',    price: 1500,  costPrice: 950,   stock: 0,   minStock: 10, supplierId: null, supplierName: 'SahelFood', isActive: true }, // RUPTURE
+  { id: 8,  businessId: 0, name: 'Sardines en boîte',      barcode: '6009001000088', category: 'ALIMENTAIRE',    price: 800,   costPrice: 550,   stock: 34,  minStock: 10, supplierId: null, supplierName: 'OceanPack', isActive: true },
+  { id: 9,  businessId: 0, name: 'Tomates en conserve',    barcode: '6009001000099', category: 'ALIMENTAIRE',    price: 700,   costPrice: 480,   stock: 45,  minStock: 10, supplierId: null, supplierName: null,        isActive: true },
+  { id: 10, businessId: 0, name: 'Lait concentré 400g',    barcode: '6009001000100', category: 'ALIMENTAIRE',    price: 1100,  costPrice: 750,   stock: 72,  minStock: 15, supplierId: null, supplierName: 'Nestlé CM', isActive: true },
+  { id: 11, businessId: 0, name: 'Café moulu 250g',        barcode: '6009001000111', category: 'ALIMENTAIRE',    price: 2500,  costPrice: 1700,  stock: 28,  minStock: 8,  supplierId: null, supplierName: 'CafeCam',   isActive: true },
+  { id: 12, businessId: 0, name: 'Nescafé 200g',           barcode: '6009001000122', category: 'ALIMENTAIRE',    price: 3200,  costPrice: 2100,  stock: 18,  minStock: 8,  supplierId: null, supplierName: 'Nestlé CM', isActive: true },
+  // BOISSONS (6 articles)
+  { id: 13, businessId: 0, name: 'Eau minérale 1,5L',      barcode: '6009001000133', category: 'BOISSONS',       price: 500,   costPrice: 300,   stock: 144, minStock: 24, supplierId: null, supplierName: 'Source CM', isActive: true },
+  { id: 14, businessId: 0, name: 'Jus de goyave 1L',       barcode: '6009001000144', category: 'BOISSONS',       price: 1200,  costPrice: 800,   stock: 48,  minStock: 12, supplierId: null, supplierName: 'FrutoPack', isActive: true },
+  { id: 15, businessId: 0, name: 'Coca-Cola 33cl',         barcode: '6009001000155', category: 'BOISSONS',       price: 600,   costPrice: 380,   stock: 96,  minStock: 24, supplierId: null, supplierName: 'SABC',      isActive: true },
+  { id: 16, businessId: 0, name: 'Bière Castel 65cl',      barcode: '6009001000166', category: 'BOISSONS',       price: 1000,  costPrice: 680,   stock: 0,   minStock: 24, supplierId: null, supplierName: 'SABC',      isActive: true }, // RUPTURE
+  { id: 17, businessId: 0, name: 'Malta Guinness 33cl',    barcode: '6009001000177', category: 'BOISSONS',       price: 700,   costPrice: 450,   stock: 72,  minStock: 18, supplierId: null, supplierName: 'SABC',      isActive: true },
+  { id: 18, businessId: 0, name: 'Jus de bissap 500ml',    barcode: '6009001000188', category: 'BOISSONS',       price: 800,   costPrice: 500,   stock: 36,  minStock: 10, supplierId: null, supplierName: 'FrutoPack', isActive: true },
+  // HYGIENE (6 articles)
+  { id: 19, businessId: 0, name: 'Savon Omo 500g',         barcode: '6009001000199', category: 'HYGIENE',        price: 1200,  costPrice: 800,   stock: 80,  minStock: 15, supplierId: null, supplierName: 'Unilever',  isActive: true },
+  { id: 20, businessId: 0, name: 'Shampoing Pantène 400ml',barcode: '6009001000200', category: 'HYGIENE',        price: 2800,  costPrice: 1900,  stock: 24,  minStock: 8,  supplierId: null, supplierName: 'P&G CM',    isActive: true },
+  { id: 21, businessId: 0, name: 'Dentifrice Signal 75ml', barcode: '6009001000211', category: 'HYGIENE',        price: 900,   costPrice: 580,   stock: 60,  minStock: 12, supplierId: null, supplierName: 'Unilever',  isActive: true },
+  { id: 22, businessId: 0, name: 'Lessive en poudre 1kg',  barcode: '6009001000222', category: 'HYGIENE',        price: 1500,  costPrice: 1000,  stock: 0,   minStock: 10, supplierId: null, supplierName: 'Unilever',  isActive: true }, // RUPTURE
+  { id: 23, businessId: 0, name: 'Gel douche Dove 250ml',  barcode: '6009001000233', category: 'HYGIENE',        price: 2200,  costPrice: 1450,  stock: 30,  minStock: 8,  supplierId: null, supplierName: 'Unilever',  isActive: true },
+  { id: 24, businessId: 0, name: 'Papier toilette x12',    barcode: '6009001000244', category: 'HYGIENE',        price: 3500,  costPrice: 2300,  stock: 20,  minStock: 6,  supplierId: null, supplierName: null,        isActive: true },
+  // PRODUITS_FRAIS (4 articles)
+  { id: 25, businessId: 0, name: 'Œufs frais x30',         barcode: '6009001000255', category: 'PRODUITS_FRAIS', price: 4200,  costPrice: 3000,  stock: 15,  minStock: 5,  supplierId: null, supplierName: 'FermeYaoundé', isActive: true },
+  { id: 26, businessId: 0, name: 'Yaourt brassé 1L',       barcode: '6009001000266', category: 'PRODUITS_FRAIS', price: 1800,  costPrice: 1200,  stock: 10,  minStock: 4,  supplierId: null, supplierName: 'SCA',       isActive: true },
+  { id: 27, businessId: 0, name: 'Fromage blanc 500g',     barcode: '6009001000277', category: 'PRODUITS_FRAIS', price: 2500,  costPrice: 1600,  stock: 8,   minStock: 3,  supplierId: null, supplierName: 'SCA',       isActive: true },
+  { id: 28, businessId: 0, name: 'Beurre de vache 250g',   barcode: '6009001000288', category: 'PRODUITS_FRAIS', price: 3200,  costPrice: 2100,  stock: 12,  minStock: 4,  supplierId: null, supplierName: 'SCA',       isActive: true },
+  // AUTRES (2 articles)
+  { id: 29, businessId: 0, name: 'Allumettes x10 boîtes',  barcode: '6009001000299', category: 'AUTRES',         price: 500,   costPrice: 280,   stock: 150, minStock: 20, supplierId: null, supplierName: null,        isActive: true },
+  { id: 30, businessId: 0, name: 'Huile moteur 1L',        barcode: '6009001000300', category: 'AUTRES',         price: 3800,  costPrice: 2600,  stock: 6,   minStock: 4,  supplierId: null, supplierName: 'Total CM',  isActive: true },
+];
+
 /* ───── Types ─────────────────────────────────────────────────── */
 type Category = 'ALL' | 'ALIMENTAIRE' | 'BOISSONS' | 'HYGIENE' | 'PRODUITS_FRAIS' | 'AUTRES';
 type FilterStock = 'ALL' | 'LOW' | 'CRITICAL';
@@ -602,7 +641,7 @@ export default function GroceryProductsPage() {
     { query: { queryKey: ['suppliers', bId], enabled: !!bId } },
   );
 
-  const all = products ?? [];
+  const all = (products && products.length > 0) ? products : DEMO_GROCERY_PRODUCTS;
   const criticalCount = all.filter(p => p.stock === 0).length;
   const lowCount = all.filter(p => p.stock > 0 && p.stock <= p.minStock).length;
   const totalValue = all.reduce((s, p) => s + p.stock * p.price, 0);

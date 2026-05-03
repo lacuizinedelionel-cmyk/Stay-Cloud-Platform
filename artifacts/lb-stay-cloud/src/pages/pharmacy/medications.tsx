@@ -20,6 +20,36 @@ import {
   Package, TrendingDown, Filter,
 } from 'lucide-react';
 
+/* ──────────────────────────────────────────────── demo data */
+const DEMO_MEDICATIONS: Medication[] = [
+  // Antidouleurs / Antipyrétiques
+  { id: 1,  businessId: 0, name: 'Paracétamol 500mg',        dci: 'Paracétamol',         dosage: '500mg',    form: 'Comprimé',    price: 1800,  stock: 0,   minStock: 20, expirationDate: '2026-12-31', requiresPrescription: false, supplierId: null }, // RUPTURE
+  { id: 2,  businessId: 0, name: 'Doliprane 1000mg',         dci: 'Paracétamol',         dosage: '1000mg',   form: 'Comprimé',    price: 2500,  stock: 48,  minStock: 15, expirationDate: '2026-09-30', requiresPrescription: false, supplierId: null },
+  { id: 3,  businessId: 0, name: 'Ibuprofène 400mg',         dci: 'Ibuprofène',           dosage: '400mg',    form: 'Gélule',      price: 2200,  stock: 36,  minStock: 10, expirationDate: '2027-03-15', requiresPrescription: false, supplierId: null },
+  { id: 4,  businessId: 0, name: 'Aspirine 500mg',           dci: 'Acide acétylsalicylique', dosage: '500mg', form: 'Comprimé',    price: 1200,  stock: 60,  minStock: 15, expirationDate: '2027-06-30', requiresPrescription: false, supplierId: null },
+  // Antibiotiques
+  { id: 5,  businessId: 0, name: 'Amoxicilline 500mg',       dci: 'Amoxicilline',         dosage: '500mg',    form: 'Gélule',      price: 4500,  stock: 0,   minStock: 12, expirationDate: '2026-08-20', requiresPrescription: true,  supplierId: null }, // RUPTURE
+  { id: 6,  businessId: 0, name: 'Clamoxyl 1g',              dci: 'Amoxicilline',         dosage: '1g',       form: 'Comprimé',    price: 6500,  stock: 20,  minStock: 8,  expirationDate: '2026-11-15', requiresPrescription: true,  supplierId: null },
+  { id: 7,  businessId: 0, name: 'Ciprofloxacine 500mg',     dci: 'Ciprofloxacine',       dosage: '500mg',    form: 'Comprimé',    price: 5500,  stock: 18,  minStock: 6,  expirationDate: '2027-01-31', requiresPrescription: true,  supplierId: null },
+  // Vitamines & Suppléments
+  { id: 8,  businessId: 0, name: 'Vitamines C 1000mg',       dci: 'Acide ascorbique',     dosage: '1000mg',   form: 'Comprimé',    price: 3000,  stock: 80,  minStock: 20, expirationDate: '2027-05-31', requiresPrescription: false, supplierId: null },
+  { id: 9,  businessId: 0, name: 'Zinc 15mg',                dci: 'Zinc',                 dosage: '15mg',     form: 'Comprimé',    price: 2800,  stock: 55,  minStock: 12, expirationDate: '2027-08-31', requiresPrescription: false, supplierId: null },
+  { id: 10, businessId: 0, name: 'Fer + Acide folique',      dci: 'Fer / Folate',         dosage: '60mg',     form: 'Comprimé',    price: 2200,  stock: 42,  minStock: 10, expirationDate: '2026-12-31', requiresPrescription: false, supplierId: null },
+  // Antipaludéens
+  { id: 11, businessId: 0, name: 'Coartem 80/480mg',         dci: 'Artémétherluméfantrine', dosage: '80/480mg', form: 'Comprimé',  price: 8500,  stock: 25,  minStock: 10, expirationDate: '2026-10-31', requiresPrescription: true,  supplierId: null },
+  { id: 12, businessId: 0, name: 'Quinine 500mg',            dci: 'Quinine',              dosage: '500mg',    form: 'Comprimé',    price: 1800,  stock: 38,  minStock: 10, expirationDate: '2027-02-28', requiresPrescription: true,  supplierId: null },
+  // Matériel médical
+  { id: 13, businessId: 0, name: 'Gants latex stériles ×10', dci: null,                   dosage: null,       form: 'Autre',       price: 2500,  stock: 40,  minStock: 10, expirationDate: '2028-01-01', requiresPrescription: false, supplierId: null },
+  { id: 14, businessId: 0, name: 'Seringues 5ml ×10',        dci: null,                   dosage: null,       form: 'Autre',       price: 3200,  stock: 0,   minStock: 10, expirationDate: '2028-06-01', requiresPrescription: false, supplierId: null }, // RUPTURE
+  // Sirops
+  { id: 15, businessId: 0, name: 'Pédiatric Fever Sirop',    dci: 'Paracétamol',         dosage: '120mg/5ml', form: 'Sirop',      price: 3500,  stock: 22,  minStock: 8,  expirationDate: '2026-07-31', requiresPrescription: false, supplierId: null },
+  { id: 16, businessId: 0, name: 'Ambroxol Sirop 30mg',      dci: 'Ambroxol',            dosage: '30mg/5ml', form: 'Sirop',       price: 4200,  stock: 14,  minStock: 6,  expirationDate: '2026-09-30', requiresPrescription: false, supplierId: null },
+  { id: 17, businessId: 0, name: 'Cétirizine 10mg',          dci: 'Cétirizine',           dosage: '10mg',     form: 'Comprimé',    price: 2800,  stock: 30,  minStock: 8,  expirationDate: '2027-04-30', requiresPrescription: false, supplierId: null },
+  { id: 18, businessId: 0, name: 'Métronidazole 250mg',      dci: 'Métronidazole',        dosage: '250mg',    form: 'Comprimé',    price: 1500,  stock: 50,  minStock: 12, expirationDate: '2027-03-31', requiresPrescription: true,  supplierId: null },
+  { id: 19, businessId: 0, name: 'Oméprazole 20mg',          dci: 'Oméprazole',           dosage: '20mg',     form: 'Gélule',      price: 3000,  stock: 35,  minStock: 10, expirationDate: '2027-01-31', requiresPrescription: true,  supplierId: null },
+  { id: 20, businessId: 0, name: 'Pansements adhésifs ×20',  dci: null,                   dosage: null,       form: 'Autre',       price: 1500,  stock: 60,  minStock: 15, expirationDate: '2028-12-31', requiresPrescription: false, supplierId: null },
+];
+
 /* ──────────────────────────────────────────────── helpers */
 type StockFilter = 'ALL' | 'LOW' | 'CRITICAL';
 type ExpFilter = 'ALL' | 'EXPIRING' | 'EXPIRED';
@@ -494,7 +524,7 @@ export default function PharmacyMedicationsPage() {
     { query: { queryKey: medsKey, enabled: !!bId, refetchInterval: 60000 } },
   );
 
-  const all = medications ?? [];
+  const all = (medications && medications.length > 0) ? medications : DEMO_MEDICATIONS;
   const criticalCount = all.filter(m => m.stock === 0).length;
   const lowCount = all.filter(m => m.stock > 0 && m.stock <= m.minStock).length;
   const expiringCount = all.filter(m => { const d = daysUntilExpiry(m.expirationDate); return d >= 0 && d <= 30; }).length;
