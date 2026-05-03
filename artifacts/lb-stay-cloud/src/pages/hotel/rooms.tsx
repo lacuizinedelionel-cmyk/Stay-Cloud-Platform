@@ -30,25 +30,28 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const DEMO_ROOMS: HotelRoom[] = Array.from({ length: 110 }, (_, index) => {
-  const number = 101 + index;
-  const typeCycle: HotelRoomType[] = ['STANDARD', 'SUPERIOR', 'SUITE', 'PRESIDENTIAL'];
-  const statusCycle: HotelRoomStatus[] = ['AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING', 'AVAILABLE', 'OCCUPIED'];
-  const type = typeCycle[index % typeCycle.length];
-  const status = statusCycle[index % statusCycle.length];
-  const prices = { STANDARD: 85000, SUPERIOR: 125000, SUITE: 185000, PRESIDENTIAL: 320000 };
-
-  return {
-    id: number,
-    number: String(number),
-    floor: number < 150 ? 1 : number < 200 ? 2 : 3,
-    type,
-    status,
-    pricePerNight: prices[type] + (index % 5) * 5000,
-    currentGuestName: status === 'OCCUPIED' ? `Client VIP ${index + 1}` : null,
-    checkoutDate: status === 'OCCUPIED' ? `${new Date(Date.now() + (index + 1) * 86400000).toISOString().split('T')[0]}` : null,
-  } as HotelRoom;
-});
+const DEMO_ROOMS: HotelRoom[] = [
+  { id: 101, number: '101', floor: 1, type: 'STANDARD', status: 'AVAILABLE', pricePerNight: 85000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 102, number: '102', floor: 1, type: 'STANDARD', status: 'OCCUPIED', pricePerNight: 85000, currentGuestName: "M. Eto'o", checkoutDate: '2026-05-05' } as HotelRoom,
+  { id: 103, number: '103', floor: 1, type: 'STANDARD', status: 'CLEANING', pricePerNight: 85000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 104, number: '104', floor: 1, type: 'SUPERIOR', status: 'AVAILABLE', pricePerNight: 125000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 105, number: '105', floor: 1, type: 'SUPERIOR', status: 'OCCUPIED', pricePerNight: 125000, currentGuestName: 'Mme Nchoutou', checkoutDate: '2026-05-06' } as HotelRoom,
+  { id: 106, number: '106', floor: 1, type: 'SUPERIOR', status: 'AVAILABLE', pricePerNight: 125000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 107, number: '107', floor: 1, type: 'SUITE', status: 'OCCUPIED', pricePerNight: 185000, currentGuestName: 'M. Kamdem', checkoutDate: '2026-05-07' } as HotelRoom,
+  { id: 108, number: '108', floor: 1, type: 'SUITE', status: 'CLEANING', pricePerNight: 185000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 201, number: '201', floor: 2, type: 'STANDARD', status: 'AVAILABLE', pricePerNight: 90000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 202, number: '202', floor: 2, type: 'STANDARD', status: 'OCCUPIED', pricePerNight: 90000, currentGuestName: 'Mme Ngono', checkoutDate: '2026-05-04' } as HotelRoom,
+  { id: 203, number: '203', floor: 2, type: 'STANDARD', status: 'AVAILABLE', pricePerNight: 90000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 204, number: '204', floor: 2, type: 'SUPERIOR', status: 'CLEANING', pricePerNight: 130000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 205, number: '205', floor: 2, type: 'SUPERIOR', status: 'OCCUPIED', pricePerNight: 130000, currentGuestName: 'M. Mbarga', checkoutDate: '2026-05-08' } as HotelRoom,
+  { id: 206, number: '206', floor: 2, type: 'SUITE', status: 'AVAILABLE', pricePerNight: 190000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 301, number: '301', floor: 3, type: 'STANDARD', status: 'AVAILABLE', pricePerNight: 95000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 302, number: '302', floor: 3, type: 'STANDARD', status: 'OCCUPIED', pricePerNight: 95000, currentGuestName: 'Mme Tchuidjang', checkoutDate: '2026-05-05' } as HotelRoom,
+  { id: 303, number: '303', floor: 3, type: 'SUPERIOR', status: 'AVAILABLE', pricePerNight: 135000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 304, number: '304', floor: 3, type: 'SUPERIOR', status: 'CLEANING', pricePerNight: 135000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+  { id: 305, number: '305', floor: 3, type: 'SUITE', status: 'OCCUPIED', pricePerNight: 195000, currentGuestName: 'M. Essono', checkoutDate: '2026-05-09' } as HotelRoom,
+  { id: 306, number: '306', floor: 3, type: 'PRESIDENTIAL', status: 'AVAILABLE', pricePerNight: 320000, currentGuestName: null, checkoutDate: null } as HotelRoom,
+];
 
 const DEMO_CREDITS: CustomerCredit[] = [
   { id: 1, businessId: 1, clientName: 'M. Tagne', clientPhone: '+237691000001', creditLimit: 100000, totalDebt: 45000, status: 'ACTIVE', notes: 'Paiement prévu ce soir', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
