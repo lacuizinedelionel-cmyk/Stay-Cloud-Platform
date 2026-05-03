@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { loginSchema, type LoginFormData } from '@/lib/schemas';
-import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone, LockKeyhole } from 'lucide-react';
+import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone, LockKeyhole, Mail, MessageCircle, Phone } from 'lucide-react';
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -350,7 +350,7 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="space-y-2">
+                <div className="space-y-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Email ou téléphone
                 </label>
@@ -378,8 +378,11 @@ export default function Login() {
                         borderColor: recoveryMode === mode ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
                         color: recoveryMode === mode ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
                       }}
-                    >
-                      {mode}
+                      >
+                      <span className="inline-flex items-center gap-1.5">
+                        {mode === 'Email' ? <Mail className="w-3.5 h-3.5" /> : mode === 'SMS' ? <Phone className="w-3.5 h-3.5" /> : <MessageCircle className="w-3.5 h-3.5" />}
+                        {mode}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -401,6 +404,9 @@ export default function Login() {
               >
                 Aller à la réinitialisation
               </button>
+              <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+                LB Stay ne vous demandera jamais votre mot de passe par message
+              </p>
             </div>
           )}
 
