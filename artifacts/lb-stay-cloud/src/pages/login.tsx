@@ -11,13 +11,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { loginSchema, type LoginFormData } from '@/lib/schemas';
-import { Zap, ArrowRight, Loader2 } from 'lucide-react';
+import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone } from 'lucide-react';
 
 export default function Login() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
+  const [pendingEmail, setPendingEmail] = useState('');
+  const [pendingPhone, setPendingPhone] = useState('+237 6XX XXX XXX');
+  const [otp, setOtp] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -35,7 +40,10 @@ export default function Login() {
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate({ data }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+        setPendingEmail(data.email);
+        setPendingPhone('+237 6XX XXX XXX');
+        setOtp('');
+        setStep('otp');
       },
       onError: () => {
         toast({
@@ -45,6 +53,26 @@ export default function Login() {
         });
       },
     });
+  };
+
+  const handleVerifyOtp = () => {
+    setOtpLoading(true);
+    setTimeout(() => {
+      if (otp === '123456') {
+        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+        toast({
+          title: 'Connexion validée',
+          description: 'Double authentification réussie.',
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Code incorrect',
+          description: 'Utilisez le code démo 123456.',
+        });
+      }
+      setOtpLoading(false);
+    }, 600);
   };
 
   return (
@@ -130,13 +158,15 @@ export default function Login() {
             <span className="font-extrabold text-base text-white" style={{ letterSpacing: '-0.02em' }}>LB Stay Cloud</span>
           </div>
 
-          <h1 className="text-3xl font-extrabold text-foreground mb-1" style={{ letterSpacing: '-0.03em' }}>
-            Connexion
-          </h1>
-          <p className="text-muted-foreground text-sm mb-8">Accédez à votre tableau de bord.</p>
+          {step === 'credentials' && (
+            <>
+              <h1 className="text-3xl font-extrabold text-foreground mb-1" style={{ letterSpacing: '-0.03em' }}>
+                Connexion
+              </h1>
+              <p className="text-muted-foreground text-sm mb-8">Accédez à votre tableau de bord.</p>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="email"
@@ -226,8 +256,65 @@ export default function Login() {
                   ✨ Pas encore de compte ? Créer un compte
                 </Link>
               </div>
-            </form>
-          </Form>
+                </form>
+              </Form>
+            </>
+          )}
+
+          {step === 'otp' && (
+            <div className="space-y-5">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-xl gradient-gold flex items-center justify-center">
+                  <ShieldCheck className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.03em' }}>
+                    Sécurité renforcée
+                  </h1>
+                  <p className="text-sm text-muted-foreground">Entrez le code reçu par SMS au {pendingPhone}.</p>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl border border-border bg-card flex items-center gap-3">
+                <Smartphone className="w-5 h-5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{pendingEmail}</p>
+                  <p className="text-xs text-muted-foreground">Code démo : 123456</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Code à 6 chiffres
+                </label>
+                <Input
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otp}
+                  onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="123456"
+                  className="h-11 bg-card border-border/70 text-foreground placeholder:text-muted-foreground focus:border-primary tracking-[0.35em] text-center text-lg"
+                />
+              </div>
+
+              <Button
+                type="button"
+                className="w-full h-11 gradient-gold text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                disabled={otpLoading || otp.length !== 6}
+                onClick={handleVerifyOtp}
+              >
+                {otpLoading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Vérification…</> : 'Accéder au Dashboard'}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setStep('credentials')}
+                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Modifier mes identifiants
+              </button>
+            </div>
+          )}
 
         </motion.div>
       </div>
