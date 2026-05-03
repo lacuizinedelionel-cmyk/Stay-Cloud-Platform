@@ -57,6 +57,8 @@ const PROFILE_STORAGE_KEY = 'lb_stay_profile';
 const PREFERENCES_STORAGE_KEY = 'lb_stay_preferences';
 const LOCAL_ACCOUNTS_KEY = 'lb_stay_local_accounts';
 const LOCAL_SESSION_KEY = 'lb_stay_local_session';
+const DEFAULT_ADMIN_EMAIL = 'admin@lbstay.com';
+const DEFAULT_ADMIN_PASSWORD = 'password';
 
 const DEFAULT_PROFILE: ProfileData = {
   fullName: 'Demo Manager',
@@ -141,6 +143,28 @@ function readLocalSession(): LocalAccount | null {
   }
 }
 
+function writeDefaultAdminAccount() {
+  const accounts = readLocalAccounts();
+  const hasAdmin = accounts.some(account => account.email.toLowerCase() === DEFAULT_ADMIN_EMAIL);
+  if (hasAdmin) return;
+  accounts.push({
+    email: DEFAULT_ADMIN_EMAIL,
+    passwordHash: simpleHash(DEFAULT_ADMIN_PASSWORD),
+    name: 'Super Admin',
+    businessName: 'LB Stay Cloud',
+    businessSector: 'SUPER_ADMIN',
+    city: 'Douala',
+    plan: 'enterprise',
+    active: true,
+    createdAt: new Date().toISOString(),
+  });
+  localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+function ensureDefaultAdminAccount() {
+  writeDefaultAdminAccount();
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
@@ -148,6 +172,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profileData, setProfileData] = useState<ProfileData>(() => readProfileData());
   const [preferencesData, setPreferencesData] = useState<PreferencesData>(() => readPreferencesData());
   const [localUser, setLocalUser] = useState<LocalAccount | null>(() => readLocalSession());
+
+  useEffect(() => {
+    ensureDefaultAdminAccount();
+  }, []);
 
   const { data: user, isLoading: isUserLoading, error: userError } = useGetMe({
     query: {
