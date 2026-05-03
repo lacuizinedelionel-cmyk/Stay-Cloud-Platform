@@ -45,6 +45,40 @@ const DEMO_CAISSE_ORDERS: CaisseOrder[] = [
   { id: 30, clientName: 'Atangana', tableNumber: 'T32', paymentMethod: 'ORANGE_MONEY', total: 0, status: 'FREE', createdAt: '2026-05-03T15:54:00.000Z', items: [] },
 ];
 
+const DEMO_SUPERMARKET_SALES: CaisseOrder[] = Array.from({ length: 50 }, (_, index) => {
+  const ticket = 9001 + index;
+  const servers = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha'];
+  const tables = ['S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08'];
+  const products = [
+    { name: 'Riz 5kg', base: 8500 },
+    { name: 'Huile 1L', base: 2200 },
+    { name: 'Savon', base: 750 },
+    { name: 'Paracétamol', base: 1200 },
+    { name: 'Vitamine C', base: 2800 },
+    { name: 'Pansements', base: 1600 },
+  ];
+  const methodCycle = ['CASH', 'CASH', 'CASH', 'CASH', 'MTN_MOMO', 'MTN_MOMO', 'MTN_MOMO', 'ORANGE_MONEY', 'ORANGE_MONEY', 'ORANGE_MONEY'];
+  const status = index < 46 ? 'COMPLETED' : index < 49 ? 'CANCELLED' : 'FREE';
+  const main = products[index % products.length];
+  const extra = products[(index + 2) % products.length];
+  const qty1 = (index % 3) + 1;
+  const qty2 = index % 2 === 0 ? 1 : 2;
+  const total = main.base * qty1 + extra.base * qty2 + 300 * ((index % 4) + 1);
+  return {
+    id: ticket,
+    clientName: `Client ${ticket}`,
+    tableNumber: tables[index % tables.length],
+    paymentMethod: methodCycle[index % methodCycle.length],
+    total: status === 'FREE' ? 0 : total,
+    status,
+    createdAt: new Date(Date.now() - index * 11 * 60000).toISOString(),
+    items: status === 'FREE' ? [] : [
+      { productName: main.name, quantity: qty1, unitPrice: main.base, subtotal: main.base * qty1 },
+      { productName: extra.name, quantity: qty2, unitPrice: extra.base, subtotal: extra.base * qty2 },
+    ],
+  };
+});
+
 /* ── Types ── */
 interface CaisseOrder {
   id: number; clientName: string | null; tableNumber: string | null;
