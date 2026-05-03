@@ -147,8 +147,12 @@ export default function RestaurantMenuPage() {
                           </div>
                           <div className="flex items-center justify-between gap-2">
                             <Badge variant="outline">Photo d’illustration</Badge>
-                            <Button size="sm" variant="outline" className="gap-2">
-                              <Sparkles className="w-4 h-4" /> Modifier
+                            <Button
+                              size="sm"
+                              className="gap-2 text-white"
+                              style={{ background: 'linear-gradient(135deg, #0f172a, #1d4ed8, #f59e0b)' }}
+                            >
+                              <Sparkles className="w-4 h-4" /> Modifier le prix
                             </Button>
                           </div>
                         </div>
