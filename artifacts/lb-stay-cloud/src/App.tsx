@@ -12,7 +12,7 @@ import ActivatePage from "@/pages/activate";
 import SignupPage from "@/pages/signup";
 import SuperAdminDashboard from "@/pages/superadmin/dashboard";
 import SuperAdminAnalyticsPage from "@/pages/superadmin/analytics";
-import SuperAdminBillingPage from "@/pages/superadmin/billing";
+import SuperAdminSubscriptionsPage from "@/pages/superadmin/subscriptions";
 
 import RestaurantDashboard from "@/pages/restaurant/dashboard";
 import RestaurantOrdersPage from "@/pages/restaurant/orders";
@@ -138,7 +138,7 @@ function Router() {
       <Route path="/messages">{() => <ProtectedRoute component={MessagesPage} />}</Route>
       <Route path="/superadmin/messages">{() => <SuperAdminGuard component={SuperAdminMessagesPage} />}</Route>
       <Route path="/superadmin/analytics">{() => <SuperAdminGuard component={SuperAdminAnalyticsPage} />}</Route>
-      <Route path="/superadmin/billing">{() => <SuperAdminGuard component={SuperAdminBillingPage} />}</Route>
+      <Route path="/superadmin/subscriptions">{() => <SuperAdminGuard component={SuperAdminSubscriptionsPage} />}</Route>
 
       <Route path="/dashboard">{() => <ProtectedRoute component={NotFound} />}</Route>
 

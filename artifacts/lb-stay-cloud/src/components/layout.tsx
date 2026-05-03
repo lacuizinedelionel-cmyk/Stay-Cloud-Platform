@@ -285,25 +285,25 @@ function SuperAdminSidebar({ user, logout }: { user: any; logout: () => void }) 
           Vue Globale
         </Link>
 
-        {/* Facturation */}
+        {/* Abonnements */}
         <Link
-          href="/superadmin/billing"
+          href="/superadmin/subscriptions"
           className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all mb-1"
           style={{
-            background: location === '/superadmin/billing' ? 'hsl(38 90% 56% / 0.15)' : 'transparent',
-            color: location === '/superadmin/billing' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
-            border: location === '/superadmin/billing' ? '1px solid hsl(38 90% 56% / 0.3)' : '1px solid transparent',
+            background: location === '/superadmin/subscriptions' ? 'hsl(38 90% 56% / 0.15)' : 'transparent',
+            color: location === '/superadmin/subscriptions' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
+            border: location === '/superadmin/subscriptions' ? '1px solid hsl(38 90% 56% / 0.3)' : '1px solid transparent',
           }}
-          onMouseEnter={e => { if (location !== '/superadmin/billing') (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))'; }}
-          onMouseLeave={e => { if (location !== '/superadmin/billing') (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+          onMouseEnter={e => { if (location !== '/superadmin/subscriptions') (e.currentTarget as HTMLElement).style.background = 'hsl(var(--muted))'; }}
+          onMouseLeave={e => { if (location !== '/superadmin/subscriptions') (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
         >
           <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: location === '/superadmin/billing' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted))' }}>
+            style={{ background: location === '/superadmin/subscriptions' ? 'hsl(38 90% 56%)' : 'hsl(var(--muted))' }}>
             <Receipt className="w-3.5 h-3.5"
-              style={{ color: location === '/superadmin/billing' ? '#000' : 'hsl(var(--muted-foreground))' }}
+              style={{ color: location === '/superadmin/subscriptions' ? '#000' : 'hsl(var(--muted-foreground))' }}
               strokeWidth={2} />
           </div>
-          <span className="flex-1">Facturation</span>
+          <span className="flex-1">Gestion des Abonnements</span>
         </Link>
 
         {/* Analytics */}
