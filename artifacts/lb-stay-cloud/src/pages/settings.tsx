@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle } from 'lucide-react';
+import { Redirect } from 'wouter';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle, MessageSquare, MessageCircleMore, Radio } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
@@ -64,6 +65,10 @@ export default function SettingsPage() {
   const [invoicePrefix, setInvoicePrefix] = useState('INV-CM-');
   const [legalFooter, setLegalFooter] = useState('RCCM: RC/DLA/2024/B/1234 • NIU: M0721XXXXXXXXX');
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
+  const [smsGateway, setSmsGateway] = useState('Twilio / CamSMS');
+  const [whatsappGateway, setWhatsappGateway] = useState('WhatsApp Business API');
+  const [orangeMoneyStatus, setOrangeMoneyStatus] = useState('Connecté');
+  const [mtnMoMoStatus, setMtnMoMoStatus] = useState('Connecté');
   const users = [
     { name: 'Aline M.', role: 'Réceptionniste', site: 'Douala', status: 'Actif' },
     { name: 'Mika T.', role: 'Serveur', site: 'Yaoundé', status: 'Actif' },
@@ -81,6 +86,36 @@ export default function SettingsPage() {
     'Jean P. a ajusté le taux EUR/XAF',
     'Mika T. a imprimé un ticket POS',
     'Aline M. a réactivé un compte employé',
+  ];
+  const communicationsCards = [
+    {
+      title: 'Passerelle SMS',
+      icon: MessageSquare,
+      subtitle: 'Alertes stock, notifications opérationnelles, codes courts.',
+      value: smsGateway,
+      accent: 'hsl(38 90% 56%)',
+    },
+    {
+      title: 'Passerelle WhatsApp',
+      icon: MessageCircleMore,
+      subtitle: 'Factures, relances et messages clients premium.',
+      value: whatsappGateway,
+      accent: '#F59E0B',
+    },
+    {
+      title: 'Orange Money',
+      icon: Radio,
+      subtitle: 'Statut de connexion API paiement.',
+      value: orangeMoneyStatus,
+      accent: '#FB923C',
+    },
+    {
+      title: 'MTN MoMo',
+      icon: Radio,
+      subtitle: 'Statut de connexion API paiement.',
+      value: mtnMoMoStatus,
+      accent: '#FACC15',
+    },
   ];
 
   const current = useMemo(() => sites.find(s => s.id === selectedSite) ?? sites[0], [selectedSite, sites]);
@@ -370,6 +405,75 @@ export default function SettingsPage() {
                     <p className="text-sm text-foreground">{log}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-4 h-4" />
+              <span className="font-bold">Communications (API)</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {communicationsCards.map(card => {
+                const Icon = card.icon;
+                return (
+                  <div key={card.title} className="rounded-2xl p-4 border" style={{ background: 'linear-gradient(180deg, hsl(var(--muted) / 0.35), hsl(var(--card)))', borderColor: 'hsl(var(--border))' }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${card.accent}1F` }}>
+                          <Icon className="w-4 h-4" style={{ color: card.accent }} />
+                        </div>
+                        <div>
+                          <p className="font-semibold">{card.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
+                        </div>
+                      </div>
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
+                        {card.value}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SMS Gateway</label>
+                <input
+                  value={smsGateway}
+                  onChange={e => setSmsGateway(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">WhatsApp Gateway</label>
+                <input
+                  value={whatsappGateway}
+                  onChange={e => setWhatsappGateway(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Orange Money</label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <Radio className="w-4 h-4 text-muted-foreground" />
+                  <input value={orangeMoneyStatus} onChange={e => setOrangeMoneyStatus(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">MTN MoMo</label>
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <Radio className="w-4 h-4 text-muted-foreground" />
+                  <input value={mtnMoMoStatus} onChange={e => setMtnMoMoStatus(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
+                </div>
               </div>
             </div>
           </div>
