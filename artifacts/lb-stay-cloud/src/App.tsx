@@ -70,6 +70,27 @@ function ProtectedRoute({ component: Component, allowedRoles }: { component: any
   );
 }
 
+function SuperAdminGuard({ component: Component }: { component: any }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+    </div>
+  );
+  if (!user) return <Redirect to="/login" />;
+  if (user.email !== 'admin@lbstay.com') return <Redirect to="/login" />;
+
+  return (
+    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 md:ml-64 overflow-y-auto custom-scrollbar">
+        <Component />
+      </main>
+    </div>
+  );
+}
+
 function Router() {
   return (
     <Switch>
@@ -78,7 +99,7 @@ function Router() {
       <Route path="/signup" component={SignupPage} />
 
       <Route path="/superadmin">
-        {() => <ProtectedRoute component={SuperAdminDashboard} allowedRoles={['SUPER_ADMIN']} />}
+        {() => <SuperAdminGuard component={SuperAdminDashboard} />}
       </Route>
 
       {/* Restaurant */}
@@ -115,9 +136,9 @@ function Router() {
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/audit">{() => <ProtectedRoute component={AuditPage} />}</Route>
       <Route path="/messages">{() => <ProtectedRoute component={MessagesPage} />}</Route>
-      <Route path="/superadmin/messages">{() => <ProtectedRoute component={SuperAdminMessagesPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
-      <Route path="/superadmin/analytics">{() => <ProtectedRoute component={SuperAdminAnalyticsPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
-      <Route path="/superadmin/billing">{() => <ProtectedRoute component={SuperAdminBillingPage} allowedRoles={['SUPER_ADMIN']} />}</Route>
+      <Route path="/superadmin/messages">{() => <SuperAdminGuard component={SuperAdminMessagesPage} />}</Route>
+      <Route path="/superadmin/analytics">{() => <SuperAdminGuard component={SuperAdminAnalyticsPage} />}</Route>
+      <Route path="/superadmin/billing">{() => <SuperAdminGuard component={SuperAdminBillingPage} />}</Route>
 
       <Route path="/dashboard">{() => <ProtectedRoute component={NotFound} />}</Route>
 
