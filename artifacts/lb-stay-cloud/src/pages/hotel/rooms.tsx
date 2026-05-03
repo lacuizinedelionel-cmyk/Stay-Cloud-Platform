@@ -13,6 +13,7 @@ import {
   HotelRoomStatus,
   HotelRoomType,
   HotelReservation,
+  CustomerCredit,
 } from '@workspace/api-client-react';
 import { DashboardHero } from '@/components/dashboard-hero';
 import { useQueryClient } from '@tanstack/react-query';
@@ -29,10 +30,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const DEMO_ROOMS: HotelRoom[] = Array.from({ length: 20 }, (_, index) => {
-  const number = 101 + index * 5;
+const DEMO_ROOMS: HotelRoom[] = Array.from({ length: 110 }, (_, index) => {
+  const number = 101 + index;
   const typeCycle: HotelRoomType[] = ['STANDARD', 'SUPERIOR', 'SUITE', 'PRESIDENTIAL'];
-  const statusCycle: HotelRoomStatus[] = ['AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING'];
+  const statusCycle: HotelRoomStatus[] = ['AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING', 'AVAILABLE', 'OCCUPIED'];
   const type = typeCycle[index % typeCycle.length];
   const status = statusCycle[index % statusCycle.length];
   const prices = { STANDARD: 85000, SUPERIOR: 125000, SUITE: 185000, PRESIDENTIAL: 320000 };
@@ -40,14 +41,27 @@ const DEMO_ROOMS: HotelRoom[] = Array.from({ length: 20 }, (_, index) => {
   return {
     id: number,
     number: String(number),
-    floor: Math.floor(number / 100),
+    floor: number < 150 ? 1 : number < 200 ? 2 : 3,
     type,
     status,
-    pricePerNight: prices[type] + (index % 4) * 5000,
+    pricePerNight: prices[type] + (index % 5) * 5000,
     currentGuestName: status === 'OCCUPIED' ? `Client VIP ${index + 1}` : null,
     checkoutDate: status === 'OCCUPIED' ? `${new Date(Date.now() + (index + 1) * 86400000).toISOString().split('T')[0]}` : null,
   } as HotelRoom;
 });
+
+const DEMO_CREDITS: CustomerCredit[] = [
+  { id: 1, businessId: 1, clientName: 'M. Tagne', clientPhone: '+237691000001', creditLimit: 100000, totalDebt: 45000, status: 'ACTIVE', notes: 'Paiement prévu ce soir', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 2, businessId: 1, clientName: 'Mme Njoume', clientPhone: '+237691000002', creditLimit: 80000, totalDebt: 32000, status: 'WARNED', notes: 'Ardoise boutique', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 3, businessId: 1, clientName: 'M. Mvondo', clientPhone: '+237691000003', creditLimit: 150000, totalDebt: 97000, status: 'ACTIVE', notes: 'Client régulier', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 4, businessId: 1, clientName: 'Mme Tchounkeu', clientPhone: '+237691000004', creditLimit: 60000, totalDebt: 18500, status: 'ACTIVE', notes: 'Livraison hebdo', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 5, businessId: 1, clientName: 'M. Etoa', clientPhone: '+237691000005', creditLimit: 120000, totalDebt: 76000, status: 'WARNED', notes: 'Soya et boissons', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 6, businessId: 1, clientName: 'Mme Ayissi', clientPhone: '+237691000006', creditLimit: 50000, totalDebt: 14000, status: 'ACTIVE', notes: 'Pharmacie', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 7, businessId: 1, clientName: 'M. Nguimfack', clientPhone: '+237691000007', creditLimit: 110000, totalDebt: 61000, status: 'ACTIVE', notes: 'Caisse ouverte', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 8, businessId: 1, clientName: 'Mme Foka', clientPhone: '+237691000008', creditLimit: 90000, totalDebt: 54000, status: 'WARNED', notes: 'Règlement fin de semaine', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 9, businessId: 1, clientName: 'M. Mbarga', clientPhone: '+237691000009', creditLimit: 70000, totalDebt: 25000, status: 'ACTIVE', notes: 'Vente à crédit', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+  { id: 10, businessId: 1, clientName: 'Mme Talla', clientPhone: '+237691000010', creditLimit: 130000, totalDebt: 88000, status: 'ACTIVE', notes: 'Compte suivi', lastPurchaseDate: new Date().toISOString() } as CustomerCredit,
+];
 
 const STATUS_CONFIG: Record<HotelRoomStatus, { label: string; color: string; bg: string }> = {
   AVAILABLE: { label: 'Libre',      color: '#10B981', bg: 'hsl(160 84% 39% / 0.12)' },
@@ -581,7 +595,7 @@ export default function HotelRoomsPage() {
     createReservation({ data: { businessId: bId, roomId: modal.room.id, ...data } });
   };
 
-  const sourceRooms = rooms?.length ? rooms : DEMO_ROOMS;
+  const sourceRooms = (rooms?.length ? rooms : DEMO_ROOMS) as HotelRoom[];
   const filtered = filterStatus === 'ALL' ? sourceRooms : sourceRooms.filter(r => r.status === filterStatus);
 
   const STATUS_FILTERS: { value: HotelRoomStatus | 'ALL'; label: string; color?: string }[] = [
@@ -643,7 +657,7 @@ export default function HotelRoomsPage() {
       </div>
 
       {/* Grille */}
-      {roomsLoading && !rooms?.length ? (
+      {roomsLoading && sourceRooms.length === 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {Array(15).fill(0).map((_, i) => <Skeleton key={i} className="h-[130px] rounded-xl" />)}
         </div>
