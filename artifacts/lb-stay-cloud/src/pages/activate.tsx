@@ -251,7 +251,7 @@ export default function ActivatePage() {
                   type="submit"
                   disabled={!valid || isLoading}
                   className="w-full h-11 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-40"
-                  style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
+                  style={{ background: 'linear-gradient(135deg, hsl(38 90% 56%), hsl(38 90% 46%))', color: '#000' }}
                 >
                   {isLoading
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Activation…</>
