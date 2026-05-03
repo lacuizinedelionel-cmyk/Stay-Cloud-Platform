@@ -25,7 +25,7 @@ type CaisseDemoTransaction = {
   status: 'Validé';
 };
 
-const restauNames = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha', 'Serge', 'Monique', 'Hugo', 'Nadine', 'Junior'];
+const cameroonianNames = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha', 'Serge', 'Monique', 'Hugo', 'Nadine', 'Junior'];
 const restauItems = [
   ['Ndolé', 'Soya'],
   ['Poisson braisé', 'Bissap'],
@@ -35,7 +35,6 @@ const restauItems = [
 ];
 
 const demoCashiers = ['Junior', 'Aline', 'Mika', 'Sarah', 'Blaise', 'Nadine', 'Paul', 'Monique', 'Hugo', 'Aïcha'];
-const demoClients = ['Client VIP', 'Mme Ngono', 'M. Tchatchoua', 'Famille Mbarga', 'Société BTP', 'Hôtel Palace', 'M. Mvondo', 'Restaurant Synergy', 'Client habituel', 'Agence Pro'];
 const demoMethods: Array<'MoMo' | 'Orange Money' | 'Cash'> = ['MoMo', 'Orange Money', 'Cash'];
 
 function buildCashJournalDemo(prefix: string, baseAmount: number): CaisseDemoTransaction[] {
@@ -46,7 +45,7 @@ function buildCashJournalDemo(prefix: string, baseAmount: number): CaisseDemoTra
       id: index + 1,
       time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
       cashier: demoCashiers[index % demoCashiers.length],
-      client: `${prefix} ${demoClients[index % demoClients.length]}`,
+      client: `${prefix} ${cameroonianNames[index % cameroonianNames.length]}`,
       amount: baseAmount + (index % 5) * 3500 + (index % 3) * 1200,
       paymentMethod: demoMethods[index % demoMethods.length],
       status: 'Validé',
@@ -54,9 +53,11 @@ function buildCashJournalDemo(prefix: string, baseAmount: number): CaisseDemoTra
   });
 }
 
-const DEMO_CASH_JOURNALS: Record<'RESTAURANT' | 'SUPERMARKET', CaisseDemoTransaction[]> = {
-  RESTAURANT: buildCashJournalDemo('Resto', 14500),
-  SUPERMARKET: buildCashJournalDemo('Supermarché', 9800),
+const DEMO_CASH_JOURNALS: Record<'HOTEL' | 'RESTAURANT' | 'SUPERMARKET' | 'PHARMACY', CaisseDemoTransaction[]> = {
+  HOTEL: buildCashJournalDemo('Client Hôtel', 22000),
+  RESTAURANT: buildCashJournalDemo('Client Resto', 14500),
+  SUPERMARKET: buildCashJournalDemo('Client Supermarché', 9800),
+  PHARMACY: buildCashJournalDemo('Client Pharmacie', 5400),
 };
 
 function buildDemoOrders(prefix: string, count: number, amountSet: number[], itemsSet: string[][], modeCycle: Array<'CASH' | 'MTN_MOMO' | 'ORANGE_MONEY'>, baseHour: number) {
@@ -67,7 +68,7 @@ function buildDemoOrders(prefix: string, count: number, amountSet: number[], ite
     const items = itemsSet[index % itemsSet.length];
     return {
       id: index + 1,
-      clientName: restauNames[index % restauNames.length],
+      clientName: `${cameroonianNames[index % cameroonianNames.length]} ${['Mvondo', 'Ngono', 'Tchatchoua', 'Mbarga', 'Manga'][index % 5]}`,
       tableNumber: `${prefix}${String((index % 18) + 1).padStart(2, '0')}`,
       paymentMethod: modeCycle[index % modeCycle.length],
       total: amount,
@@ -140,13 +141,21 @@ const DEMO_CAISSE_BY_SECTOR: Record<string, CaisseDay> = {
 };
 
 const SECTOR_CASH_JOURNAL = {
+  HOTEL: {
+    label: 'Hôtel',
+    transactions: DEMO_CASH_JOURNALS.HOTEL,
+  },
   RESTAURANT: {
-    label: 'Hôtel / Resto',
+    label: 'Resto',
     transactions: DEMO_CASH_JOURNALS.RESTAURANT,
   },
   SUPERMARKET: {
     label: 'Supermarché',
     transactions: DEMO_CASH_JOURNALS.SUPERMARKET,
+  },
+  PHARMACY: {
+    label: 'Pharmacie',
+    transactions: DEMO_CASH_JOURNALS.PHARMACY,
   },
 };
 
@@ -310,7 +319,9 @@ export default function CaissePage() {
   const queryClient  = useQueryClient();
   const { toast }    = useToast();
   const bId = business?.id ?? 0;
-  const demoSector: 'RESTAURANT' | 'SUPERMARKET' = String(business?.sector) === 'SUPERMARKET' ? 'SUPERMARKET' : 'RESTAURANT';
+  const sector = String(business?.sector);
+  const demoSector: 'HOTEL' | 'RESTAURANT' | 'SUPERMARKET' | 'PHARMACY' =
+    sector === 'HOTEL' ? 'HOTEL' : sector === 'PHARMACY' ? 'PHARMACY' : sector === 'SUPERMARKET' ? 'SUPERMARKET' : 'RESTAURANT';
 
   const today = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(today);
@@ -524,7 +535,7 @@ export default function CaissePage() {
 
               {/* KPI ventilation par mode de paiement */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                {breakdown.length === 0 ? (
+              {breakdown.length === 0 ? (
                   <div className="col-span-4 flex flex-col items-center justify-center py-12 gap-2">
                     <FileText className="w-10 h-10 text-muted-foreground/20" strokeWidth={1} />
                     <p className="text-sm text-muted-foreground">Aucune transaction ce jour</p>
@@ -536,29 +547,26 @@ export default function CaissePage() {
                 )}
               </div>
 
-              {/* Total du jour */}
-              {(s?.totalAmount ?? 0) > 0 && (
-                <div className="rounded-xl p-5 flex items-center justify-between"
-                  style={{ background: 'hsl(38 90% 56% / 0.07)', border: '1px solid hsl(38 90% 56% / 0.2)' }}>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total encaissé</p>
-                    <p className="text-3xl font-extrabold mt-1" style={{ color: 'hsl(38 90% 56%)', letterSpacing: '-0.04em' }}>
-                      {formatXAF(s!.totalAmount)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">{s!.orderCount} commande{s!.orderCount !== 1 ? 's' : ''} · moy. {formatXAF(s!.orderCount ? Math.round(s!.totalAmount / s!.orderCount) : 0)}</p>
-                  </div>
-                  {!isClosed && (
-                    <button
-                      onClick={() => setShowCloture(true)}
-                      className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all"
-                      style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
-                    >
-                      <Lock className="w-4 h-4" />
-                      Clôturer la caisse
-                    </button>
-                  )}
+              <div className="rounded-xl p-5 flex items-center justify-between"
+                style={{ background: 'hsl(38 90% 56% / 0.07)', border: '1px solid hsl(38 90% 56% / 0.2)' }}>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Total des ventes du jour</p>
+                  <p className="text-3xl font-extrabold mt-1" style={{ color: 'hsl(38 90% 56%)', letterSpacing: '-0.04em' }}>
+                    {formatXAF(s?.totalAmount ?? 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{s?.orderCount ?? 0} transaction{s?.orderCount === 1 ? '' : 's'} · moyenne {formatXAF(s?.orderCount ? Math.round((s?.totalAmount ?? 0) / s.orderCount) : 0)}</p>
                 </div>
-              )}
+                {!isClosed && (
+                  <button
+                    onClick={() => setShowCloture(true)}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold transition-all"
+                    style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
+                  >
+                    <Lock className="w-4 h-4" />
+                    Clôturer la caisse
+                  </button>
+                )}
+              </div>
 
               {/* Liste des transactions */}
               {caisse && caisse.orders.length > 0 && (
