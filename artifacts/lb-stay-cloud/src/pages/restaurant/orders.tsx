@@ -427,7 +427,7 @@ export default function RestaurantOrdersPage() {
     { businessId: business?.id ?? 0 },
     { query: { queryKey: ordersQueryKey, enabled: !!business?.id, refetchInterval: 15000 } },
   );
-  const displayOrders = orders && orders.length > 0 ? orders : DEMO_RESTAURANT_ORDERS;
+  const displayOrders = (orders && orders.length > 0 ? orders : DEMO_RESTAURANT_ORDERS) as RestaurantOrder[];
 
   const { mutate: updateStatus } = useUpdateRestaurantOrderStatus({
     mutation: {

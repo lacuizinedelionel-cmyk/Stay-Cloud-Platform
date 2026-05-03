@@ -495,7 +495,7 @@ export default function SuperAdminDashboard() {
     query: { queryKey: getGetSuperAdminRecentActivityQueryKey() },
   });
 
-  const chartData = useDemoFallback(chart, DEMO_REVENUE_CHART);
+  const chartData = useDemoFallback(chart as unknown[], DEMO_REVENUE_CHART as unknown[]) as typeof DEMO_REVENUE_CHART;
   const sectorData = useDemoFallback(sectorRevenue, DEMO_SECTOR_REVENUE);
   const paymentData = useDemoFallback(paymentMethods, DEMO_PAYMENT_METHODS);
   const alertsData = useDemoFallback(stockAlerts, DEMO_STOCK_ALERTS);
@@ -906,14 +906,14 @@ export default function SuperAdminDashboard() {
                         <td className="px-6 py-3.5">
                           <div className="flex items-center gap-2">
                             <button
-                              onClick={() => setDetailBiz(biz)}
+                              onClick={() => setDetailBiz(biz as unknown as AnyBiz)}
                               className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
                               style={{ background: 'hsl(217 91% 60% / 0.12)', color: '#3B82F6' }}
                             >
                               <Eye className="w-3 h-3" /> Détails
                             </button>
                             <button
-                              onClick={() => setEditBiz(biz)}
+                              onClick={() => setEditBiz(biz as unknown as AnyBiz)}
                               className="flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1.5 rounded-lg transition-all hover:opacity-80"
                               style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}
                             >

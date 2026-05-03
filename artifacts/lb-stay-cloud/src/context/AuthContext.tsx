@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation } from 'wouter';
 import { useGetMe, useListBusinesses, User, Business, getGetMeQueryKey, getListBusinessesQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
@@ -23,6 +23,17 @@ type PreferencesData = {
   };
 };
 
+export type LocalAccount = {
+  email: string;
+  passwordHash: string;
+  name: string;
+  businessName: string;
+  businessSector: string;
+  city: string;
+  plan: string;
+  createdAt: string;
+};
+
 interface AuthContextType {
   user: User | null;
   business: Business | null;
@@ -33,12 +44,18 @@ interface AuthContextType {
   updateFullName: (fullName: string) => void;
   preferencesData: PreferencesData;
   updatePreferencesData: (patch: Partial<PreferencesData>) => void;
+  saveLocalAccount: (account: Omit<LocalAccount, 'createdAt'>) => void;
+  loginWithLocalAccount: (email: string, password: string) => boolean;
+  localUser: LocalAccount | null;
+  localLogout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const PROFILE_STORAGE_KEY = 'lb_stay_profile';
 const PREFERENCES_STORAGE_KEY = 'lb_stay_preferences';
+const LOCAL_ACCOUNTS_KEY = 'lb_stay_local_accounts';
+const LOCAL_SESSION_KEY = 'lb_stay_local_session';
 
 const DEFAULT_PROFILE: ProfileData = {
   fullName: 'Demo Manager',
@@ -56,6 +73,16 @@ const DEFAULT_PREFERENCES: PreferencesData = {
     whatsapp: true,
   },
 };
+
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return 'h_' + Math.abs(hash).toString(36);
+}
 
 function readProfileData(): ProfileData {
   try {
@@ -92,12 +119,34 @@ function readPreferencesData(): PreferencesData {
   }
 }
 
+function readLocalAccounts(): LocalAccount[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_ACCOUNTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function readLocalSession(): LocalAccount | null {
+  try {
+    const raw = localStorage.getItem(LOCAL_SESSION_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as LocalAccount;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null);
   const [profileData, setProfileData] = useState<ProfileData>(() => readProfileData());
   const [preferencesData, setPreferencesData] = useState<PreferencesData>(() => readPreferencesData());
+  const [localUser, setLocalUser] = useState<LocalAccount | null>(() => readLocalSession());
 
   const { data: user, isLoading: isUserLoading, error: userError } = useGetMe({
     query: {
@@ -116,10 +165,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [location] = useLocation();
 
   useEffect(() => {
-    if (userError && !PUBLIC_ROUTES.includes(location)) {
+    if (userError && !localUser && !PUBLIC_ROUTES.includes(location)) {
       setLocation('/login');
     }
-  }, [userError, location, setLocation]);
+  }, [userError, localUser, location, setLocation]);
 
   useEffect(() => {
     if (user?.businessId && businesses) {
@@ -132,15 +181,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setProfileData(prev => {
-      const nextEmail = user?.email || DEFAULT_PROFILE.email;
-      const nextName = user?.name || DEFAULT_PROFILE.fullName;
+      const srcEmail = localUser?.email || user?.email || DEFAULT_PROFILE.email;
+      const srcName  = localUser?.name  || user?.name  || DEFAULT_PROFILE.fullName;
       return {
         ...prev,
-        fullName: prev.fullName === DEFAULT_PROFILE.fullName ? nextName : prev.fullName,
-        email: prev.email === DEFAULT_PROFILE.email ? nextEmail : prev.email,
+        fullName: prev.fullName === DEFAULT_PROFILE.fullName ? srcName  : prev.fullName,
+        email:    prev.email    === DEFAULT_PROFILE.email    ? srcEmail : prev.email,
       };
     });
-  }, [user]);
+  }, [user, localUser]);
 
   useEffect(() => {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profileData));
@@ -150,15 +199,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferencesData));
   }, [preferencesData]);
 
-  const updateProfileData = (patch: Partial<ProfileData>) => {
+  const updateProfileData = useCallback((patch: Partial<ProfileData>) => {
     setProfileData(prev => ({ ...prev, ...patch }));
-  };
+  }, []);
 
-  const updateFullName = (fullName: string) => {
+  const updateFullName = useCallback((fullName: string) => {
     setProfileData(prev => ({ ...prev, fullName }));
-  };
+  }, []);
 
-  const updatePreferencesData = (patch: Partial<PreferencesData>) => {
+  const updatePreferencesData = useCallback((patch: Partial<PreferencesData>) => {
     setPreferencesData(prev => ({
       ...prev,
       ...patch,
@@ -167,9 +216,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...patch.stockAlerts,
       },
     }));
-  };
+  }, []);
 
-  const logout = () => {
+  const saveLocalAccount = useCallback((account: Omit<LocalAccount, 'createdAt'>) => {
+    const accounts = readLocalAccounts();
+    const existing = accounts.findIndex(a => a.email.toLowerCase() === account.email.toLowerCase());
+    const entry: LocalAccount = { ...account, createdAt: new Date().toISOString() };
+    if (existing >= 0) {
+      accounts[existing] = entry;
+    } else {
+      accounts.push(entry);
+    }
+    localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(accounts));
+  }, []);
+
+  const loginWithLocalAccount = useCallback((email: string, password: string): boolean => {
+    const accounts = readLocalAccounts();
+    const hash = simpleHash(password);
+    const match = accounts.find(a =>
+      a.email.toLowerCase() === email.toLowerCase() && a.passwordHash === hash
+    );
+    if (match) {
+      setLocalUser(match);
+      localStorage.setItem(LOCAL_SESSION_KEY, JSON.stringify(match));
+      setProfileData(prev => ({
+        ...prev,
+        fullName: match.name || prev.fullName,
+        email: match.email,
+      }));
+      return true;
+    }
+    return false;
+  }, []);
+
+  const localLogout = useCallback(() => {
+    setLocalUser(null);
+    localStorage.removeItem(LOCAL_SESSION_KEY);
+  }, []);
+
+  const logout = useCallback(() => {
+    localLogout();
     localStorage.removeItem(PROFILE_STORAGE_KEY);
     localStorage.removeItem(PREFERENCES_STORAGE_KEY);
     sessionStorage.clear();
@@ -177,12 +263,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     toast({ title: 'Vous avez été déconnecté avec succès' });
     setLocation('/login');
-  };
+  }, [localLogout, queryClient, setLocation]);
+
+  const effectiveUser = user || (localUser ? ({
+    id: 0,
+    email: localUser.email,
+    name: localUser.name,
+    role: 'ADMIN',
+    businessId: 1,
+  } as unknown as User) : null);
+
+  const effectiveBusiness = currentBusiness || (localUser ? ({
+    id: 1,
+    name: localUser.businessName,
+    sector: localUser.businessSector || 'RESTAURANT',
+    city: localUser.city || 'Douala',
+    ownerId: 0,
+    subscriptionPlan: localUser.plan || 'PRO',
+    isActive: true,
+    createdAt: localUser.createdAt,
+  } as unknown as Business) : null);
 
   const isLoading = isUserLoading || (!!user?.businessId && isBusinessesLoading);
+
   const value = useMemo(() => ({
-    user: user || null,
-    business: currentBusiness,
+    user: effectiveUser,
+    business: effectiveBusiness,
     isLoading,
     logout,
     profileData,
@@ -190,7 +296,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateFullName,
     preferencesData,
     updatePreferencesData,
-  }), [currentBusiness, isLoading, preferencesData, profileData, user]);
+    saveLocalAccount,
+    loginWithLocalAccount,
+    localUser,
+    localLogout,
+  }), [effectiveUser, effectiveBusiness, isLoading, logout, profileData, updateProfileData, updateFullName, preferencesData, updatePreferencesData, saveLocalAccount, loginWithLocalAccount, localUser, localLogout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -202,3 +312,5 @@ export function useAuth() {
   }
   return context;
 }
+
+export { simpleHash };

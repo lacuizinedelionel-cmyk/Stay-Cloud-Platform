@@ -482,9 +482,9 @@ export default function HotelReservationsPage() {
     { businessId: bId },
     { query: { queryKey: resKey, enabled: !!bId, refetchInterval: 15000 } },
   );
-  const displayReservations = reservations && reservations.length > 0
+  const displayReservations = (reservations && reservations.length > 0
     ? reservations
-    : DEMO_HOTEL_RESERVATIONS;
+    : DEMO_HOTEL_RESERVATIONS) as HotelReservation[];
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: resKey });

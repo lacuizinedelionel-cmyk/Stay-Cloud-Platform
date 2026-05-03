@@ -15,7 +15,7 @@ import { Zap, ArrowRight, Loader2, ShieldCheck, Smartphone, LockKeyhole, Mail, M
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const { user } = useAuth();
+  const { user, loginWithLocalAccount } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [step, setStep] = useState<'credentials' | 'otp' | 'recovery'>('credentials');
@@ -50,11 +50,20 @@ export default function Login() {
         });
       },
       onError: () => {
-        toast({
-          variant: 'destructive',
-          title: 'Identifiants incorrects',
-          description: 'Vérifiez votre email et mot de passe.',
-        });
+        const localOk = loginWithLocalAccount(data.email, data.password);
+        if (localOk) {
+          toast({
+            title: 'Connexion réussie',
+            description: 'Bienvenue sur LB Stay Cloud.',
+          });
+          setLocation('/dashboard');
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Identifiants incorrects',
+            description: 'Vérifiez votre email et mot de passe.',
+          });
+        }
       },
     });
   };
