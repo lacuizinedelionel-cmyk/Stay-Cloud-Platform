@@ -13,6 +13,16 @@ type ProfileData = {
   avatarUrl: string;
 };
 
+type PreferencesData = {
+  language: 'fr' | 'en';
+  theme: 'light' | 'dark';
+  stockAlerts: {
+    email: boolean;
+    sms: boolean;
+    whatsapp: boolean;
+  };
+};
+
 interface AuthContextType {
   user: User | null;
   business: Business | null;
@@ -20,17 +30,30 @@ interface AuthContextType {
   logout: () => void;
   profileData: ProfileData;
   updateProfileData: (patch: Partial<ProfileData>) => void;
+  preferencesData: PreferencesData;
+  updatePreferencesData: (patch: Partial<PreferencesData>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const PROFILE_STORAGE_KEY = 'lb_stay_profile';
+const PREFERENCES_STORAGE_KEY = 'lb_stay_preferences';
 
 const DEFAULT_PROFILE: ProfileData = {
   fullName: 'Demo Manager',
   email: 'manager@lbstay.cloud',
   phone: '+237 699 123 456',
   avatarUrl: '',
+};
+
+const DEFAULT_PREFERENCES: PreferencesData = {
+  language: 'fr',
+  theme: 'dark',
+  stockAlerts: {
+    email: true,
+    sms: true,
+    whatsapp: true,
+  },
 };
 
 function readProfileData(): ProfileData {
@@ -49,11 +72,31 @@ function readProfileData(): ProfileData {
   }
 }
 
+function readPreferencesData(): PreferencesData {
+  try {
+    const raw = localStorage.getItem(PREFERENCES_STORAGE_KEY);
+    if (!raw) return DEFAULT_PREFERENCES;
+    const parsed = JSON.parse(raw) as Partial<PreferencesData>;
+    return {
+      language: parsed.language === 'en' ? 'en' : 'fr',
+      theme: parsed.theme === 'light' ? 'light' : 'dark',
+      stockAlerts: {
+        email: parsed.stockAlerts?.email ?? DEFAULT_PREFERENCES.stockAlerts.email,
+        sms: parsed.stockAlerts?.sms ?? DEFAULT_PREFERENCES.stockAlerts.sms,
+        whatsapp: parsed.stockAlerts?.whatsapp ?? DEFAULT_PREFERENCES.stockAlerts.whatsapp,
+      },
+    };
+  } catch {
+    return DEFAULT_PREFERENCES;
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [currentBusiness, setCurrentBusiness] = useState<Business | null>(null);
   const [profileData, setProfileData] = useState<ProfileData>(() => readProfileData());
+  const [preferencesData, setPreferencesData] = useState<PreferencesData>(() => readPreferencesData());
 
   const { data: user, isLoading: isUserLoading, error: userError } = useGetMe({
     query: {
@@ -102,12 +145,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profileData));
   }, [profileData]);
 
+  useEffect(() => {
+    localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(preferencesData));
+  }, [preferencesData]);
+
   const updateProfileData = (patch: Partial<ProfileData>) => {
     setProfileData(prev => ({ ...prev, ...patch }));
   };
 
+  const updatePreferencesData = (patch: Partial<PreferencesData>) => {
+    setPreferencesData(prev => ({
+      ...prev,
+      ...patch,
+      stockAlerts: {
+        ...prev.stockAlerts,
+        ...patch.stockAlerts,
+      },
+    }));
+  };
+
   const logout = () => {
     localStorage.removeItem(PROFILE_STORAGE_KEY);
+    localStorage.removeItem(PREFERENCES_STORAGE_KEY);
     sessionStorage.clear();
     queryClient.clear();
     fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
@@ -123,7 +182,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     profileData,
     updateProfileData,
-  }), [currentBusiness, isLoading, profileData, user]);
+    preferencesData,
+    updatePreferencesData,
+  }), [currentBusiness, isLoading, preferencesData, profileData, user]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

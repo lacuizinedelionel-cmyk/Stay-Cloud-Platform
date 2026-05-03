@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { Redirect } from 'wouter';
-import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle, MessageCircleMore, MessageSquare, Radio, User, Mail, Phone, LockKeyhole, Upload, Camera } from 'lucide-react';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle, MessageCircleMore, MessageSquare, Radio, User, Mail, Phone, LockKeyhole, Upload, Camera, FileText, Languages, MoonStar, SunMedium, BellRing, CalendarCheck2, ChevronRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-
 
 type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
 
@@ -106,6 +105,77 @@ function ProfileSection() {
   );
 }
 
+function BrandingSection() {
+  const [niu, setNiu] = useState('M0721XXXXXXXXX');
+  const [rccm, setRccm] = useState('RC/DLA/2024/B/1234');
+
+  return (
+    <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+      <div className="flex items-center gap-2">
+        <FileText className="w-4 h-4" />
+        <span className="font-bold">Branding & Légal</span>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">NIU</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><BadgeDollarSign className="w-4 h-4 text-muted-foreground" /><input value={niu} onChange={e => setNiu(e.target.value)} className="w-full bg-transparent outline-none" /></div></label>
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">RCCM</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Building2 className="w-4 h-4 text-muted-foreground" /><input value={rccm} onChange={e => setRccm(e.target.value)} className="w-full bg-transparent outline-none" /></div></label>
+      </div>
+      <p className="text-xs text-muted-foreground">Ces informations apparaissent sur les factures et documents légaux.</p>
+    </div>
+  );
+}
+
+function PreferencesSection() {
+  const { preferencesData, updatePreferencesData } = useAuth();
+  return (
+    <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+      <div className="flex items-center gap-2"><Languages className="w-4 h-4" /><span className="font-bold">Préférences</span></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Langue</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Globe className="w-4 h-4 text-muted-foreground" /><select value={preferencesData.language} onChange={e => updatePreferencesData({ language: e.target.value === 'en' ? 'en' : 'fr' })} className="w-full bg-transparent outline-none"><option value="fr">Français</option><option value="en">English</option></select></div></label>
+        <div className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Thème</span><button type="button" onClick={() => updatePreferencesData({ theme: preferencesData.theme === 'dark' ? 'light' : 'dark' })} className="w-full inline-flex items-center justify-between gap-2 px-4 py-2.5 rounded-xl font-semibold border" style={{ background: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))' }}><span className="inline-flex items-center gap-2">{preferencesData.theme === 'dark' ? <MoonStar className="w-4 h-4" /> : <SunMedium className="w-4 h-4" />} {preferencesData.theme === 'dark' ? 'Mode Sombre' : 'Mode Clair'}</span><span className="text-xs text-muted-foreground">Basculer</span></button></div>
+      </div>
+    </div>
+  );
+}
+
+function NotificationsSection() {
+  const { preferencesData, updatePreferencesData } = useAuth();
+  return (
+    <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+      <div className="flex items-center gap-2"><BellRing className="w-4 h-4" /><span className="font-bold">Notifications stock</span></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {[
+          { key: 'email', label: 'Email' },
+          { key: 'sms', label: 'SMS' },
+          { key: 'whatsapp', label: 'WhatsApp' },
+        ].map(item => (
+          <label key={item.key} className="flex items-center gap-3 rounded-xl px-4 py-3 border" style={{ background: 'hsl(var(--muted) / 0.35)', borderColor: 'hsl(var(--border))' }}>
+            <input type="checkbox" checked={preferencesData.stockAlerts[item.key as 'email' | 'sms' | 'whatsapp']} onChange={() => updatePreferencesData({ stockAlerts: { [item.key]: !preferencesData.stockAlerts[item.key as 'email' | 'sms' | 'whatsapp'] } as any })} />
+            <span className="font-medium">{item.label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SubscriptionSection() {
+  return (
+    <div className="rounded-2xl p-5 border space-y-4" style={{ background: 'linear-gradient(135deg, hsl(222 50% 7%) 0%, hsl(222 50% 4%) 100%)', borderColor: 'hsl(38 90% 56% / 0.25)' }}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground font-semibold">Abonnement</p>
+          <h3 className="text-xl font-extrabold text-white">Pack Premium - Actif</h3>
+        </div>
+        <CalendarCheck2 className="w-5 h-5 text-yellow-400" />
+      </div>
+      <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: 'hsl(var(--muted) / 0.12)' }}>
+        <span className="text-sm text-muted-foreground">Prochaine date de paiement</span>
+        <span className="text-sm font-bold text-white">12 Juin 2026</span>
+      </div>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { toast } = useToast();
   const { profileData } = useAuth();
@@ -187,6 +257,12 @@ export default function SettingsPage() {
       </div>
 
       <ProfileSection />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <BrandingSection />
+        <PreferencesSection />
+      </div>
+      <NotificationsSection />
+      <SubscriptionSection />
 
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
         <div className="space-y-4">
