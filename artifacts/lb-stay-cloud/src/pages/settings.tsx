@@ -57,10 +57,11 @@ function StatCard({ title, value }: { title: string; value: string }) {
 }
 
 function ProfileSection() {
-  const { profileData, updateProfileData } = useAuth();
+  const { profileData, updateProfileData, updateFullName } = useAuth();
   const fileRef = useRef<HTMLInputElement>(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
+  const [draftName, setDraftName] = useState(profileData.fullName);
 
   const uploadAvatar = (file: File) => {
     if (!file.type.startsWith('image/')) return;
@@ -70,6 +71,10 @@ function ProfileSection() {
   };
 
   const initials = profileData.fullName.trim().charAt(0).toUpperCase();
+
+  const saveProfileName = () => {
+    updateFullName(draftName.trim() || profileData.fullName);
+  };
 
   return (
     <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
@@ -94,13 +99,18 @@ function ProfileSection() {
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nom complet</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><User className="w-4 h-4 text-muted-foreground" /><input value={profileData.fullName} onChange={e => updateProfileData({ fullName: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nom complet de l'administrateur</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><User className="w-4 h-4 text-muted-foreground" /><input value={draftName} onChange={e => setDraftName(e.target.value)} className="w-full bg-transparent outline-none" /></div></label>
         <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Mail className="w-4 h-4 text-muted-foreground" /><input value={profileData.email} onChange={e => updateProfileData({ email: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
         <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Téléphone</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Phone className="w-4 h-4 text-muted-foreground" /><input value={profileData.phone} onChange={e => updateProfileData({ phone: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
         <div className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mot de passe</span><button type="button" onClick={() => setPasswordOpen(v => !v)} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold border" style={{ background: passwordOpen ? 'hsl(38 90% 56% / 0.12)' : 'hsl(var(--muted))', borderColor: 'hsl(var(--border))' }}><LockKeyhole className="w-4 h-4" />Changer le mot de passe</button></div>
       </div>
 
       {passwordOpen && <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input value={passwords.current} onChange={e => setPasswords(prev => ({ ...prev, current: e.target.value }))} placeholder="Mot de passe actuel" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /><input value={passwords.next} onChange={e => setPasswords(prev => ({ ...prev, next: e.target.value }))} placeholder="Nouveau mot de passe" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /><input value={passwords.confirm} onChange={e => setPasswords(prev => ({ ...prev, confirm: e.target.value }))} placeholder="Confirmer" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /></div>}
+      <div className="flex justify-end">
+        <button type="button" onClick={saveProfileName} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold" style={{ background: 'linear-gradient(135deg,#B7791F,#F5A623)', color: '#fff' }}>
+          <Save className="w-4 h-4" /> Enregistrer
+        </button>
+      </div>
     </div>
   );
 }

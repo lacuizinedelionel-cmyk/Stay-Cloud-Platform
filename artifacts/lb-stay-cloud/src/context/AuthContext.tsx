@@ -30,6 +30,7 @@ interface AuthContextType {
   logout: () => void;
   profileData: ProfileData;
   updateProfileData: (patch: Partial<ProfileData>) => void;
+  updateFullName: (fullName: string) => void;
   preferencesData: PreferencesData;
   updatePreferencesData: (patch: Partial<PreferencesData>) => void;
 }
@@ -153,6 +154,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfileData(prev => ({ ...prev, ...patch }));
   };
 
+  const updateFullName = (fullName: string) => {
+    setProfileData(prev => ({ ...prev, fullName }));
+  };
+
   const updatePreferencesData = (patch: Partial<PreferencesData>) => {
     setPreferencesData(prev => ({
       ...prev,
@@ -182,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     profileData,
     updateProfileData,
+    updateFullName,
     preferencesData,
     updatePreferencesData,
   }), [currentBusiness, isLoading, preferencesData, profileData, user]);
