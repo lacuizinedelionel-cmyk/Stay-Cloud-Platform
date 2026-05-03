@@ -26,6 +26,42 @@ import {
   Clock, CheckCircle2, BarChart2, AlertTriangle, PackageX,
 } from 'lucide-react';
 
+const DEMO_REVENUE_CHART = Array.from({ length: 12 }, (_, i) => ({
+  month: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][i],
+  revenue: [820000, 940000, 880000, 1050000, 1120000, 1380000, 1290000, 1450000, 1560000, 1680000, 1820000, 1950000][i],
+  transactions: 1500 + (i * 40),
+}));
+
+const DEMO_SECTOR_REVENUE = [
+  { sector: 'RESTAURANT', label: 'Restauration', revenue: 4200000, transactions: 180 },
+  { sector: 'HOTEL', label: 'Hôtellerie', revenue: 3800000, transactions: 92 },
+  { sector: 'GROCERY', label: 'Supermarché', revenue: 2900000, transactions: 210 },
+  { sector: 'PHARMACY', label: 'Pharmacie', revenue: 1700000, transactions: 74 },
+];
+
+const DEMO_PAYMENT_METHODS = [
+  { method: 'CASH', label: 'Espèces', amount: 4200000, percentage: 35 },
+  { method: 'MTN_MOBILE_MONEY', label: 'MTN Mobile Money', amount: 3100000, percentage: 26 },
+  { method: 'ORANGE_MONEY', label: 'Orange Money', amount: 2900000, percentage: 24 },
+  { method: 'CARD', label: 'Carte bancaire', amount: 1800000, percentage: 15 },
+];
+
+const DEMO_STOCK_ALERTS = Array.from({ length: 100 }, (_, i) => {
+  const critical = i < 5;
+  return {
+    businessId: 800 + i,
+    businessName: `Supermarché Démo ${Math.floor(i / 10) + 1}`,
+    sector: 'GROCERY',
+    sectorLabel: 'Supermarché',
+    source: 'grocery',
+    sourceLabel: 'Supermarché',
+    productName: critical ? `Produit critique ${i + 1}` : `Article ${i + 1}`,
+    stock: critical ? 0 : 8 + (i % 12),
+    minStock: 10,
+    severity: critical ? 'critical' : 'low',
+  };
+});
+
 /* ── Stock Alert type ── */
 type StockAlert = {
   businessId: number;
@@ -50,6 +86,10 @@ function useStockAlerts() {
     },
     refetchInterval: 30000,
   });
+}
+
+function useDemoFallback<T>(data: T[] | undefined, fallback: T[]) {
+  return data && data.length > 0 ? data : fallback;
 }
 
 /* ──────────────────────────────────────────────────────── */
@@ -142,9 +182,9 @@ const SECTOR_COLORS_ALERT: Record<string, string> = {
 
 function StockAlertsPanel() {
   const { data: alerts, isLoading } = useStockAlerts();
-
-  const critical = (alerts ?? []).filter(a => a.severity === 'critical');
-  const low      = (alerts ?? []).filter(a => a.severity === 'low');
+  const displayAlerts = alerts && alerts.length > 0 ? alerts : DEMO_STOCK_ALERTS;
+  const critical = displayAlerts.filter(a => a.severity === 'critical');
+  const low      = displayAlerts.filter(a => a.severity === 'low');
 
   return (
     <motion.div
@@ -185,7 +225,7 @@ function StockAlertsPanel() {
                 {low.length} bas
               </span>
             )}
-            {(alerts ?? []).length === 0 && (
+            {displayAlerts.length === 0 && (
               <span className="flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full"
                 style={{ background: 'hsl(160 84% 39% / 0.1)', color: '#10B981' }}>
                 Tous les stocks sont OK
@@ -200,7 +240,7 @@ function StockAlertsPanel() {
         <div className="p-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {Array(8).fill(0).map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
         </div>
-      ) : (alerts ?? []).length === 0 ? (
+      ) : displayAlerts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-10 text-muted-foreground">
           <CheckCircle2 className="w-8 h-8 mb-2" style={{ color: '#10B981' }} />
           <p className="text-sm font-semibold">Aucune alerte stock</p>
@@ -208,7 +248,7 @@ function StockAlertsPanel() {
         </div>
       ) : (
         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-          {(alerts ?? []).map((alert, i) => {
+          {displayAlerts.map((alert, i) => {
             const isCritical = alert.severity === 'critical';
             const accentColor = isCritical ? '#EF4444' : 'hsl(38 90% 56%)';
             const bgColor     = isCritical ? 'hsl(0 72% 51% / 0.08)' : 'hsl(38 90% 56% / 0.07)';
@@ -320,6 +360,7 @@ function ChartTooltip({ active, payload, label, formatter }: any) {
 /*  Main Dashboard                                         */
 /* ──────────────────────────────────────────────────────── */
 export default function SuperAdminDashboard() {
+  const { data: stockAlerts, isLoading: stockLoading } = useStockAlerts();
   const { data: stats, isLoading: statsLoading } = useGetSuperAdminStats({
     query: { queryKey: getGetSuperAdminStatsQueryKey() },
   });
@@ -339,7 +380,11 @@ export default function SuperAdminDashboard() {
     query: { queryKey: getGetSuperAdminRecentActivityQueryKey() },
   });
 
-  const totalCA = sectorRevenue?.reduce((s, r) => s + r.revenue, 0) ?? 0;
+  const chartData = useDemoFallback(chart, DEMO_REVENUE_CHART);
+  const sectorData = useDemoFallback(sectorRevenue, DEMO_SECTOR_REVENUE);
+  const paymentData = useDemoFallback(paymentMethods, DEMO_PAYMENT_METHODS);
+  const alertsData = useDemoFallback(stockAlerts, DEMO_STOCK_ALERTS);
+  const totalCA = sectorData.reduce((s, r) => s + r.revenue, 0);
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-[1600px]">
@@ -424,7 +469,7 @@ export default function SuperAdminDashboard() {
             : (
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={chart ?? []} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="gold-grad" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%"  stopColor="hsl(38 90% 56%)" stopOpacity={0.3} />
@@ -469,14 +514,14 @@ export default function SuperAdminDashboard() {
                   <div className="relative">
                     <PieChart width={150} height={150}>
                       <Pie
-                        data={paymentMethods ?? []}
+                        data={paymentData}
                         cx={75} cy={75}
                         innerRadius={48} outerRadius={70}
                         dataKey="amount"
                         strokeWidth={2}
                         stroke="hsl(var(--background))"
                       >
-                        {(paymentMethods ?? []).map(m => (
+                        {paymentData.map(m => (
                           <Cell key={m.method} fill={METHOD_COLORS[m.method] ?? '#6B7280'} />
                         ))}
                       </Pie>
@@ -484,14 +529,14 @@ export default function SuperAdminDashboard() {
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <p className="text-xs font-bold text-foreground">Total</p>
                       <p className="text-[10px] text-muted-foreground">
-                        {formatXAF(paymentMethods?.reduce((s, m) => s + m.amount, 0) ?? 0)}
+                        {formatXAF(paymentData.reduce((s, m) => s + m.amount, 0))}
                       </p>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  {(paymentMethods ?? []).map(m => {
+                  {paymentData.map(m => {
                     const Icon = METHOD_ICONS[m.method] ?? CreditCard;
                     const color = METHOD_COLORS[m.method] ?? '#6B7280';
                     return (
@@ -544,7 +589,7 @@ export default function SuperAdminDashboard() {
             : (
               <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={sectorRevenue ?? []} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                  <BarChart data={sectorData} barSize={28} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={11}
                       tickLine={false} axisLine={false} fontFamily="Plus Jakarta Sans" />
@@ -554,7 +599,7 @@ export default function SuperAdminDashboard() {
                       fontFamily="Plus Jakarta Sans" />
                     <Tooltip content={<ChartTooltip formatter={(v: number) => formatXAF(v)} />} />
                     <Bar dataKey="revenue" radius={[6, 6, 0, 0]}>
-                      {(sectorRevenue ?? []).map(r => (
+                      {sectorData.map(r => (
                         <Cell key={r.sector} fill={SECTOR_COLORS[r.sector] ?? '#6B7280'} />
                       ))}
                     </Bar>
@@ -566,7 +611,7 @@ export default function SuperAdminDashboard() {
           {/* Sector legend */}
           {!sectorLoading && (
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-4">
-              {(sectorRevenue ?? []).map(r => (
+              {sectorData.map(r => (
                 <div key={r.sector} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: SECTOR_COLORS[r.sector] ?? '#6B7280' }} />
                   <span className="text-[10px] text-muted-foreground">{r.label}</span>
