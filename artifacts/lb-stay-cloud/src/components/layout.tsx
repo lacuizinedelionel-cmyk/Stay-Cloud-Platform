@@ -527,6 +527,7 @@ function SidebarLogo() {
 
 function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; role?: string }) {
   const { lang, toggle } = useLanguage();
+  const displayName = user?.name ?? user?.email ?? 'Utilisateur';
   return (
     <div className="p-3 shrink-0 space-y-1" style={{ borderTop: '1px solid hsl(var(--border))' }}>
       {/* Sélecteur de langue */}
@@ -547,18 +548,20 @@ function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; 
       </button>
 
       {/* User card */}
-      <div
-        className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
-        style={{ background: 'hsl(var(--muted) / 0.5)' }}
-      >
-        <div className="w-8 h-8 rounded-full gradient-gold flex items-center justify-center shrink-0">
-          <span className="text-xs font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
+      <Link href="/settings" className="block">
+        <div
+          className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all"
+          style={{ background: 'hsl(var(--muted) / 0.5)' }}
+        >
+          <div className="w-8 h-8 rounded-full gradient-gold flex items-center justify-center shrink-0">
+            <span className="text-xs font-bold text-white">{displayName.charAt(0).toUpperCase()}</span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-foreground truncate">{displayName}</p>
+            <p className="text-[10px] text-muted-foreground truncate">{role ?? user?.email}</p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
-          <p className="text-[10px] text-muted-foreground truncate">{role ?? user.email}</p>
-        </div>
-      </div>
+      </Link>
 
       <button
         onClick={logout}

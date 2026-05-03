@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, MessageSquare, CreditCard, ImagePlus, X,
-  CheckCircle2, Upload, Globe, Loader2, Phone, Switch as SwitchIcon,
+  CheckCircle2, Upload, Globe, Loader2, BadgeDollarSign, UserCircle2,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 
@@ -29,6 +29,15 @@ function Card({ children }: { children: React.ReactNode }) {
   return (
     <div className="rounded-xl p-5 space-y-4"
       style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+      {children}
+    </div>
+  );
+}
+
+function LabelPill({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]"
+      style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
       {children}
     </div>
   );
@@ -230,185 +239,104 @@ export default function SettingsPage() {
   const { user, business } = useAuth();
   const { t, lang, setLang } = useLanguage();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const [name, setName]     = useState(business?.name ?? '');
-  const [city, setCity]     = useState((business as any)?.city ?? '');
-  const [phone, setPhone]   = useState((business as any)?.phone ?? '');
-  const [address, setAddr]  = useState((business as any)?.address ?? '');
+  const [logoUrl, setLogoUrl] = useState((business as any)?.logoUrl ?? '');
+  const [currency, setCurrency] = useState('XAF');
+
+  useEffect(() => {
+    setName(business?.name ?? '');
+    setLogoUrl((business as any)?.logoUrl ?? '');
+  }, [business]);
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-6 page-enter">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
-          {t.settings.title}
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">{t.settings.subtitle}</p>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.02em' }}>
+            {t.settings.title}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">{t.settings.subtitle}</p>
+        </div>
+        <LabelPill>XAF</LabelPill>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-        {/* ── Profil de l'enseigne ── */}
-        <SectionHeading
-          icon={Building2}
-          title={t.settings.businessName}
-          subtitle={lang === 'fr'
-            ? 'Informations affichées sur vos reçus et factures.'
-            : 'Information displayed on your receipts and invoices.'}
-        />
-        <div className="md:col-span-2 space-y-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
-            <FormField label={t.settings.businessName}>
-              <TextInput value={name} onChange={setName} />
-            </FormField>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label={t.settings.city}>
-                <TextInput value={city} onChange={setCity} />
+            <SectionHeading
+              icon={UserCircle2}
+              title={lang === 'fr' ? 'Profil' : 'Profile'}
+              subtitle={lang === 'fr' ? 'Modifiez votre nom et vos infos principales.' : 'Update your name and main info.'}
+            />
+            <div className="space-y-4 mt-4">
+              <FormField label={lang === 'fr' ? 'Nom d’utilisateur' : 'Username'}>
+                <TextInput value={user?.name ?? name} onChange={setName} />
               </FormField>
-              <FormField label={t.settings.phone}>
-                <TextInput value={phone} onChange={setPhone} placeholder="+237 6XX XXX XXX" />
-              </FormField>
-            </div>
-            <FormField label={lang === 'fr' ? 'Adresse complète' : 'Full address'}>
-              <TextInput value={address} onChange={setAddr} />
-            </FormField>
-            <button
-              onClick={() => toast({ title: '✅ ' + t.settings.savedOk })}
-              className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
-              style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
-            >
-              {t.actions.save}
-            </button>
-          </Card>
-        </div>
-
-        {/* ── Logo ── */}
-        <SectionHeading
-          icon={ImagePlus}
-          title={t.settings.logo}
-          subtitle={t.settings.logoSubtitle}
-        />
-        <div className="md:col-span-2">
-          {business?.id
-            ? <LogoUploadSection businessId={business.id} />
-            : <div className="h-20 rounded-xl flex items-center justify-center text-xs text-muted-foreground"
-                style={{ background: 'hsl(var(--muted))', border: '1px dashed hsl(var(--border))' }}>
-                {lang === 'fr' ? 'Enseigne non associée' : 'No business linked'}
-              </div>
-          }
-        </div>
-
-        {/* ── Langue ── */}
-        <SectionHeading
-          icon={Globe}
-          title={t.settings.language}
-          subtitle={lang === 'fr'
-            ? 'Choisissez la langue de l\'interface utilisateur.'
-            : 'Choose the interface language.'}
-          color="#60A5FA"
-        />
-        <div className="md:col-span-2">
-          <Card>
-            <div className="flex gap-3">
-              {(['fr', 'en'] as const).map(l => (
-                <button
-                  key={l}
-                  onClick={() => setLang(l)}
-                  className="flex items-center gap-2.5 flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all"
-                  style={{
-                    background: lang === l ? 'hsl(38 90% 56% / 0.15)' : 'hsl(var(--muted))',
-                    color: lang === l ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
-                    border: lang === l ? '1px solid hsl(38 90% 56% / 0.35)' : '1px solid transparent',
-                  }}
-                >
-                  <span className="text-lg">{l === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
-                  <div className="text-left">
-                    <p className="text-sm font-bold">{l === 'fr' ? 'Français' : 'English'}</p>
-                    <p className="text-[10px] opacity-70">{l === 'fr' ? 'Interface en français' : 'English interface'}</p>
-                  </div>
-                  {lang === l && <CheckCircle2 className="w-4 h-4 ml-auto" />}
-                </button>
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        {/* ── WhatsApp ── */}
-        <SectionHeading
-          icon={MessageSquare}
-          title="WhatsApp Business"
-          subtitle={lang === 'fr'
-            ? 'Envoi de reçus et notifications par WhatsApp.'
-            : 'Send receipts and notifications via WhatsApp.'}
-          color="#10B981"
-        />
-        <div className="md:col-span-2">
-          <Card>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  {lang === 'fr' ? 'Activer WhatsApp Business' : 'Enable WhatsApp Business'}
-                </p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {lang === 'fr' ? 'Messages automatiques aux clients' : 'Automatic messages to clients'}
-                </p>
-              </div>
-              <Switch disabled />
-            </div>
-            <FormField label={lang === 'fr' ? 'Numéro WhatsApp Business' : 'WhatsApp Business number'}>
-              <TextInput placeholder="+237 6XX XXX XXX" disabled />
-            </FormField>
-            <button
-              disabled
-              className="px-4 py-2 rounded-lg text-xs font-semibold opacity-50 cursor-not-allowed"
-              style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', border: '1px solid hsl(var(--border))' }}
-            >
-              {lang === 'fr' ? 'Connecter le compte' : 'Connect account'}
-            </button>
-          </Card>
-        </div>
-
-        {/* ── Mobile Money ── */}
-        <SectionHeading
-          icon={CreditCard}
-          title="Mobile Money"
-          subtitle={lang === 'fr'
-            ? 'Configuration des paiements MTN et Orange.'
-            : 'MTN and Orange payment configuration.'}
-          color="#F5A623"
-        />
-        <div className="md:col-span-2">
-          <Card>
-            {[
-              { label: 'MTN Mobile Money', sub: lang === 'fr' ? 'Non configuré' : 'Not configured', bg: '#FFCC00', text: '#000', abbr: 'MTN' },
-              { label: 'Orange Money',     sub: lang === 'fr' ? 'Non configuré' : 'Not configured', bg: '#FF6600', text: '#fff', abbr: 'OM'  },
-            ].map((mm, i) => (
-              <div key={mm.label}
-                className="flex items-center justify-between py-3"
-                style={{ borderBottom: i === 0 ? '1px solid hsl(var(--border))' : 'none' }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs shrink-0"
-                    style={{ background: mm.bg, color: mm.text }}>
-                    {mm.abbr}
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">{mm.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{mm.sub}</p>
-                  </div>
+              <FormField label={lang === 'fr' ? 'Devise par défaut' : 'Default currency'}>
+                <div className="rounded-lg px-3 py-2 text-sm"
+                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
+                  <BadgeDollarSign className="inline w-4 h-4 mr-2 align-[-2px]" />
+                  <span>{currency}</span>
                 </div>
-                <button
-                  disabled
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold opacity-50 cursor-not-allowed"
-                  style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--muted-foreground))', border: '1px solid hsl(var(--border))' }}
-                >
-                  {lang === 'fr' ? 'Configurer' : 'Configure'}
-                </button>
-              </div>
-            ))}
+              </FormField>
+              <button onClick={() => toast({ title: '✅ ' + t.settings.savedOk })}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold transition-all"
+                style={{ background: 'linear-gradient(135deg, #D97706, #F5A623)', color: '#000' }}>
+                {t.actions.save}
+              </button>
+            </div>
+          </Card>
+
+          <Card>
+            <SectionHeading
+              icon={ImagePlus}
+              title={t.settings.logo}
+              subtitle={t.settings.logoSubtitle}
+            />
+            <div className="mt-4">
+              {business?.id
+                ? <LogoUploadSection businessId={business.id} />
+                : <div className="h-20 rounded-xl flex items-center justify-center text-xs text-muted-foreground"
+                    style={{ background: 'hsl(var(--muted))', border: '1px dashed hsl(var(--border))' }}>
+                    {lang === 'fr' ? 'Enseigne non associée' : 'No business linked'}
+                  </div>
+              }
+            </div>
           </Card>
         </div>
 
+        <Card>
+          <SectionHeading
+            icon={Globe}
+            title={t.settings.language}
+            subtitle={lang === 'fr' ? 'Choisissez la langue de l\'interface utilisateur.' : 'Choose the interface language.'}
+            color="#60A5FA"
+          />
+          <div className="flex gap-3 mt-4">
+            {(['fr', 'en'] as const).map(l => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                className="flex items-center gap-2.5 flex-1 px-4 py-3 rounded-xl text-sm font-bold transition-all"
+                style={{
+                  background: lang === l ? 'hsl(38 90% 56% / 0.15)' : 'hsl(var(--muted))',
+                  color: lang === l ? 'hsl(38 90% 56%)' : 'hsl(var(--muted-foreground))',
+                  border: lang === l ? '1px solid hsl(38 90% 56% / 0.35)' : '1px solid transparent',
+                }}
+              >
+                <span className="text-lg">{l === 'fr' ? '🇫🇷' : '🇬🇧'}</span>
+                <div className="text-left">
+                  <p className="text-sm font-bold">{l === 'fr' ? 'Français' : 'English'}</p>
+                  <p className="text-[10px] opacity-70">{l === 'fr' ? 'Interface en français' : 'English interface'}</p>
+                </div>
+                {lang === l && <CheckCircle2 className="w-4 h-4 ml-auto" />}
+              </button>
+            ))}
+          </div>
+        </Card>
       </div>
     </div>
   );
