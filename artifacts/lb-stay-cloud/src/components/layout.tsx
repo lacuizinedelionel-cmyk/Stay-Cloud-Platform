@@ -213,13 +213,15 @@ function SidebarLogo() {
 
 function SidebarFooter({ user, logout, role }: { user: any; logout: () => void; role?: string }) {
   const { lang, toggle } = useLanguage();
-  const displayName = user?.name ?? user?.email ?? 'Utilisateur';
+  const { profileData } = useAuth();
+  const displayName = profileData.fullName || user?.name || user?.email || 'Utilisateur';
+  const avatarText = displayName.charAt(0).toUpperCase();
   return (
     <div className="p-3 shrink-0 space-y-1" style={{ borderTop: '1px solid hsl(var(--border))' }}>
       <button onClick={toggle} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all" style={{ background: 'hsl(var(--muted) / 0.5)', color: 'hsl(var(--muted-foreground))' }} title={lang === 'fr' ? 'Switch to English' : 'Passer en français'}>
         <span className="text-base leading-none">{lang === 'fr' ? '🇫🇷' : '🇬🇧'}</span><span className="flex-1 text-left">{lang === 'fr' ? 'Français' : 'English'}</span><span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>{lang.toUpperCase()}</span>
       </button>
-      <Link href="/settings" className="block"><div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all" style={{ background: 'hsl(var(--muted) / 0.5)' }}><div className="w-8 h-8 rounded-full gradient-gold flex items-center justify-center shrink-0"><span className="text-xs font-bold text-white">{displayName.charAt(0).toUpperCase()}</span></div><div className="flex-1 min-w-0"><p className="text-xs font-semibold text-foreground truncate">{displayName}</p><p className="text-[10px] text-muted-foreground truncate">{role ?? user?.email}</p></div></div></Link>
+      <Link href="/settings" className="block"><div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all" style={{ background: 'hsl(var(--muted) / 0.5)' }}><div className="w-8 h-8 rounded-full overflow-hidden gradient-gold flex items-center justify-center shrink-0">{profileData.avatarUrl ? <img src={profileData.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : <span className="text-xs font-bold text-white">{avatarText}</span>}</div><div className="flex-1 min-w-0"><p className="text-xs font-semibold text-foreground truncate">{displayName}</p><p className="text-[10px] text-muted-foreground truncate">{role ?? profileData.email}</p></div></div></Link>
       <button type="button" onClick={logout} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground transition-all" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'hsl(0 72% 51% / 0.08)'; (e.currentTarget as HTMLElement).style.color = '#EF4444'; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = ''; }}><LogOut className="w-3.5 h-3.5" strokeWidth={1.5} />{lang === 'fr' ? 'Déconnexion' : 'Sign out'}</button>
     </div>
   );

@@ -1,7 +1,9 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Redirect } from 'wouter';
-import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle, MessageSquare, MessageCircleMore, Radio } from 'lucide-react';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle, MessageCircleMore, MessageSquare, Radio, User, Mail, Phone, LockKeyhole, Upload, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+
 
 type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
 
@@ -55,8 +57,58 @@ function StatCard({ title, value }: { title: string; value: string }) {
   );
 }
 
+function ProfileSection() {
+  const { profileData, updateProfileData } = useAuth();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwords, setPasswords] = useState({ current: '', next: '', confirm: '' });
+
+  const uploadAvatar = (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => updateProfileData({ avatarUrl: String(reader.result ?? '') });
+    reader.readAsDataURL(file);
+  };
+
+  const initials = profileData.fullName.trim().charAt(0).toUpperCase();
+
+  return (
+    <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-extrabold">Mon Profil</h2>
+          <p className="text-sm text-muted-foreground">Vos informations personnelles s'affichent dans toute l'application.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center gradient-gold shrink-0" style={{ background: profileData.avatarUrl ? 'transparent' : 'linear-gradient(135deg,#D97706,#F5A623)' }}>
+            {profileData.avatarUrl ? <img src={profileData.avatarUrl} alt={profileData.fullName} className="w-full h-full object-cover" /> : <span className="text-white font-extrabold text-lg">{initials}</span>}
+          </div>
+          <div className="space-y-2">
+            <button type="button" onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border" style={{ background: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))' }}>
+              <Upload className="w-4 h-4" /> Uploader une photo
+            </button>
+            {profileData.avatarUrl && <button type="button" onClick={() => updateProfileData({ avatarUrl: '' })} className="block text-xs text-muted-foreground">Supprimer la photo</button>}
+          </div>
+        </div>
+      </div>
+
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nom complet</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><User className="w-4 h-4 text-muted-foreground" /><input value={profileData.fullName} onChange={e => updateProfileData({ fullName: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Email</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Mail className="w-4 h-4 text-muted-foreground" /><input value={profileData.email} onChange={e => updateProfileData({ email: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
+        <label className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Téléphone</span><div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}><Phone className="w-4 h-4 text-muted-foreground" /><input value={profileData.phone} onChange={e => updateProfileData({ phone: e.target.value })} className="w-full bg-transparent outline-none" /></div></label>
+        <div className="space-y-2 text-sm"><span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mot de passe</span><button type="button" onClick={() => setPasswordOpen(v => !v)} className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold border" style={{ background: passwordOpen ? 'hsl(38 90% 56% / 0.12)' : 'hsl(var(--muted))', borderColor: 'hsl(var(--border))' }}><LockKeyhole className="w-4 h-4" />Changer le mot de passe</button></div>
+      </div>
+
+      {passwordOpen && <div className="grid grid-cols-1 md:grid-cols-3 gap-4"><input value={passwords.current} onChange={e => setPasswords(prev => ({ ...prev, current: e.target.value }))} placeholder="Mot de passe actuel" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /><input value={passwords.next} onChange={e => setPasswords(prev => ({ ...prev, next: e.target.value }))} placeholder="Nouveau mot de passe" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /><input value={passwords.confirm} onChange={e => setPasswords(prev => ({ ...prev, confirm: e.target.value }))} placeholder="Confirmer" type="password" className="px-3 py-2 rounded-xl outline-none" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }} /></div>}
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { profileData } = useAuth();
   const [sites, setSites] = useState(initialSites);
   const [selectedSite, setSelectedSite] = useState(initialSites[0].id);
   const [vat, setVat] = useState('19.25');
@@ -88,34 +140,10 @@ export default function SettingsPage() {
     'Aline M. a réactivé un compte employé',
   ];
   const communicationsCards = [
-    {
-      title: 'Passerelle SMS',
-      icon: MessageSquare,
-      subtitle: 'Alertes stock, notifications opérationnelles, codes courts.',
-      value: smsGateway,
-      accent: 'hsl(38 90% 56%)',
-    },
-    {
-      title: 'Passerelle WhatsApp',
-      icon: MessageCircleMore,
-      subtitle: 'Factures, relances et messages clients premium.',
-      value: whatsappGateway,
-      accent: '#F59E0B',
-    },
-    {
-      title: 'Orange Money',
-      icon: Radio,
-      subtitle: 'Statut de connexion API paiement.',
-      value: orangeMoneyStatus,
-      accent: '#FB923C',
-    },
-    {
-      title: 'MTN MoMo',
-      icon: Radio,
-      subtitle: 'Statut de connexion API paiement.',
-      value: mtnMoMoStatus,
-      accent: '#FACC15',
-    },
+    { title: 'Passerelle SMS', icon: MessageSquare, subtitle: 'Alertes stock, notifications opérationnelles, codes courts.', value: smsGateway, accent: 'hsl(38 90% 56%)' },
+    { title: 'Passerelle WhatsApp', icon: MessageCircleMore, subtitle: 'Factures, relances et messages clients premium.', value: whatsappGateway, accent: '#F59E0B' },
+    { title: 'Orange Money', icon: Radio, subtitle: 'Statut de connexion API paiement.', value: orangeMoneyStatus, accent: '#FB923C' },
+    { title: 'MTN MoMo', icon: Radio, subtitle: 'Statut de connexion API paiement.', value: mtnMoMoStatus, accent: '#FACC15' },
   ];
 
   const current = useMemo(() => sites.find(s => s.id === selectedSite) ?? sites[0], [selectedSite, sites]);
@@ -134,16 +162,18 @@ export default function SettingsPage() {
 
   const save = () => toast({ title: 'Configuration enregistrée', description: 'La configuration multi-site a été mise à jour.' });
 
+  if (false) return <Redirect to="/login" />;
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-[0.2em]" style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
             <Globe className="w-3.5 h-3.5" />
-            Dashboard de configuration multi-site
+            Command Center
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold" style={{ letterSpacing: '-0.03em' }}>Gestion Multi-Enseignes</h1>
-          <p className="text-muted-foreground max-w-2xl">Activez les modules par établissement et personnalisez le nom commercial de chaque site.</p>
+          <p className="text-muted-foreground max-w-2xl">Activez les modules par établissement et finalisez votre profil pro.</p>
         </div>
         <button onClick={save} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm" style={{ background: 'linear-gradient(135deg, #D97706, #F5A623)', color: '#000' }}>
           <Save className="w-4 h-4" /> Enregistrer la configuration
@@ -153,8 +183,10 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard title="Établissements" value={`${sites.length}`} />
         <StatCard title="Modules actifs" value={`${sites.reduce((sum, s) => sum + Object.values(s.modules).filter(Boolean).length, 0)}`} />
-        <StatCard title="Site sélectionné" value={current.city} />
+        <StatCard title="Profil" value={profileData.fullName} />
       </div>
+
+      <ProfileSection />
 
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6">
         <div className="space-y-4">
@@ -267,214 +299,6 @@ export default function SettingsPage() {
                   ))}
                 </tbody>
               </table>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 border" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
-            <p className="text-sm text-muted-foreground">LB Stay Cloud garde une base commune, mais chaque enseigne peut activer ses modules et son nom commercial indépendamment.</p>
-          </div>
-
-          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
-            <div className="flex items-center gap-2">
-              <Landmark className="w-4 h-4" />
-              <span className="font-bold">Finances & Fiscalité</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">TVA Cameroun</label>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <Percent className="w-4 h-4 text-muted-foreground" />
-                  <input value={vat} onChange={e => setVat(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                  <span className="text-xs text-muted-foreground">%</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Devise principale</label>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground" />
-                  <select value={currency} onChange={e => setCurrency(e.target.value)} className="w-full bg-transparent outline-none text-sm">
-                    <option value="XAF">XAF</option>
-                    <option value="EUR">EUR</option>
-                    <option value="USD">USD</option>
-                  </select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Préfixe factures</label>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <ReceiptText className="w-4 h-4 text-muted-foreground" />
-                  <input value={invoicePrefix} onChange={e => setInvoicePrefix(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                </div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {(['XAF', 'EUR', 'USD'] as const).map(code => (
-                <div key={code} className="space-y-2">
-                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Taux {code}</label>
-                  <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                    <span className="text-sm font-bold w-8">{code}</span>
-                    <input
-                      value={exchangeRates[code]}
-                      onChange={e => setExchangeRates(prev => ({ ...prev, [code]: e.target.value }))}
-                      className="w-full bg-transparent outline-none text-sm text-right"
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pied de page légal</label>
-              <textarea
-                value={legalFooter}
-                onChange={e => setLegalFooter(e.target.value)}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-                style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4" />
-                <span className="font-bold">Sécurité & Accès</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setTwoFactorEnabled(v => !v)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
-                style={{
-                  background: twoFactorEnabled ? 'hsl(38 90% 56% / 0.12)' : 'transparent',
-                  borderColor: twoFactorEnabled ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
-                  color: twoFactorEnabled ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
-                }}
-              >
-                {twoFactorEnabled ? <MessageCircle className="w-4 h-4" /> : <PhoneCall className="w-4 h-4" />}
-                2FA {twoFactorEnabled ? 'Activée' : 'Désactivée'}
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                <span className="font-semibold text-sm">Gestion des utilisateurs</span>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px]">
-                  <thead>
-                    <tr className="text-left text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                      <th className="py-2 pr-4">Employé</th>
-                      <th className="py-2 px-4">Rôle</th>
-                      <th className="py-2 px-4">Site</th>
-                      <th className="py-2 px-4">Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(user => (
-                      <tr key={user.name} className="border-t" style={{ borderColor: 'hsl(var(--border))' }}>
-                        <td className="py-3 pr-4 font-medium">{user.name}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.role}</td>
-                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.site}</td>
-                        <td className="py-3 px-4">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: user.status === 'Actif' ? 'hsl(38 90% 56% / 0.12)' : 'hsl(0 84% 60% / 0.12)', color: user.status === 'Actif' ? 'hsl(38 90% 56%)' : '#F87171' }}>
-                            {user.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <History className="w-4 h-4" />
-                <span className="font-semibold text-sm">Logs d’audit récents</span>
-              </div>
-              <div className="space-y-2">
-                {auditLogs.map((log, index) => (
-                  <div key={log} className="flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: 'hsl(38 90% 56% / 0.14)', color: 'hsl(38 90% 56%)' }}>
-                      {index + 1}
-                    </div>
-                    <p className="text-sm text-foreground">{log}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
-            <div className="flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              <span className="font-bold">Communications (API)</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {communicationsCards.map(card => {
-                const Icon = card.icon;
-                return (
-                  <div key={card.title} className="rounded-2xl p-4 border" style={{ background: 'linear-gradient(180deg, hsl(var(--muted) / 0.35), hsl(var(--card)))', borderColor: 'hsl(var(--border))' }}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${card.accent}1F` }}>
-                          <Icon className="w-4 h-4" style={{ color: card.accent }} />
-                        </div>
-                        <div>
-                          <p className="font-semibold">{card.title}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{card.subtitle}</p>
-                        </div>
-                      </div>
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}>
-                        {card.value}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">SMS Gateway</label>
-                <input
-                  value={smsGateway}
-                  onChange={e => setSmsGateway(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">WhatsApp Gateway</label>
-                <input
-                  value={whatsappGateway}
-                  onChange={e => setWhatsappGateway(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Orange Money</label>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <Radio className="w-4 h-4 text-muted-foreground" />
-                  <input value={orangeMoneyStatus} onChange={e => setOrangeMoneyStatus(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">MTN MoMo</label>
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}>
-                  <Radio className="w-4 h-4 text-muted-foreground" />
-                  <input value={mtnMoMoStatus} onChange={e => setMtnMoMoStatus(e.target.value)} className="w-full bg-transparent outline-none text-sm" />
-                </div>
-              </div>
             </div>
           </div>
         </div>
