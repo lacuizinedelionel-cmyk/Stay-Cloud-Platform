@@ -91,6 +91,26 @@ const DEMO_RESTAURANT_ORDERS = [
       { quantity: 1, productName: 'Pain beurre', subtotal: 2000 },
     ],
   },
+  ...Array.from({ length: 21 }, (_, i) => {
+    const idx = i + 5;
+    const dishes = ['Ndolé', 'Poulet DG', 'Soya'] as const;
+    const dish = dishes[i % dishes.length];
+    const total = 5000 + ((i * 2200) % 45000);
+    const statuses = [RestaurantOrderStatus.PENDING, RestaurantOrderStatus.PREPARING, RestaurantOrderStatus.READY, RestaurantOrderStatus.DELIVERED] as const;
+    const status = statuses[i % statuses.length];
+    return {
+      id: 7000 + idx,
+      status,
+      clientName: idx % 2 === 0 ? 'M. Eto\'o' : idx % 3 === 0 ? 'Mme Bella' : 'M. Abena',
+      tableNumber: (idx % 14) + 1,
+      createdAt: new Date(Date.now() - idx * 900000).toISOString(),
+      total,
+      items: [
+        { quantity: 1, productName: dish, subtotal: Math.round(total * 0.7) },
+        { quantity: 1, productName: dish === 'Soya' ? 'Bâton de manioc' : 'Boisson', subtotal: total - Math.round(total * 0.7) },
+      ],
+    };
+  }),
 ];
 
 const COLUMNS: {
