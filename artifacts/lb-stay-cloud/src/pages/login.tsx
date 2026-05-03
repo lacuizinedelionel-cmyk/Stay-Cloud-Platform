@@ -18,11 +18,14 @@ export default function Login() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState<'credentials' | 'otp'>('credentials');
+  const [step, setStep] = useState<'credentials' | 'otp' | 'recovery'>('credentials');
   const [pendingEmail, setPendingEmail] = useState('');
   const [pendingPhone, setPendingPhone] = useState('+237 6XX XXX XXX');
   const [otp, setOtp] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState<'Email' | 'SMS' | 'WhatsApp'>('Email');
+  const [recoveryLoading, setRecoveryLoading] = useState(false);
+  const [recoveryTarget, setRecoveryTarget] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -73,6 +76,18 @@ export default function Login() {
       }
       setOtpLoading(false);
     }, 600);
+  };
+
+  const handleRecovery = () => {
+    setRecoveryLoading(true);
+    setTimeout(() => {
+      toast({
+        title: 'Succès',
+        description: `Un lien/code sécurisé vous a été envoyé via ${recoveryMode}`,
+      });
+      setRecoveryLoading(false);
+      setStep('credentials');
+    }, 700);
   };
 
   return (
@@ -196,15 +211,16 @@ export default function Login() {
                       <FormLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Mot de passe
                       </FormLabel>
-                      <Link
-                        href="/activate"
+                      <button
+                        type="button"
                         className="text-xs font-medium transition-colors"
                         style={{ color: 'hsl(38 90% 56%)' }}
+                        onClick={() => setStep('recovery')}
                         onMouseEnter={e => (e.currentTarget as HTMLElement).style.opacity = '0.75'}
                         onMouseLeave={e => (e.currentTarget as HTMLElement).style.opacity = '1'}
                       >
                         Mot de passe oublié ?
-                      </Link>
+                      </button>
                     </div>
                     <FormControl>
                       <Input
@@ -317,6 +333,74 @@ export default function Login() {
               <p className="pt-2 text-center text-[11px] leading-relaxed text-muted-foreground">
                 LB Stay utilise un cryptage de bout en bout pour protéger vos données bancaires
               </p>
+            </div>
+          )}
+
+          {step === 'recovery' && (
+            <div className="space-y-5 font-sans">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full gradient-gold flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                  <LockKeyhole className="w-4.5 h-4.5 text-white" />
+                </div>
+                <div className="pt-0.5">
+                  <h1 className="text-2xl font-extrabold text-foreground" style={{ letterSpacing: '-0.03em' }}>
+                    Récupération sécurisée
+                  </h1>
+                  <p className="text-sm text-muted-foreground leading-relaxed">Entrez votre email ou numéro de téléphone.</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Email ou téléphone
+                </label>
+                <Input
+                  value={recoveryTarget}
+                  onChange={e => setRecoveryTarget(e.target.value)}
+                  placeholder="admin@lbstay.com ou +237..."
+                  className="h-11 bg-card border-border/70 text-foreground placeholder:text-muted-foreground focus:border-primary"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Mode de réception
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(['Email', 'SMS', 'WhatsApp'] as const).map(mode => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => setRecoveryMode(mode)}
+                      className="h-11 rounded-xl text-xs font-semibold transition-all border"
+                      style={{
+                        background: recoveryMode === mode ? 'hsl(38 90% 56% / 0.12)' : 'hsl(var(--card))',
+                        borderColor: recoveryMode === mode ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
+                        color: recoveryMode === mode ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
+                      }}
+                    >
+                      {mode}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                className="w-full h-11 gradient-gold text-white font-semibold text-sm hover:opacity-90 transition-opacity"
+                disabled={recoveryLoading || !recoveryTarget}
+                onClick={handleRecovery}
+              >
+                {recoveryLoading ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Envoi…</> : 'Envoyer le code sécurisé'}
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setStep('credentials')}
+                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Retour à la connexion
+              </button>
             </div>
           )}
 
