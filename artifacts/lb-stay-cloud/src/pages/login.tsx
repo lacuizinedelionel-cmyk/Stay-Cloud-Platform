@@ -43,10 +43,11 @@ export default function Login() {
   const onSubmit = (data: LoginFormData) => {
     loginMutation.mutate({ data }, {
       onSuccess: () => {
-        setPendingEmail(data.email);
-        setPendingPhone('+237 6XX XXX XXX');
-        setOtp('');
-        setStep('otp');
+        queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+        toast({
+          title: 'Connexion réussie',
+          description: 'Bienvenue sur LB Stay Cloud.',
+        });
       },
       onError: () => {
         toast({

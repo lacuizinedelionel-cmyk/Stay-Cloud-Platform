@@ -64,6 +64,8 @@ export default function SignupPage() {
   const [step, setStep]       = useState<'form' | 'plan' | 'success'>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('pro');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const [form, setForm] = useState({
     businessName: '',
@@ -78,6 +80,7 @@ export default function SignupPage() {
     setForm(f => ({ ...f, [k]: e.target.value }));
 
   const step1Valid = form.businessName && form.sector && form.city && form.email.includes('@') && form.phone;
+  const signupValid = password.length >= 8 && password === confirmPassword;
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,7 +91,6 @@ export default function SignupPage() {
   const handleConfirm = async () => {
     setIsLoading(true);
     try {
-      const password = `${form.businessName.replace(/\s+/g, '').toLowerCase()}1234`;
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,20 +103,18 @@ export default function SignupPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
+      if (!response.ok) throw new Error(await response.text());
 
       setStep('success');
       toast({
         title: 'Compte créé',
-        description: `Votre mot de passe provisoire est ${password}.`,
+        description: 'Votre compte est prêt. Vous pouvez vous connecter avec vos identifiants.',
       });
     } catch {
       toast({
         variant: 'destructive',
         title: 'Création impossible',
-        description: 'Cet email existe peut-être déjà.',
+        description: 'Vérifiez vos informations ou choisissez un autre email.',
       });
     } finally {
       setIsLoading(false);
@@ -352,6 +352,40 @@ export default function SignupPage() {
                   </div>
                 </div>
 
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Mot de passe <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <div className="flex items-center gap-2 px-3 h-11 rounded-xl"
+                    style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      placeholder="Minimum 8 caractères"
+                      required
+                      className="bg-transparent flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Confirmer le mot de passe <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <div className="flex items-center gap-2 px-3 h-11 rounded-xl"
+                    style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      placeholder="Répétez le mot de passe"
+                      required
+                      className="bg-transparent flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none"
+                    />
+                  </div>
+                </div>
+
                 {/* Téléphone */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -373,7 +407,7 @@ export default function SignupPage() {
 
                 <button
                   type="submit"
-                  disabled={!step1Valid}
+                  disabled={!step1Valid || !signupValid}
                   className="w-full h-11 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-40 mt-2"
                   style={{ background: 'hsl(38 90% 56%)', color: '#000' }}
                 >
