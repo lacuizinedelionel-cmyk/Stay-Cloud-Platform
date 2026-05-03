@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
-import { BadgeDollarSign, CheckCircle2, Globe, ImagePlus, Loader2, Phone, Upload, X, MapPin, Building2 } from 'lucide-react';
+import { BadgeDollarSign, CheckCircle2, Globe, ImagePlus, Loader2, Upload, X } from 'lucide-react';
 
 function Card({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl p-5 space-y-4" style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>{children}</div>;
@@ -89,7 +89,7 @@ export default function BusinessSettingsPage() {
   const [currency, setCurrency] = useState('XAF');
   const [logoUrl, setLogoUrl] = useState('');
 
-  const { data } = useQuery({
+  const { data, refetch } = useQuery({
     queryKey: ['business-settings', businessId],
     queryFn: async () => {
       const res = await fetch(`/api/billing/settings?businessId=${businessId}`);
@@ -110,7 +110,7 @@ export default function BusinessSettingsPage() {
   const { mutate: saveSettings, isPending } = useMutation({
     mutationFn: async () => {
       const res = await fetch('/api/billing/settings', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ businessId, logoUrl, address, phone, currency, businessName: name }),
       });
@@ -119,6 +119,7 @@ export default function BusinessSettingsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['business-settings', businessId] });
+      refetch();
       toast({ title: '✅ ' + t.settings.savedOk });
     },
     onError: () => toast({ title: t.common.error, variant: 'destructive' }),

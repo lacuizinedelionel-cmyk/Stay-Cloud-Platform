@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   useListRestaurantProducts,
   useCreateRestaurantOrder,
@@ -23,6 +24,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MobileMoneyModal } from '@/components/mobile-money-modal';
+import { apiClient } from '@workspace/api-client-react';
 
 type CartItem = {
   productId: number;
@@ -323,6 +325,16 @@ export default function POSPage() {
 
   const { mutateAsync: createOrderAsync, isPending: isOrderPending } = useCreateRestaurantOrder();
   const { mutateAsync: addCreditTxAsync, isPending: isTxPending } = useAddCreditTransaction();
+  const { data: billingSettings } = useQuery({
+    queryKey: ['billing-settings', business?.id],
+    queryFn: async () => {
+      if (!business?.id) return null;
+      const res = await fetch(`/api/billing/settings?businessId=${business.id}`);
+      if (!res.ok) return null;
+      return res.json() as Promise<{ businessName?: string | null; logoUrl?: string | null; address?: string | null; phone?: string | null; currency?: string | null }>;
+    },
+    enabled: !!business?.id,
+  });
 
   const isPending = isOrderPending || isTxPending;
 
@@ -435,7 +447,10 @@ export default function POSPage() {
     setIsPrinting(true);
     try {
       await generateInvoicePDF({
-        businessName: business.name,
+        businessName: billingSettings?.businessName ?? business.name,
+        businessAddress: billingSettings?.address ?? undefined,
+        businessPhone: billingSettings?.phone ?? undefined,
+        businessLogo: billingSettings?.logoUrl ?? undefined,
         invoiceNumber,
         date: new Date().toLocaleDateString('fr-FR'),
         items: snap.cart.map(i => ({ name: i.name, quantity: i.quantity, unitPrice: i.price })),

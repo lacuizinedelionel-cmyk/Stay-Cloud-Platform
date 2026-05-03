@@ -12,6 +12,7 @@ export interface InvoiceOptions {
   businessName: string;
   businessAddress?: string;
   businessPhone?: string;
+  businessLogo?: string;
   clientName?: string;
   tableNumber?: string;
   invoiceNumber: string;
@@ -32,6 +33,7 @@ export async function generateInvoicePDF(opts: InvoiceOptions): Promise<void> {
     businessName,
     businessAddress = 'Douala, Cameroun',
     businessPhone,
+    businessLogo,
     clientName,
     tableNumber,
     invoiceNumber,
@@ -51,6 +53,13 @@ export async function generateInvoicePDF(opts: InvoiceOptions): Promise<void> {
   doc.rect(0, 0, W, 50, 'F');
   doc.setFillColor(...GOLD);
   doc.rect(0, 48, W, 2.5, 'F');
+
+  if (businessLogo) {
+    try {
+      doc.addImage(businessLogo, 'PNG', W - M - 26, 10, 18, 18);
+    } catch {
+    }
+  }
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(18);
