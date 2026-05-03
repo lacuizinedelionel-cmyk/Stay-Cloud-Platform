@@ -89,7 +89,7 @@ function ProfileSection() {
           </div>
           <div className="space-y-2">
             <button type="button" onClick={() => fileRef.current?.click()} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border" style={{ background: 'hsl(var(--muted))', borderColor: 'hsl(var(--border))' }}>
-              <Upload className="w-4 h-4" /> Uploader une photo
+              <Camera className="w-4 h-4" /> Simuler l'upload photo
             </button>
             {profileData.avatarUrl && <button type="button" onClick={() => updateProfileData({ avatarUrl: '' })} className="block text-xs text-muted-foreground">Supprimer la photo</button>}
           </div>

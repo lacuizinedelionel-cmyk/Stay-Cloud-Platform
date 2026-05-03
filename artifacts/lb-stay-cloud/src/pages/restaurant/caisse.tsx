@@ -310,7 +310,7 @@ export default function CaissePage() {
   const queryClient  = useQueryClient();
   const { toast }    = useToast();
   const bId = business?.id ?? 0;
-  const demoSector = business?.sector === 'SUPERMARKET' ? 'SUPERMARKET' : 'RESTAURANT';
+  const demoSector: 'RESTAURANT' | 'SUPERMARKET' = String(business?.sector) === 'SUPERMARKET' ? 'SUPERMARKET' : 'RESTAURANT';
 
   const today = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(today);
