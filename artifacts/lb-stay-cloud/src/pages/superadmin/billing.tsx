@@ -42,6 +42,12 @@ const STATUS_CFG: Record<SubStatus, { label: string; color: string; bg: string; 
   SUSPENDU:  { label: 'Suspendu',   color: '#EF4444', bg: 'hsl(0 72% 51% / 0.12)',  icon: XCircle       },
 };
 
+const PAYMENT_STATUS_CFG: Record<SubStatus, { label: string; color: string; bg: string }> = {
+  ACTIF:     { label: 'Payé',       color: '#10B981', bg: 'hsl(160 84% 39% / 0.12)' },
+  EN_RETARD: { label: 'En attente',  color: '#F59E0B', bg: 'hsl(38 90% 56% / 0.12)' },
+  SUSPENDU:  { label: 'Expiré',      color: '#EF4444', bg: 'hsl(0 72% 51% / 0.12)' },
+};
+
 const INITIAL_SUBS: Subscription[] = [
   { id: 1, businessName: 'Restaurant Chez Mama',        sector: 'RESTAURANT', city: 'Douala',  icon: UtensilsCrossed, plan: 'PRO',     status: 'ACTIF',     renewalDate: '15 Juin 2026',  lastPaid: '15 Mai 2026',  lastPaidAmount: 35_000, contact: 'M. Ayissi Pierre',   email: 'restaurant@lbstay.com'  },
   { id: 2, businessName: 'Hôtel Le Prestige',           sector: 'HOTEL',      city: 'Yaoundé', icon: BedDouble,       plan: 'ELITE',   status: 'ACTIF',     renewalDate: '1 Juin 2026',   lastPaid: '1 Mai 2026',   lastPaidAmount: 75_000, contact: 'Mme Ngono Cécile',   email: 'hotel@lbstay.com'       },
@@ -426,7 +432,7 @@ export default function SuperAdminBillingPage() {
           <span className="col-span-3">Enseigne</span>
           <span className="col-span-2">Plan</span>
           <span className="col-span-2">Statut</span>
-          <span className="col-span-2">Renouvellement</span>
+          <span className="col-span-2">Statut du Paiement</span>
           <span className="col-span-1 text-right">Montant</span>
           <span className="col-span-2 text-center">Actions</span>
         </div>
@@ -478,7 +484,16 @@ export default function SuperAdminBillingPage() {
                   </span>
                 </div>
 
-                {/* Renewal */}
+                {/* Payment status */}
+                <div className="col-span-4 md:col-span-2">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                    style={{ background: PAYMENT_STATUS_CFG[sub.status].bg, color: PAYMENT_STATUS_CFG[sub.status].color }}>
+                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: PAYMENT_STATUS_CFG[sub.status].color }} />
+                    {PAYMENT_STATUS_CFG[sub.status].label}
+                  </span>
+                </div>
+
+                {/* Due date */}
                 <div className="col-span-4 md:col-span-2">
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3 h-3 shrink-0" style={{ color: isOverdue ? '#F59E0B' : 'hsl(var(--muted-foreground))' }} />
