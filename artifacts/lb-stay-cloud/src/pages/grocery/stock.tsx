@@ -25,6 +25,24 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEMO_GROCERY_PRODUCTS = [
+  { id: 1, businessId: 1, name: 'Sucre 1kg', category: 'FOOD', stock: 48, minStock: 12, price: 1250, costPrice: 980, isActive: true },
+  { id: 2, businessId: 1, name: 'Riz 5kg', category: 'FOOD', stock: 26, minStock: 10, price: 8500, costPrice: 7200, isActive: true },
+  { id: 3, businessId: 1, name: 'Paracétamol', category: 'MEDICINE', stock: 64, minStock: 20, price: 600, costPrice: 380, isActive: true },
+  { id: 4, businessId: 1, name: 'Huile de palme 1L', category: 'FOOD', stock: 18, minStock: 8, price: 1900, costPrice: 1450, isActive: true },
+  { id: 5, businessId: 1, name: 'Lait en poudre', category: 'FOOD', stock: 15, minStock: 10, price: 4200, costPrice: 3600, isActive: true },
+  { id: 6, businessId: 1, name: 'Savon de lessive', category: 'HYGIENE', stock: 72, minStock: 25, price: 750, costPrice: 520, isActive: true },
+  { id: 7, businessId: 1, name: 'Eau minérale pack', category: 'BOISSONS', stock: 35, minStock: 12, price: 2800, costPrice: 2100, isActive: true },
+  { id: 8, businessId: 1, name: 'Café moulu', category: 'FOOD', stock: 9, minStock: 10, price: 3600, costPrice: 2900, isActive: true },
+  { id: 9, businessId: 1, name: 'Pâtes alimentaires', category: 'FOOD', stock: 41, minStock: 15, price: 1450, costPrice: 980, isActive: true },
+  { id: 10, businessId: 1, name: 'Tomates en boîte', category: 'FOOD', stock: 22, minStock: 12, price: 1100, costPrice: 780, isActive: true },
+  { id: 11, businessId: 1, name: 'Jus de gingembre', category: 'BOISSONS', stock: 13, minStock: 8, price: 1750, costPrice: 1200, isActive: true },
+  { id: 12, businessId: 1, name: 'Biscuit local', category: 'FOOD', stock: 55, minStock: 18, price: 500, costPrice: 320, isActive: true },
+  { id: 13, businessId: 1, name: 'Riz parfumé', category: 'FOOD', stock: 7, minStock: 10, price: 9200, costPrice: 7600, isActive: true },
+  { id: 14, businessId: 1, name: 'Pansements', category: 'MEDICINE', stock: 30, minStock: 14, price: 1400, costPrice: 950, isActive: true },
+  { id: 15, businessId: 1, name: 'Détergent 2L', category: 'HYGIENE', stock: 11, minStock: 8, price: 2300, costPrice: 1700, isActive: true },
+] as GroceryProduct[];
+
 function StockBar({ current, min }: { current: number; min: number }) {
   const pct = min === 0 ? 100 : Math.min((current / Math.max(current, min * 3)) * 100, 100);
   const isLow = current <= min;
@@ -64,6 +82,7 @@ export default function GroceryStockPage() {
   const [sort, setSort] = useState<'name' | 'stock' | 'value'>('stock');
   const [isExporting, setIsExporting] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<GroceryProduct | null>(null);
+  const fallbackProducts = DEMO_GROCERY_PRODUCTS;
 
   const productsKey = getListGroceryProductsQueryKey({ businessId: bId });
   const statsKey = getGetGroceryStatsQueryKey({ businessId: bId });
@@ -73,7 +92,9 @@ export default function GroceryStockPage() {
     { query: { queryKey: statsKey, enabled: !!bId } },
   );
 
-  const filtered = (products ?? [])
+  const sourceProducts = (products && products.length > 0 ? products : fallbackProducts);
+
+  const filtered = sourceProducts
     .filter(p => {
       const matchSearch = p.name.toLowerCase().includes(search.toLowerCase());
       const matchFilter =
@@ -88,21 +109,20 @@ export default function GroceryStockPage() {
       return a.name.localeCompare(b.name);
     });
 
-  const criticalCount = (products ?? []).filter(p => p.stock === 0).length;
-  const lowCount = (products ?? []).filter(p => p.stock > 0 && p.stock <= p.minStock).length;
-  const totalValue = (products ?? []).reduce((s, p) => s + p.stock * p.price, 0);
+  const criticalCount = sourceProducts.filter(p => p.stock === 0).length;
+  const lowCount = sourceProducts.filter(p => p.stock > 0 && p.stock <= p.minStock).length;
+  const totalValue = sourceProducts.reduce((s, p) => s + p.stock * p.price, 0);
 
   const FILTERS = [
-    { value: 'ALL' as const, label: 'Tous', count: products?.length ?? 0, color: undefined },
+    { value: 'ALL' as const, label: 'Tous', count: sourceProducts.length, color: undefined },
     { value: 'LOW' as const, label: 'Stock bas', count: lowCount, color: '#F59E0B' },
     { value: 'CRITICAL' as const, label: 'Rupture', count: criticalCount, color: '#EF4444' },
   ];
 
   const handleExportPDF = async () => {
-    if (!products || products.length === 0) return;
     setIsExporting(true);
     try {
-      await generateStockReportPDF(business?.name ?? 'Épicerie', products);
+      await generateStockReportPDF(business?.name ?? 'Épicerie', sourceProducts);
     } finally {
       setIsExporting(false);
     }
@@ -118,7 +138,7 @@ export default function GroceryStockPage() {
         </div>
         <button
           onClick={handleExportPDF}
-          disabled={isExporting || !products || products.length === 0}
+          disabled={isExporting || sourceProducts.length === 0}
           className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           style={{
             background: 'linear-gradient(135deg, hsl(38 90% 56%), hsl(38 90% 46%))',
@@ -170,7 +190,7 @@ export default function GroceryStockPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total produits', value: products?.length ?? '—', icon: Package, color: '#3B82F6' },
+          { label: 'Total produits', value: sourceProducts.length, icon: Package, color: '#3B82F6' },
           { label: 'Rupture de stock', value: criticalCount, icon: TrendingDown, color: '#EF4444', pulse: criticalCount > 0 },
           { label: 'Stock bas', value: lowCount, icon: AlertTriangle, color: '#F59E0B', pulse: lowCount > 0 },
           { label: 'Valeur stock', value: formatXAF(totalValue), icon: CheckCircle2, color: '#10B981' },
