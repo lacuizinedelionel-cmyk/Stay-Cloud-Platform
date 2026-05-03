@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { BadgeDollarSign, CheckCircle2, Globe, ImagePlus, Loader2, Upload, X } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 function Card({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl p-5 space-y-4" style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>{children}</div>;
@@ -78,10 +79,15 @@ function LogoPicker({ businessId, logoUrl, onChange }: { businessId: number; log
 export default function BusinessSettingsPage() {
   const { id } = useParams();
   const { business } = useAuth();
+  const { isSuperAdmin, hasMinRole } = usePermissions();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const canAccess = useMemo(() => business && String(business.id) === String(id), [business, id]);
+  const canAccess = useMemo(() => {
+    if (isSuperAdmin) return true;
+    if (!business) return false;
+    return hasMinRole('OWNER') && String(business.id) === String(id);
+  }, [business, hasMinRole, id, isSuperAdmin]);
   const businessId = business?.id ?? 0;
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
@@ -125,7 +131,7 @@ export default function BusinessSettingsPage() {
     onError: () => toast({ title: t.common.error, variant: 'destructive' }),
   });
 
-  if (!business) return <Redirect to="/login" />;
+  if (!business && !isSuperAdmin) return <Redirect to="/login" />;
   if (!canAccess) return <Redirect to="/settings" />;
 
   return (

@@ -3,6 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/context/LanguageContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Building2, MessageSquare, CreditCard, ImagePlus, X,
@@ -237,9 +238,11 @@ function LogoUploadSection({ businessId }: { businessId: number }) {
 ══════════════════════════════════════ */
 export default function SettingsPage() {
   const { user, business } = useAuth();
+  const { isSuperAdmin, hasMinRole } = usePermissions();
   const { t, lang, setLang } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const canViewBusinessSettings = isSuperAdmin || (business && hasMinRole('OWNER'));
 
   const [name, setName]     = useState(business?.name ?? '');
   const [logoUrl, setLogoUrl] = useState((business as any)?.logoUrl ?? '');
@@ -249,6 +252,9 @@ export default function SettingsPage() {
     setName(business?.name ?? '');
     setLogoUrl((business as any)?.logoUrl ?? '');
   }, [business]);
+
+  if (!isSuperAdmin && !business) return <Redirect to="/login" />;
+  if (!canViewBusinessSettings && !isSuperAdmin) return <Redirect to="/dashboard" />;
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-6 page-enter">

@@ -2,6 +2,8 @@ import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, billingSettingsTable } from "@workspace/db";
 
+const isSuperAdminEmail = (email?: string | null) => email === "admin@lbstay.com";
+
 const router: IRouter = Router();
 
 const fmt = (b: typeof billingSettingsTable.$inferSelect) => ({
@@ -15,6 +17,10 @@ const fmt = (b: typeof billingSettingsTable.$inferSelect) => ({
 router.get("/billing/settings", async (req, res): Promise<void> => {
   const businessId = parseInt(req.query.businessId as string, 10);
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+  if (!isSuperAdminEmail(req.user?.email) && req.user?.businessId !== businessId) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const [settings] = await db.select().from(billingSettingsTable).where(eq(billingSettingsTable.businessId, businessId));
   if (!settings) {
     // Retourne les valeurs par défaut si non configuré
@@ -41,6 +47,10 @@ router.get("/billing/settings", async (req, res): Promise<void> => {
 router.put("/billing/settings", async (req, res): Promise<void> => {
   const { businessId, businessName, logoUrl, headerLine1, headerLine2, footerText, invoicePrefix, taxRate, currency, bankDetails, showTax, showLogo, primaryColor } = req.body;
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+  if (!isSuperAdminEmail(req.user?.email) && req.user?.businessId !== businessId) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
 
   const [existing] = await db.select().from(billingSettingsTable).where(eq(billingSettingsTable.businessId, businessId));
 
@@ -74,6 +84,10 @@ router.put("/billing/settings", async (req, res): Promise<void> => {
 router.post("/billing/settings/increment-invoice", async (req, res): Promise<void> => {
   const { businessId } = req.body;
   if (!businessId) { res.status(400).json({ error: "businessId required" }); return; }
+  if (!isSuperAdminEmail(req.user?.email) && req.user?.businessId !== businessId) {
+    res.status(403).json({ error: "forbidden" });
+    return;
+  }
   const [settings] = await db.select().from(billingSettingsTable).where(eq(billingSettingsTable.businessId, businessId));
   if (!settings) { res.status(404).json({ error: "Billing settings not found" }); return; }
 
