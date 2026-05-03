@@ -39,6 +39,60 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
+const DEMO_RESTAURANT_ORDERS = [
+  {
+    id: 7001,
+    status: RestaurantOrderStatus.PENDING,
+    clientName: 'M. Eto\'o',
+    tableNumber: 12,
+    createdAt: new Date().toISOString(),
+    total: 18500,
+    items: [
+      { quantity: 2, productName: 'Poulet DG', subtotal: 12000 },
+      { quantity: 1, productName: 'Jus gingembre', subtotal: 3500 },
+      { quantity: 1, productName: 'Plantain', subtotal: 3000 },
+    ],
+  },
+  {
+    id: 7002,
+    status: RestaurantOrderStatus.PREPARING,
+    clientName: 'Mme Bella',
+    tableNumber: 5,
+    createdAt: new Date().toISOString(),
+    total: 22500,
+    items: [
+      { quantity: 1, productName: 'Poisson braisé', subtotal: 15000 },
+      { quantity: 2, productName: 'Bâton de manioc', subtotal: 7500 },
+    ],
+  },
+  {
+    id: 7003,
+    status: RestaurantOrderStatus.READY,
+    clientName: 'M. Abena',
+    tableNumber: 9,
+    createdAt: new Date().toISOString(),
+    total: 14500,
+    items: [
+      { quantity: 1, productName: 'Ndolé', subtotal: 9000 },
+      { quantity: 1, productName: 'Eau minérale', subtotal: 1500 },
+      { quantity: 1, productName: 'Riz sauté', subtotal: 4000 },
+    ],
+  },
+  {
+    id: 7004,
+    status: RestaurantOrderStatus.DELIVERED,
+    clientName: 'Mme Bella',
+    tableNumber: 2,
+    createdAt: new Date().toISOString(),
+    total: 9800,
+    items: [
+      { quantity: 1, productName: 'Omelette complète', subtotal: 6000 },
+      { quantity: 1, productName: 'Café', subtotal: 1800 },
+      { quantity: 1, productName: 'Pain beurre', subtotal: 2000 },
+    ],
+  },
+];
+
 const COLUMNS: {
   status: RestaurantOrderStatus;
   label: string;
@@ -353,6 +407,7 @@ export default function RestaurantOrdersPage() {
     { businessId: business?.id ?? 0 },
     { query: { queryKey: ordersQueryKey, enabled: !!business?.id, refetchInterval: 15000 } },
   );
+  const displayOrders = orders && orders.length > 0 ? orders : DEMO_RESTAURANT_ORDERS;
 
   const { mutate: updateStatus } = useUpdateRestaurantOrderStatus({
     mutation: {
@@ -390,7 +445,7 @@ export default function RestaurantOrdersPage() {
   );
 
   const getColumnOrders = (status: RestaurantOrderStatus) =>
-    (orders ?? []).filter((o) => o.status === status);
+    (displayOrders ?? []).filter((o) => o.status === status);
 
   function handleDragStart(event: DragStartEvent) {
     const order = event.active.data.current?.order as RestaurantOrder;
@@ -435,7 +490,7 @@ export default function RestaurantOrdersPage() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-            {orders?.filter((o) => o.status === RestaurantOrderStatus.PENDING).length ?? 0} en
+            {displayOrders?.filter((o) => o.status === RestaurantOrderStatus.PENDING).length ?? 0} en
             attente
           </div>
           <button

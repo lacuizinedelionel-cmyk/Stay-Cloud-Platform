@@ -25,6 +25,12 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEMO_HOTEL_RESERVATIONS = [
+  { id: 9101, guestName: "M. Eto'o", roomNumber: '301', status: 'RESERVED' as HotelReservationStatus, checkInDate: new Date().toISOString().split('T')[0], checkOutDate: new Date(Date.now() + 86400000 * 2).toISOString().split('T')[0], totalAmount: 240000, nights: 2, createdAt: new Date().toISOString(), guestPhone: '+237 699 100 101' },
+  { id: 9102, guestName: 'Mme Bella', roomNumber: '204', status: 'RESERVED' as HotelReservationStatus, checkInDate: new Date().toISOString().split('T')[0], checkOutDate: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0], totalAmount: 360000, nights: 3, createdAt: new Date().toISOString(), guestPhone: '+237 699 100 102' },
+  { id: 9103, guestName: 'M. Abena', roomNumber: '112', status: 'RESERVED' as HotelReservationStatus, checkInDate: new Date().toISOString().split('T')[0], checkOutDate: new Date(Date.now() + 86400000).toISOString().split('T')[0], totalAmount: 120000, nights: 1, createdAt: new Date().toISOString(), guestPhone: '+237 699 100 103' },
+];
+
 /* ── Statuts ── */
 const STATUS_CFG: Record<HotelReservationStatus, { label: string; color: string; bg: string }> = {
   RESERVED:    { label: 'Réservée',    color: '#3B82F6', bg: 'hsl(217 91% 60% / 0.12)' },
@@ -476,6 +482,9 @@ export default function HotelReservationsPage() {
     { businessId: bId },
     { query: { queryKey: resKey, enabled: !!bId, refetchInterval: 15000 } },
   );
+  const displayReservations = reservations && reservations.length > 0
+    ? reservations
+    : DEMO_HOTEL_RESERVATIONS;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: resKey });
@@ -555,7 +564,7 @@ export default function HotelReservationsPage() {
 
   /* ── Filtrage & tri ── */
   const filtered = useMemo(() => {
-    let list = reservations ?? [];
+    let list = displayReservations ?? [];
     if (statusFilter !== 'ALL') list = list.filter(r => r.status === statusFilter);
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -566,11 +575,11 @@ export default function HotelReservationsPage() {
       );
     }
     return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [reservations, statusFilter, search]);
+  }, [displayReservations, statusFilter, search]);
 
   /* ── KPI counts ── */
   const counts = useMemo(() => {
-    const all = reservations ?? [];
+    const all = displayReservations ?? [];
     return {
       total:      all.length,
       reserved:   all.filter(r => r.status === 'RESERVED').length,
@@ -578,7 +587,7 @@ export default function HotelReservationsPage() {
       cancelled:  all.filter(r => r.status === 'CANCELLED').length,
       revenue:    all.filter(r => r.status !== 'CANCELLED').reduce((s, r) => s + r.totalAmount, 0),
     };
-  }, [reservations]);
+  }, [displayReservations]);
 
   return (
     <div className="p-6 md:p-8 space-y-6 relative page-enter">
@@ -641,8 +650,8 @@ export default function HotelReservationsPage() {
             const isActive = statusFilter === f.value;
             const cfg = f.value !== 'ALL' ? STATUS_CFG[f.value as HotelReservationStatus] : null;
             const count = f.value === 'ALL'
-              ? (reservations?.length ?? 0)
-              : (reservations?.filter(r => r.status === f.value).length ?? 0);
+              ? (displayReservations?.length ?? 0)
+              : (displayReservations?.filter(r => r.status === f.value).length ?? 0);
             return (
               <button
                 key={f.value}
