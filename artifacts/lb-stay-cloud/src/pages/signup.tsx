@@ -87,9 +87,38 @@ export default function SignupPage() {
 
   const handleConfirm = async () => {
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setIsLoading(false);
-    setStep('success');
+    try {
+      const password = `${form.businessName.replace(/\s+/g, '').toLowerCase()}1234`;
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: form.email,
+          password,
+          name: form.contactName || form.businessName,
+          businessName: form.businessName,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      setStep('success');
+      toast({
+        title: 'Compte créé',
+        description: `Votre mot de passe provisoire est ${password}.`,
+      });
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Création impossible',
+        description: 'Cet email existe peut-être déjà.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
