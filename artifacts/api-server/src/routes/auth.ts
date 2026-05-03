@@ -60,6 +60,40 @@ router.post("/auth/login", async (req, res): Promise<void> => {
   });
 });
 
+router.post("/auth/signup", async (req, res): Promise<void> => {
+  const { email, password, name, businessName } = req.body ?? {};
+  if (!email || !password || !name || !businessName) {
+    res.status(400).json({ error: "Missing required fields" });
+    return;
+  }
+
+  const [existing] = await db.select().from(usersTable).where(eq(usersTable.email, email));
+  if (existing) {
+    res.status(409).json({ error: "Email already exists" });
+    return;
+  }
+
+  const [user] = await db.insert(usersTable).values({
+    email,
+    passwordHash: hashPassword(password),
+    name,
+    role: "OWNER",
+  }).returning();
+
+  (req.session as any).userId = user.id;
+  res.status(201).json({
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      businessId: user.businessId,
+      createdAt: user.createdAt.toISOString(),
+    },
+    token: `session_${user.id}`,
+  });
+});
+
 router.post("/auth/logout", async (req, res): Promise<void> => {
   req.session?.destroy(() => {});
   res.json({ ok: true });
