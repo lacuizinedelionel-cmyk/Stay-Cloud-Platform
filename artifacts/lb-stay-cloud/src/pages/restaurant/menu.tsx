@@ -12,36 +12,36 @@ const MENU_SECTIONS = [
     title: 'Entrées',
     tone: 'hsl(38 90% 56%)',
     items: [
-      { id: 1, name: 'Salade avocat-crevettes', price: 4500, status: 'Disponible', featured: true, prep: '10 min' },
-      { id: 2, name: 'Soupe claire du jour', price: 3000, status: 'Disponible', featured: false, prep: '8 min' },
-      { id: 3, name: 'Beignets haricot', price: 2500, status: 'Disponible', featured: false, prep: '12 min' },
+      { id: 1, name: 'Salade avocat-crevettes', price: 4500, status: 'Disponible', featured: true, prep: '10 min', image: 'https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=900&q=80' },
+      { id: 2, name: 'Soupe claire du jour', price: 3000, status: 'Disponible', featured: false, prep: '8 min', image: 'https://images.unsplash.com/photo-1547592180-6c9d4f5e3f5e?auto=format&fit=crop&w=900&q=80' },
+      { id: 3, name: 'Beignets haricot', price: 2500, status: 'Disponible', featured: false, prep: '12 min', image: 'https://images.unsplash.com/photo-1512003867696-6d5ce6835040?auto=format&fit=crop&w=900&q=80' },
     ],
   },
   {
     title: 'Plats de Résistance',
     tone: '#F97316',
     items: [
-      { id: 4, name: 'Poulet DG', price: 8500, status: 'Disponible', featured: true, prep: '25 min' },
-      { id: 5, name: 'Poisson braisé', price: 9500, status: 'Disponible', featured: true, prep: '30 min' },
-      { id: 6, name: 'Ndolé crevettes', price: 7000, status: 'Disponible', featured: false, prep: '20 min' },
-      { id: 7, name: 'Soya premium', price: 3000, status: 'Rupture imminente', featured: false, prep: '12 min' },
+      { id: 4, name: 'Poulet DG', price: 8500, status: 'Disponible', featured: true, prep: '25 min', image: 'https://images.unsplash.com/photo-1604908177225-4c1f2e4bce36?auto=format&fit=crop&w=900&q=80' },
+      { id: 5, name: 'Poisson braisé', price: 9500, status: 'Disponible', featured: true, prep: '30 min', image: 'https://images.unsplash.com/photo-1529706195479-2f0b1a3f4c57?auto=format&fit=crop&w=900&q=80' },
+      { id: 6, name: 'Ndolé crevettes', price: 7000, status: 'Disponible', featured: false, prep: '20 min', image: 'https://images.unsplash.com/photo-1625938145744-4d5d45a2f22a?auto=format&fit=crop&w=900&q=80' },
+      { id: 7, name: 'Soya premium', price: 3000, status: 'Rupture imminente', featured: false, prep: '12 min', image: 'https://images.unsplash.com/photo-1534939561126-855b8675edd7?auto=format&fit=crop&w=900&q=80' },
     ],
   },
   {
     title: 'Boissons',
     tone: '#60A5FA',
     items: [
-      { id: 8, name: 'Jus de gingembre', price: 1500, status: 'Disponible', featured: true, prep: '5 min' },
-      { id: 9, name: 'Bissap maison', price: 1200, status: 'Disponible', featured: false, prep: '4 min' },
-      { id: 10, name: 'Café noir', price: 1000, status: 'Disponible', featured: false, prep: '3 min' },
+      { id: 8, name: 'Jus de gingembre', price: 1500, status: 'Disponible', featured: true, prep: '5 min', image: 'https://images.unsplash.com/photo-1547592180-4a54f6c6c4f0?auto=format&fit=crop&w=900&q=80' },
+      { id: 9, name: 'Bissap maison', price: 1200, status: 'Disponible', featured: false, prep: '4 min', image: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c0fcd?auto=format&fit=crop&w=900&q=80' },
+      { id: 10, name: 'Café noir', price: 1000, status: 'Disponible', featured: false, prep: '3 min', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=900&q=80' },
     ],
   },
   {
     title: 'Desserts',
     tone: '#A78BFA',
     items: [
-      { id: 11, name: 'Salade de fruits', price: 2500, status: 'Disponible', featured: false, prep: '6 min' },
-      { id: 12, name: 'Gâteau coco', price: 3500, status: 'Disponible', featured: true, prep: '8 min' },
+      { id: 11, name: 'Salade de fruits', price: 2500, status: 'Disponible', featured: false, prep: '6 min', image: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=900&q=80' },
+      { id: 12, name: 'Gâteau coco', price: 3500, status: 'Disponible', featured: true, prep: '8 min', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=80' },
     ],
   },
 ];
@@ -115,30 +115,42 @@ export default function RestaurantMenuPage() {
 
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {section.items.map(item => (
-                      <div key={item.id} className="rounded-2xl border border-border/60 bg-background/40 p-4 space-y-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-base">{item.name}</h4>
-                              {item.featured && <Star className="w-4 h-4 text-amber-400 fill-amber-400" />}
-                            </div>
-                            <p className="text-xs text-muted-foreground">{section.title}</p>
+                      <div key={item.id} className="overflow-hidden rounded-2xl border border-border/60 bg-background/40 shadow-sm">
+                        <div className="relative h-44 overflow-hidden">
+                          <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
+                          <div className="absolute left-4 top-4 flex gap-2">
+                            {item.featured && (
+                              <Badge className="bg-amber-400 text-black hover:bg-amber-400">
+                                <Star className="mr-1 h-3.5 w-3.5 fill-black text-black" /> Signature
+                              </Badge>
+                            )}
+                            <Badge variant={item.status === 'Rupture imminente' ? 'destructive' : 'outline'} className="bg-black/40 text-white border-white/20 backdrop-blur">
+                              {item.status}
+                            </Badge>
                           </div>
-                          <Badge variant={item.status === 'Rupture imminente' ? 'destructive' : 'outline'}>
-                            {item.status}
-                          </Badge>
+                          <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3 text-white">
+                            <div>
+                              <h4 className="text-lg font-semibold leading-tight">{item.name}</h4>
+                              <p className="text-xs text-white/80">{section.title}</p>
+                            </div>
+                            <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur">
+                              {item.prep}
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Préparation</span>
-                          <span className="font-medium">{item.prep}</span>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('fr-FR').format(item.price)} FCFA</span>
-                          <Button size="sm" variant="outline" className="gap-2">
-                            <Sparkles className="w-4 h-4" /> Modifier
-                          </Button>
+                        <div className="p-4 space-y-4">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Prix</span>
+                            <span className="text-2xl font-bold text-primary">{new Intl.NumberFormat('fr-FR').format(item.price)} FCFA</span>
+                          </div>
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge variant="outline">Photo d’illustration</Badge>
+                            <Button size="sm" variant="outline" className="gap-2">
+                              <Sparkles className="w-4 h-4" /> Modifier
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
