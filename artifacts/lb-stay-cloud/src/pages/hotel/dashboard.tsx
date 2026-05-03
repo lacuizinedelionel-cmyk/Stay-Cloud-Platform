@@ -671,7 +671,7 @@ export default function HotelDashboard() {
       </div>
 
       {/* ── Occupation + Revenue management ── */}
-      <div className="flex flex-col md:grid md:grid-cols-3 gap-5">
+      <div className="flex flex-col gap-5 md:grid md:grid-cols-3">
         <OccupancyGauge
           rate={occupancyRate}
           available={availableRooms}
@@ -691,7 +691,7 @@ export default function HotelDashboard() {
       </div>
 
       {/* ── Revenus 7 jours + Répartition types ── */}
-      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5">
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-2">
         {resLoading ? (
           <Skeleton className="h-64 rounded-xl" />
         ) : (
@@ -705,7 +705,7 @@ export default function HotelDashboard() {
       </div>
 
       {/* ── Timeline + Plan des chambres ── */}
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-5">
+      <div className="flex flex-col gap-5 lg:grid lg:grid-cols-3">
         <div>
           {resLoading ? (
             <Skeleton className="h-72 rounded-xl" />

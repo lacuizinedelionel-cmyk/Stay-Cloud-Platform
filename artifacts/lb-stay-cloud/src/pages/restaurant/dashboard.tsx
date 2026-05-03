@@ -82,8 +82,8 @@ export default function RestaurantDashboard() {
         ) : null}
       </div>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 border-border/50 bg-card">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3">
+        <Card className="border-border/50 bg-card lg:col-span-2">
           <CardHeader>
             <CardTitle>Ventes par heure</CardTitle>
           </CardHeader>
