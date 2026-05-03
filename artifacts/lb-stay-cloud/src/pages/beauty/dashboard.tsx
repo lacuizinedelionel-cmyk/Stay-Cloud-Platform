@@ -8,7 +8,7 @@ import {
   BeautyAppointmentStatus
 } from '@workspace/api-client-react';
 import { KPICard } from '@/components/kpi-card';
-import { Calendar as CalendarIcon, Users, Clock, Smile } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, Clock, Smile, Sparkles, Scissors, HeartHandshake, Palette } from 'lucide-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +30,13 @@ const DEMO_BEAUTY_APPOINTMENTS = [
   { id: 5, startTime: '13:00', endTime: '13:50', clientName: 'Mme Tchekam', serviceName: 'Soin visage gold', staffName: 'Aïcha', amount: 32000, status: 'SCHEDULED' as BeautyAppointmentStatus },
   { id: 6, startTime: '14:10', endTime: '15:00', clientName: 'Mme Tchoumbou', serviceName: 'Tresses élégantes', staffName: 'Sandra', amount: 28000, status: 'NO_SHOW' as BeautyAppointmentStatus },
   { id: 7, startTime: '15:20', endTime: '16:10', clientName: 'Mme Fonkoua', serviceName: 'Massage relaxant', staffName: 'Nadine', amount: 30000, status: 'SCHEDULED' as BeautyAppointmentStatus },
+];
+
+const DEMO_BEAUTY_SERVICES = [
+  { id: 1, name: 'Spa Signature Gold', category: 'Spa', duration: '60 min', price: 35000, therapist: 'Aïcha', occupancy: 92 },
+  { id: 2, name: 'Soin visage éclat', category: 'Soin', duration: '45 min', price: 28000, therapist: 'Nadine', occupancy: 84 },
+  { id: 3, name: 'Manucure premium', category: 'Onglerie', duration: '35 min', price: 15000, therapist: 'Carine', occupancy: 76 },
+  { id: 4, name: 'Massage relaxant', category: 'Spa', duration: '50 min', price: 30000, therapist: 'Sandra', occupancy: 88 },
 ];
 
 export default function BeautyDashboard() {
@@ -74,7 +81,7 @@ export default function BeautyDashboard() {
     <div className="p-6 md:p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Tableau de bord Beauté</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos rendez-vous et vos prestations</p>
+        <p className="text-muted-foreground mt-1">Gérez vos rendez-vous, soins Spa et prestations</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -88,6 +95,26 @@ export default function BeautyDashboard() {
             <KPICard title="Satisfaction" value={displayStats.satisfactionRate} icon={Smile} />
           </>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {DEMO_BEAUTY_SERVICES.map(service => (
+          <Card key={service.id} className="border-border/50 bg-card">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm flex items-center gap-2">
+                {service.category === 'Spa' ? <Sparkles className="w-4 h-4 text-primary" /> : service.category === 'Soin' ? <HeartHandshake className="w-4 h-4 text-primary" /> : service.category === 'Onglerie' ? <Palette className="w-4 h-4 text-primary" /> : <Scissors className="w-4 h-4 text-primary" />}
+                {service.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Catégorie</span><span>{service.category}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Durée</span><span>{service.duration}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Tarif</span><span className="font-bold text-primary">{formatXAF(service.price)}</span></div>
+              <div className="flex items-center justify-between"><span className="text-muted-foreground">Thérapeute</span><span>{service.therapist}</span></div>
+              <Badge variant="outline" className="w-fit">Occupation {service.occupancy}%</Badge>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="border-border/50 bg-card">
@@ -115,9 +142,7 @@ export default function BeautyDashboard() {
                 <TableBody>
                   {displayAppointments.map((appointment) => (
                     <TableRow key={appointment.id} className="border-border/50">
-                      <TableCell className="font-medium">
-                        {appointment.startTime} - {appointment.endTime}
-                      </TableCell>
+                      <TableCell className="font-medium">{appointment.startTime} - {appointment.endTime}</TableCell>
                       <TableCell>{appointment.clientName}</TableCell>
                       <TableCell>{appointment.serviceName}</TableCell>
                       <TableCell>{appointment.staffName}</TableCell>

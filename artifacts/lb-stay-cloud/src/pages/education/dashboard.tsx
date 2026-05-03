@@ -16,6 +16,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
+const DEMO_EDU_STATS = {
+  totalStudents: 184,
+  activeCourses: 12,
+  pendingPayments: 27,
+  attendanceRate: '91%',
+};
+
+const DEMO_EDU_COURSES = [
+  { id: 1, name: 'Anglais Professionnel', description: 'Business English & speaking', price: 85000, enrolledCount: 28 },
+  { id: 2, name: 'Comptabilité de base', description: 'Gestion PME', price: 65000, enrolledCount: 24 },
+  { id: 3, name: 'Dév. Web Starter', description: 'HTML, CSS, React', price: 120000, enrolledCount: 16 },
+  { id: 4, name: 'Marketing Digital', description: 'Réseaux sociaux & ads', price: 90000, enrolledCount: 21 },
+  { id: 5, name: 'Secrétariat Bilingue', description: 'FR / EN', price: 75000, enrolledCount: 19 },
+];
+
+const DEMO_EDU_STUDENTS = [
+  { id: 1, name: 'Nadia M.', paymentStatus: 'PAID' },
+  { id: 2, name: 'Eric T.', paymentStatus: 'PARTIAL' },
+  { id: 3, name: 'Aline K.', paymentStatus: 'PENDING' },
+  { id: 4, name: 'Jean P.', paymentStatus: 'PAID' },
+  { id: 5, name: 'Mireille S.', paymentStatus: 'PARTIAL' },
+];
+
 export default function EducationDashboard() {
   const { business } = useAuth();
   
@@ -34,24 +57,28 @@ export default function EducationDashboard() {
     { query: { enabled: !!business?.id, queryKey: getListStudentsQueryKey({ businessId: business?.id ?? 0 }) } }
   );
 
+  const displayStats = stats ?? DEMO_EDU_STATS;
+  const displayCourses = courses && courses.length > 0 ? courses : DEMO_EDU_COURSES;
+  const displayStudents = students && students.length > 0 ? students : DEMO_EDU_STUDENTS;
+
   return (
     <div className="p-6 md:p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Tableau de bord Éducation</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos apprenants et vos cours</p>
+        <p className="text-muted-foreground mt-1">Gérez vos apprenants, coachs et formations</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsLoading ? (
           Array(4).fill(0).map((_, i) => <Skeleton key={i} className="h-[120px] rounded-xl" />)
-        ) : stats ? (
+        ) : (
           <>
-            <KPICard title="Apprenants" value={stats.totalStudents} icon={Users} />
-            <KPICard title="Cours Actifs" value={stats.activeCourses} icon={BookOpen} />
-            <KPICard title="Paiements en attente" value={stats.pendingPayments} icon={CreditCard} />
-            <KPICard title="Taux de présence" value={stats.attendanceRate} icon={Activity} />
+            <KPICard title="Apprenants" value={displayStats.totalStudents} icon={Users} />
+            <KPICard title="Cours Actifs" value={displayStats.activeCourses} icon={BookOpen} />
+            <KPICard title="Paiements en attente" value={displayStats.pendingPayments} icon={CreditCard} />
+            <KPICard title="Taux de présence" value={displayStats.attendanceRate} icon={Activity} />
           </>
-        ) : null}
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -64,7 +91,7 @@ export default function EducationDashboard() {
                <div className="space-y-4">
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
-            ) : courses && courses.length > 0 ? (
+            ) : displayCourses.length > 0 ? (
               <div className="overflow-x-auto max-w-full">
                 <Table>
                   <TableHeader>
@@ -76,7 +103,7 @@ export default function EducationDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {courses.slice(0, 5).map((course) => (
+                    {displayCourses.slice(0, 5).map((course) => (
                       <TableRow key={course.id} className="border-border/50">
                         <TableCell className="font-medium">{course.name}</TableCell>
                         <TableCell>{course.description ?? '—'}</TableCell>
@@ -102,7 +129,7 @@ export default function EducationDashboard() {
                <div className="space-y-4">
                  {Array(5).fill(0).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
                </div>
-            ) : students && students.length > 0 ? (
+            ) : displayStudents.length > 0 ? (
               <div className="overflow-x-auto max-w-full">
                 <Table>
                   <TableHeader>
@@ -112,17 +139,11 @@ export default function EducationDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {students.slice(0, 5).map((student) => (
+                    {displayStudents.slice(0, 5).map((student) => (
                       <TableRow key={student.id} className="border-border/50">
-                        <TableCell className="font-medium">
-                          {student.name}
-                        </TableCell>
+                        <TableCell className="font-medium">{student.name}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={
-                            student.paymentStatus === 'PAID' ? "bg-success/10 text-success border-success/20" :
-                            student.paymentStatus === 'PARTIAL' ? "bg-yellow-500/10 text-yellow-500 border-yellow-500/20" :
-                            "bg-destructive/10 text-destructive border-destructive/20"
-                          }>
+                          <Badge variant="outline" className={student.paymentStatus === 'PAID' ? 'bg-success/10 text-success border-success/20' : student.paymentStatus === 'PARTIAL' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}>
                             {student.paymentStatus === 'PAID' ? 'Payé' : student.paymentStatus === 'PARTIAL' ? 'Partiel' : 'En attente'}
                           </Badge>
                         </TableCell>

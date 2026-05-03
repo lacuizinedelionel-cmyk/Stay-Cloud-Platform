@@ -9,7 +9,7 @@ import {
   getListFitnessClassesQueryKey
 } from '@workspace/api-client-react';
 import { KPICard } from '@/components/kpi-card';
-import { Users, Activity, Receipt, UserCheck } from 'lucide-react';
+import { Users, Activity, Receipt, UserCheck, Dumbbell, TimerReset, Zap } from 'lucide-react';
 import { formatXAF } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -65,7 +65,7 @@ export default function FitnessDashboard() {
     <div className="p-6 md:p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Tableau de bord Fitness</h1>
-        <p className="text-muted-foreground mt-1">Gérez vos membres et vos cours</p>
+        <p className="text-muted-foreground mt-1">Gérez vos membres, coachs, plannings et tarifs</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -79,6 +79,27 @@ export default function FitnessDashboard() {
             <KPICard title="Présents Maintenant" value={displayStats.presentNow} icon={UserCheck} />
           </>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {[
+          { label: 'Cours coachés', value: '18', icon: Dumbbell },
+          { label: 'Sessions semaine', value: '42', icon: TimerReset },
+          { label: 'Remplissage moyen', value: '86%', icon: Zap },
+          { label: 'Tarif moyen', value: formatXAF(18000), icon: Receipt },
+        ].map(card => (
+          <Card key={card.label} className="border-border/50 bg-card">
+            <CardContent className="pt-6 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-primary/10 text-primary">
+                <card.icon className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{card.label}</p>
+                <p className="text-lg font-bold">{card.value}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -135,7 +156,7 @@ export default function FitnessDashboard() {
 
         <Card className="border-border/50 bg-card">
           <CardHeader>
-            <CardTitle>Planning des Cours</CardTitle>
+            <CardTitle>Planning des Cours et Coachs</CardTitle>
           </CardHeader>
           <CardContent>
             {classesLoading ? (
@@ -158,9 +179,7 @@ export default function FitnessDashboard() {
                       <TableRow key={cls.id} className="border-border/50">
                         <TableCell className="font-medium">{cls.name}</TableCell>
                         <TableCell>{cls.coachName}</TableCell>
-                        <TableCell>
-                          {cls.dayOfWeek} à {cls.startTime}
-                        </TableCell>
+                        <TableCell>{cls.dayOfWeek} à {cls.startTime}</TableCell>
                         <TableCell className="text-right">
                           <span className={cls.enrolledCount >= cls.capacity ? 'text-destructive font-bold' : ''}>
                             {cls.enrolledCount} / {cls.capacity}

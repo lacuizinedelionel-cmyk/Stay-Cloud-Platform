@@ -79,6 +79,9 @@ function Router() {
       <Route path="/hotel/rooms">{() => <ProtectedRoute component={HotelRoomsPage} />}</Route>
       <Route path="/hotel/reservations">{() => <ProtectedRoute component={HotelReservationsPage} />}</Route>
       <Route path="/beauty/dashboard">{() => <ProtectedRoute component={BeautyDashboard} />}</Route>
+      <Route path="/beauty/appointments">{() => <Redirect to="/beauty/dashboard" />}</Route>
+      <Route path="/beauty/services">{() => <Redirect to="/beauty/dashboard" />}</Route>
+      <Route path="/beauty/staff">{() => <Redirect to="/beauty/dashboard" />}</Route>
       <Route path="/grocery/dashboard">{() => <ProtectedRoute component={GroceryDashboard} />}</Route>
       <Route path="/grocery/stock">{() => <ProtectedRoute component={GroceryStockPage} />}</Route>
       <Route path="/grocery/products">{() => <ProtectedRoute component={GroceryProductsPage} />}</Route>
@@ -90,7 +93,11 @@ function Router() {
       <Route path="/garage/vehicles">{() => <ProtectedRoute component={GarageVehiclesPage} />}</Route>
       <Route path="/garage/quotes">{() => <ProtectedRoute component={GarageQuotesPage} />}</Route>
       <Route path="/fitness/dashboard">{() => <ProtectedRoute component={FitnessDashboard} />}</Route>
+      <Route path="/fitness/members">{() => <Redirect to="/fitness/dashboard" />}</Route>
+      <Route path="/fitness/classes">{() => <Redirect to="/fitness/dashboard" />}</Route>
       <Route path="/education/dashboard">{() => <ProtectedRoute component={EducationDashboard} />}</Route>
+      <Route path="/education/courses">{() => <Redirect to="/education/dashboard" />}</Route>
+      <Route path="/education/students">{() => <Redirect to="/education/dashboard" />}</Route>
       <Route path="/clients">{() => <ProtectedRoute component={ClientsPage} />}</Route>
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/notifications">{() => <ProtectedRoute component={NotificationsPage} />}</Route>
@@ -110,7 +117,7 @@ function Router() {
 }
 
 function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}><LanguageProvider><AuthProvider><Router /></AuthProvider></LanguageProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter><LanguageProvider><AuthProvider><Router /></AuthProvider></LanguageProvider></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;
