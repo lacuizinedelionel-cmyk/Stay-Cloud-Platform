@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark } from 'lucide-react';
+import { CheckCircle2, Building2, Globe, Layers3, Save, ToggleLeft, ToggleRight, Store, Hotel, Soup, Pill, BriefcaseBusiness, BadgeDollarSign, Sparkles, Percent, ReceiptText, ArrowRightLeft, Landmark, Users, ShieldCheck, History, PhoneCall, MessageCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 type ModuleKey = 'hotel' | 'resto' | 'pharmacie' | 'beauty' | 'grocery' | 'garage';
@@ -63,6 +63,25 @@ export default function SettingsPage() {
   const [exchangeRates, setExchangeRates] = useState({ XAF: '1', EUR: '656.00', USD: '610.00' });
   const [invoicePrefix, setInvoicePrefix] = useState('INV-CM-');
   const [legalFooter, setLegalFooter] = useState('RCCM: RC/DLA/2024/B/1234 • NIU: M0721XXXXXXXXX');
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
+  const users = [
+    { name: 'Aline M.', role: 'Réceptionniste', site: 'Douala', status: 'Actif' },
+    { name: 'Mika T.', role: 'Serveur', site: 'Yaoundé', status: 'Actif' },
+    { name: 'Jean P.', role: 'Gérant', site: 'Bafoussam', status: 'Actif' },
+    { name: 'Sarah N.', role: 'Comptable', site: 'Douala', status: 'Suspendu' },
+  ];
+  const auditLogs = [
+    'Aline M. a annulé la facture #INV-CM-0142',
+    'Jean P. a modifié le stock de riz parfumé',
+    'Sarah N. a exporté le rapport de caisse',
+    'Mika T. a créé une réservation chambre 204',
+    'Jean P. a validé une remise exceptionnelle',
+    'Aline M. a mis à jour le profil client',
+    'Sarah N. a clôturé la journée comptable',
+    'Jean P. a ajusté le taux EUR/XAF',
+    'Mika T. a imprimé un ticket POS',
+    'Aline M. a réactivé un compte employé',
+  ];
 
   const current = useMemo(() => sites.find(s => s.id === selectedSite) ?? sites[0], [selectedSite, sites]);
   const activeModules = useMemo(() => Object.values(current.modules).filter(Boolean).length, [current.modules]);
@@ -280,6 +299,78 @@ export default function SettingsPage() {
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
                 style={{ background: 'hsl(var(--muted))', border: '1px solid hsl(var(--border))' }}
               />
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-5 border space-y-5" style={{ background: 'hsl(var(--card))', borderColor: 'hsl(var(--border))' }}>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="font-bold">Sécurité & Accès</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTwoFactorEnabled(v => !v)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border"
+                style={{
+                  background: twoFactorEnabled ? 'hsl(38 90% 56% / 0.12)' : 'transparent',
+                  borderColor: twoFactorEnabled ? 'hsl(38 90% 56% / 0.35)' : 'hsl(var(--border))',
+                  color: twoFactorEnabled ? 'hsl(38 90% 56%)' : 'hsl(var(--foreground))',
+                }}
+              >
+                {twoFactorEnabled ? <MessageCircle className="w-4 h-4" /> : <PhoneCall className="w-4 h-4" />}
+                2FA {twoFactorEnabled ? 'Activée' : 'Désactivée'}
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                <span className="font-semibold text-sm">Gestion des utilisateurs</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px]">
+                  <thead>
+                    <tr className="text-left text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                      <th className="py-2 pr-4">Employé</th>
+                      <th className="py-2 px-4">Rôle</th>
+                      <th className="py-2 px-4">Site</th>
+                      <th className="py-2 px-4">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map(user => (
+                      <tr key={user.name} className="border-t" style={{ borderColor: 'hsl(var(--border))' }}>
+                        <td className="py-3 pr-4 font-medium">{user.name}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.role}</td>
+                        <td className="py-3 px-4 text-sm text-muted-foreground">{user.site}</td>
+                        <td className="py-3 px-4">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: user.status === 'Actif' ? 'hsl(38 90% 56% / 0.12)' : 'hsl(0 84% 60% / 0.12)', color: user.status === 'Actif' ? 'hsl(38 90% 56%)' : '#F87171' }}>
+                            {user.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <History className="w-4 h-4" />
+                <span className="font-semibold text-sm">Logs d’audit récents</span>
+              </div>
+              <div className="space-y-2">
+                {auditLogs.map((log, index) => (
+                  <div key={log} className="flex items-start gap-3 rounded-xl px-3 py-2.5" style={{ background: 'hsl(var(--muted) / 0.35)' }}>
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: 'hsl(38 90% 56% / 0.14)', color: 'hsl(38 90% 56%)' }}>
+                      {index + 1}
+                    </div>
+                    <p className="text-sm text-foreground">{log}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
