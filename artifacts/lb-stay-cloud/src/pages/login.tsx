@@ -41,6 +41,15 @@ export default function Login() {
   const loginMutation = useLogin();
 
   const onSubmit = (data: LoginFormData) => {
+    const localOk = loginWithLocalAccount(data.email, data.password);
+    if (localOk) {
+      toast({
+        title: 'Connexion réussie',
+        description: 'Bienvenue sur LB Stay Cloud.',
+      });
+      setLocation('/dashboard');
+      return;
+    }
     loginMutation.mutate({ data }, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
@@ -50,20 +59,11 @@ export default function Login() {
         });
       },
       onError: () => {
-        const localOk = loginWithLocalAccount(data.email, data.password);
-        if (localOk) {
-          toast({
-            title: 'Connexion réussie',
-            description: 'Bienvenue sur LB Stay Cloud.',
-          });
-          setLocation('/dashboard');
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'Identifiants incorrects',
-            description: 'Vérifiez votre email et mot de passe.',
-          });
-        }
+        toast({
+          variant: 'destructive',
+          title: 'Identifiants incorrects',
+          description: 'Vérifiez votre email et mot de passe.',
+        });
       },
     });
   };
