@@ -19,6 +19,9 @@ import {
   ArrowUpDown,
   FileDown,
   Loader2,
+  RefreshCw,
+  Edit2,
+  Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -51,19 +54,20 @@ function StockBadge({ product }: { product: GroceryProduct }) {
 
 export default function GroceryStockPage() {
   const { business } = useAuth();
+  const { data: products, isLoading, refetch } = useListGroceryProducts(
+    { businessId: business?.id ?? 0 },
+    { query: { queryKey: getListGroceryProductsQueryKey({ businessId: business?.id ?? 0 }), enabled: !!business?.id, refetchInterval: 30000 } },
+  );
   const bId = business?.id ?? 0;
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'ALL' | 'LOW' | 'CRITICAL'>('ALL');
   const [sort, setSort] = useState<'name' | 'stock' | 'value'>('stock');
   const [isExporting, setIsExporting] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<GroceryProduct | null>(null);
 
   const productsKey = getListGroceryProductsQueryKey({ businessId: bId });
   const statsKey = getGetGroceryStatsQueryKey({ businessId: bId });
 
-  const { data: products, isLoading } = useListGroceryProducts(
-    { businessId: bId },
-    { query: { queryKey: productsKey, enabled: !!bId, refetchInterval: 30000 } },
-  );
   const { data: stats } = useGetGroceryStats(
     { businessId: bId },
     { query: { queryKey: statsKey, enabled: !!bId } },
@@ -128,6 +132,14 @@ export default function GroceryStockPage() {
             <FileDown className="w-4 h-4" />
           )}
           {isExporting ? 'Export...' : 'Rapport PDF'}
+        </button>
+        <button
+          onClick={() => refetch()}
+          className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
+          style={{ background: 'hsl(var(--muted))', color: 'hsl(var(--foreground))' }}
+        >
+          <RefreshCw className="w-4 h-4" />
+          Actualiser
         </button>
       </div>
 
@@ -282,11 +294,64 @@ export default function GroceryStockPage() {
                   <span className="text-xs font-bold text-foreground">{formatXAF(p.price)}</span>
                 </div>
                 <div className="md:hidden"><StockBar current={p.stock} min={p.minStock} /></div>
+                <div className="md:hidden flex gap-2 pt-2">
+                  <button
+                    onClick={() => setSelectedProduct(p)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
+                    style={{ background: 'hsl(38 90% 56% / 0.12)', color: 'hsl(38 90% 56%)' }}
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                    Détails
+                  </button>
+                  <button
+                    onClick={() => setSelectedProduct(p)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold"
+                    style={{ background: 'hsl(0 72% 51% / 0.1)', color: '#EF4444' }}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    Actions
+                  </button>
+                </div>
               </motion.div>
             ))}
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {selectedProduct && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.7)' }}
+            onClick={() => setSelectedProduct(null)}
+          >
+            <div
+              className="w-full max-w-sm rounded-2xl p-5 space-y-4"
+              style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">{selectedProduct.name}</h3>
+                  <p className="text-[11px] text-muted-foreground">{selectedProduct.category}</p>
+                </div>
+                <button onClick={() => setSelectedProduct(null)} className="text-xs text-muted-foreground">Fermer</button>
+              </div>
+              <p className="text-xs text-muted-foreground">Les actions rapides restent sur la page produits pour édition complète.</p>
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="w-full py-2.5 rounded-xl text-sm font-bold"
+                style={{ background: 'linear-gradient(135deg, hsl(38 90% 56%), hsl(38 90% 46%))', color: '#000' }}
+              >
+                OK
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
