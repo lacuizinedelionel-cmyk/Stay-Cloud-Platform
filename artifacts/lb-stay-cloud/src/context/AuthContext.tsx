@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode, useEffect, useState } from
 import { useLocation } from 'wouter';
 import { useGetMe, useListBusinesses, User, Business, getGetMeQueryKey, getListBusinessesQueryKey } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { toast } from '@/hooks/use-toast';
 
 const PUBLIC_ROUTES = ['/login', '/activate', '/signup'];
 
@@ -51,7 +52,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, businesses]);
 
   const logout = () => {
+    localStorage.clear();
+    sessionStorage.clear();
     queryClient.clear();
+    toast({ title: 'Vous avez été déconnecté avec succès' });
     setLocation('/login');
   };
 

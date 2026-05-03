@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from '@/hooks/use-toast';
 import {
   LayoutDashboard, Users, Settings, Bell, LogOut,
   UtensilsCrossed, Building2, Scissors, ShoppingBag,
