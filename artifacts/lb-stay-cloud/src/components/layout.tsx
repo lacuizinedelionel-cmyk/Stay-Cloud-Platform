@@ -399,6 +399,7 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
   const { t } = useLanguage();
   const unread = useUnreadCount(business?.id);
 
+  const settingsHref = business ? `/settings/${business.id}` : '/settings';
   const sharedItems = [
     { href: '/clients',       label: t.nav.clients,       icon: Users,         always: true,           badge: 0     },
     { href: '/analytics',     label: t.nav.analytics,     icon: BarChart2,     always: true,           badge: 0     },
@@ -406,7 +407,7 @@ function BusinessSidebar({ user, business, logout }: { user: any; business: any;
     { href: '/audit',         label: t.nav.audit,         icon: Shield,        always: canViewAudit,   badge: 0     },
     { href: '/billing',       label: t.nav.billing,       icon: Wallet,        always: canViewBilling, badge: 0     },
     { href: '/notifications', label: t.nav.notifications, icon: Bell,          always: true,           badge: 0     },
-    { href: '/settings',      label: t.nav.settings,      icon: Settings,      always: true,           badge: 0     },
+    { href: settingsHref, label: t.nav.settings, icon: Settings, always: true, badge: 0 },
   ].filter(i => i.always);
 
   return (

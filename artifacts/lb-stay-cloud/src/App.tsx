@@ -42,6 +42,7 @@ import ClientsPage from "@/pages/clients";
 import AnalyticsPage from "@/pages/analytics";
 import NotificationsPage from "@/pages/notifications";
 import SettingsPage from "@/pages/settings";
+import BusinessSettingsPage from "@/pages/business-settings";
 import BillingPage from "@/pages/billing";
 import AuditPage from "@/pages/audit";
 import MessagesPage from "@/pages/messages";
@@ -132,6 +133,7 @@ function Router() {
       <Route path="/clients">{() => <ProtectedRoute component={ClientsPage} />}</Route>
       <Route path="/analytics">{() => <ProtectedRoute component={AnalyticsPage} />}</Route>
       <Route path="/notifications">{() => <ProtectedRoute component={NotificationsPage} />}</Route>
+      <Route path="/settings/:id">{() => <ProtectedRoute component={BusinessSettingsPage} />}</Route>
       <Route path="/settings">{() => <ProtectedRoute component={SettingsPage} />}</Route>
       <Route path="/billing">{() => <ProtectedRoute component={BillingPage} />}</Route>
       <Route path="/audit">{() => <ProtectedRoute component={AuditPage} />}</Route>
