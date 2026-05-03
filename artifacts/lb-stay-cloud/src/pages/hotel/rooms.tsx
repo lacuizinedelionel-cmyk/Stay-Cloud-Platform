@@ -29,6 +29,26 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const DEMO_ROOMS: HotelRoom[] = Array.from({ length: 20 }, (_, index) => {
+  const number = 101 + index * 5;
+  const typeCycle: HotelRoomType[] = ['STANDARD', 'SUPERIOR', 'SUITE', 'PRESIDENTIAL'];
+  const statusCycle: HotelRoomStatus[] = ['AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING'];
+  const type = typeCycle[index % typeCycle.length];
+  const status = statusCycle[index % statusCycle.length];
+  const prices = { STANDARD: 85000, SUPERIOR: 125000, SUITE: 185000, PRESIDENTIAL: 320000 };
+
+  return {
+    id: number,
+    number: String(number),
+    floor: Math.floor(number / 100),
+    type,
+    status,
+    pricePerNight: prices[type] + (index % 4) * 5000,
+    currentGuestName: status === 'OCCUPIED' ? `Client VIP ${index + 1}` : null,
+    checkoutDate: status === 'OCCUPIED' ? `${new Date(Date.now() + (index + 1) * 86400000).toISOString().split('T')[0]}` : null,
+  } as HotelRoom;
+});
+
 const STATUS_CONFIG: Record<HotelRoomStatus, { label: string; color: string; bg: string }> = {
   AVAILABLE: { label: 'Libre',      color: '#10B981', bg: 'hsl(160 84% 39% / 0.12)' },
   OCCUPIED:  { label: 'Occupée',    color: '#EF4444', bg: 'hsl(0 72% 51% / 0.12)'   },
@@ -561,7 +581,8 @@ export default function HotelRoomsPage() {
     createReservation({ data: { businessId: bId, roomId: modal.room.id, ...data } });
   };
 
-  const filtered = filterStatus === 'ALL' ? (rooms ?? []) : (rooms ?? []).filter(r => r.status === filterStatus);
+  const sourceRooms = rooms?.length ? rooms : DEMO_ROOMS;
+  const filtered = filterStatus === 'ALL' ? sourceRooms : sourceRooms.filter(r => r.status === filterStatus);
 
   const STATUS_FILTERS: { value: HotelRoomStatus | 'ALL'; label: string; color?: string }[] = [
     { value: 'ALL',       label: 'Toutes' },
@@ -601,8 +622,8 @@ export default function HotelRoomsPage() {
         {STATUS_FILTERS.map(f => {
           const isActive = filterStatus === f.value;
           const count = f.value === 'ALL'
-            ? (rooms?.length ?? 0)
-            : (rooms?.filter(r => r.status === f.value).length ?? 0);
+            ? sourceRooms.length
+            : sourceRooms.filter(r => r.status === f.value).length;
           return (
             <button
               key={f.value}
@@ -622,7 +643,7 @@ export default function HotelRoomsPage() {
       </div>
 
       {/* Grille */}
-      {roomsLoading ? (
+      {roomsLoading && !rooms?.length ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {Array(15).fill(0).map((_, i) => <Skeleton key={i} className="h-[130px] rounded-xl" />)}
         </div>
