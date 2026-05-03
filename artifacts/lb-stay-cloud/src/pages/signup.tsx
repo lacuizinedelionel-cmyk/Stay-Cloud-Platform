@@ -75,12 +75,15 @@ export default function SignupPage() {
     phone: '',
     contactName: '',
   });
+  const [accountEmail, setAccountEmail] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountConfirmPassword, setAccountConfirmPassword] = useState('');
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm(f => ({ ...f, [k]: e.target.value }));
 
   const step1Valid = form.businessName && form.sector && form.city && form.email.includes('@') && form.phone;
-  const signupValid = password.length >= 8 && password === confirmPassword;
+  const signupValid = accountEmail.includes('@') && accountPassword.length >= 8 && accountPassword === accountConfirmPassword;
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,8 +99,8 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          email: form.email,
-          password,
+          email: accountEmail,
+          password: accountPassword,
           name: form.contactName || form.businessName,
           businessName: form.businessName,
         }),
@@ -336,16 +339,16 @@ export default function SignupPage() {
                 {/* Email */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Email professionnel <span style={{ color: '#EF4444' }}>*</span>
+                    Email du compte <span style={{ color: '#EF4444' }}>*</span>
                   </label>
                   <div className="flex items-center gap-2 px-3 h-11 rounded-xl"
                     style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
                     <Mail className="w-4 h-4 text-muted-foreground shrink-0" strokeWidth={1.5} />
                     <input
                       type="email"
-                      value={form.email}
-                      onChange={set('email')}
-                      placeholder="contact@monenseigne.cm"
+                      value={accountEmail}
+                      onChange={e => setAccountEmail(e.target.value)}
+                      placeholder="moncompte@email.com"
                       required
                       className="bg-transparent flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none"
                     />
@@ -360,8 +363,8 @@ export default function SignupPage() {
                     style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
                     <input
                       type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      value={accountPassword}
+                      onChange={e => setAccountPassword(e.target.value)}
                       placeholder="Minimum 8 caractères"
                       required
                       className="bg-transparent flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none"
@@ -377,8 +380,8 @@ export default function SignupPage() {
                     style={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}>
                     <input
                       type="password"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
+                      value={accountConfirmPassword}
+                      onChange={e => setAccountConfirmPassword(e.target.value)}
                       placeholder="Répétez le mot de passe"
                       required
                       className="bg-transparent flex-1 text-sm text-foreground placeholder:text-muted-foreground outline-none"

@@ -56,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.clear();
     queryClient.clear();
     toast({ title: 'Vous avez été déconnecté avec succès' });
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     setLocation('/login');
   };
 
