@@ -15,6 +15,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 const dayBase = new Date();
 dayBase.setHours(0, 0, 0, 0);
 
+type CaisseDemoTransaction = {
+  id: number;
+  time: string;
+  cashier: string;
+  client: string;
+  amount: number;
+  paymentMethod: 'MoMo' | 'Orange Money' | 'Cash';
+  status: 'Validé';
+};
+
 const restauNames = ['Paul', 'Syntia', 'Mado', 'Blaise', 'Aïcha', 'Serge', 'Monique', 'Hugo', 'Nadine', 'Junior'];
 const restauItems = [
   ['Ndolé', 'Soya'],
@@ -23,6 +33,31 @@ const restauItems = [
   ['Plantain', 'Eau minérale'],
   ['Brochettes', 'Frites'],
 ];
+
+const demoCashiers = ['Junior', 'Aline', 'Mika', 'Sarah', 'Blaise', 'Nadine', 'Paul', 'Monique', 'Hugo', 'Aïcha'];
+const demoClients = ['Client VIP', 'Mme Ngono', 'M. Tchatchoua', 'Famille Mbarga', 'Société BTP', 'Hôtel Palace', 'M. Mvondo', 'Restaurant Synergy', 'Client habituel', 'Agence Pro'];
+const demoMethods: Array<'MoMo' | 'Orange Money' | 'Cash'> = ['MoMo', 'Orange Money', 'Cash'];
+
+function buildCashJournalDemo(prefix: string, baseAmount: number): CaisseDemoTransaction[] {
+  return Array.from({ length: 20 }, (_, index) => {
+    const hour = 8 + Math.floor(index / 2);
+    const minute = index % 2 === 0 ? 15 : 45;
+    return {
+      id: index + 1,
+      time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+      cashier: demoCashiers[index % demoCashiers.length],
+      client: `${prefix} ${demoClients[index % demoClients.length]}`,
+      amount: baseAmount + (index % 5) * 3500 + (index % 3) * 1200,
+      paymentMethod: demoMethods[index % demoMethods.length],
+      status: 'Validé',
+    };
+  });
+}
+
+const DEMO_CASH_JOURNALS: Record<'RESTAURANT' | 'SUPERMARKET', CaisseDemoTransaction[]> = {
+  RESTAURANT: buildCashJournalDemo('Resto', 14500),
+  SUPERMARKET: buildCashJournalDemo('Supermarché', 9800),
+};
 
 function buildDemoOrders(prefix: string, count: number, amountSet: number[], itemsSet: string[][], modeCycle: Array<'CASH' | 'MTN_MOMO' | 'ORANGE_MONEY'>, baseHour: number) {
   return Array.from({ length: count }, (_, index) => {
@@ -101,6 +136,17 @@ const DEMO_CAISSE_BY_SECTOR: Record<string, CaisseDay> = {
     }, { totalCash: 0, totalMoMo: 0, totalOrangeMoney: 0, totalOther: 0, totalAmount: 0, orderCount: 0 }),
     isClosed: false,
     closedEntry: null,
+  },
+};
+
+const SECTOR_CASH_JOURNAL = {
+  RESTAURANT: {
+    label: 'Hôtel / Resto',
+    transactions: DEMO_CASH_JOURNALS.RESTAURANT,
+  },
+  SUPERMARKET: {
+    label: 'Supermarché',
+    transactions: DEMO_CASH_JOURNALS.SUPERMARKET,
   },
 };
 
@@ -264,6 +310,7 @@ export default function CaissePage() {
   const queryClient  = useQueryClient();
   const { toast }    = useToast();
   const bId = business?.id ?? 0;
+  const demoSector = business?.sector === 'SUPERMARKET' ? 'SUPERMARKET' : 'RESTAURANT';
 
   const today = new Date().toISOString().split('T')[0];
   const [selectedDate, setSelectedDate] = useState(today);
@@ -279,7 +326,9 @@ export default function CaissePage() {
     queryKey: caisseKey,
     queryFn: async () => {
       const r = await fetch(`/api/restaurant/caisse?businessId=${bId}&date=${selectedDate}`);
-      return r.json();
+      const data = await r.json();
+      if (data?.orders?.length) return data;
+      return demoSector ? DEMO_CAISSE_BY_SECTOR[demoSector] : data;
     },
     enabled: !!bId,
     refetchInterval: 30_000,
@@ -289,7 +338,22 @@ export default function CaissePage() {
     queryKey: historyKey,
     queryFn: async () => {
       const r = await fetch(`/api/restaurant/caisse/history?businessId=${bId}`);
-      return r.json();
+      const data = await r.json();
+      return Array.isArray(data) && data.length > 0
+        ? data
+        : Array.from({ length: 5 }, (_, index) => ({
+            id: index + 1,
+            businessId: bId,
+            date: new Date(Date.now() - index * 86400000).toISOString().split('T')[0],
+            totalCash: 220000 + index * 15000,
+            totalMoMo: 180000 + index * 12000,
+            totalOrangeMoney: 240000 + index * 10000,
+            totalOther: 0,
+            totalAmount: 640000 + index * 37000,
+            orderCount: 18 + index,
+            note: `Clôture démo ${index + 1}`,
+            closedAt: new Date(Date.now() - index * 86400000).toISOString(),
+          }));
     },
     enabled: !!bId,
   });
